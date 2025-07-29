@@ -4,6 +4,7 @@ import logging
 import re
 from typing import Any
 
+from ..formatting.router import FormatRouter
 from .base import BasePreprocessor
 
 logger = logging.getLogger("mcp-atlassian")
@@ -21,6 +22,7 @@ class JiraPreprocessor(BasePreprocessor):
             **kwargs: Additional arguments for the base class
         """
         super().__init__(base_url=base_url, **kwargs)
+        self.format_router = FormatRouter()
 
     def clean_jira_text(self, text: str) -> str:
         """
@@ -230,15 +232,64 @@ class JiraPreprocessor(BasePreprocessor):
 
         return output
 
-    def markdown_to_jira(self, input_text: str) -> str:
+    def markdown_to_jira(self, input_text: str, enable_adf: bool = True) -> str | dict[str, Any]:
         """
-        Convert Markdown syntax to Jira markup syntax.
+        Convert Markdown syntax to appropriate Jira format (ADF or wiki markup).
+        
+        Uses FormatRouter to automatically detect deployment type and choose format:
+        - Cloud instances: Returns ADF JSON dictionary
+        - Server/DC instances: Returns wiki markup string
+
+        Args:
+            input_text: Text in Markdown format
+            enable_adf: Whether to enable ADF conversion (default: True)
+
+        Returns:
+            For Cloud: Dictionary containing ADF JSON structure
+            For Server/DC: String in Jira wiki markup format
+        """
+        if not input_text:
+            if enable_adf:
+                # Try to determine if we should return ADF or wiki markup
+                result = self.format_router.convert_markdown("", self.base_url)
+                if result["format"] == "adf":
+                    return result["content"]  # Return ADF JSON
+                else:
+                    return ""  # Return empty string for wiki markup
+            return ""
+
+        if not enable_adf:
+            # Fall back to legacy wiki markup conversion
+            return self._legacy_markdown_to_wiki_markup(input_text)
+
+        try:
+            # Use format router to convert based on deployment type
+            result = self.format_router.convert_markdown(input_text, self.base_url)
+
+            if result["format"] == "adf":
+                # Return ADF JSON for Cloud instances
+                return result["content"]
+            else:
+                # Return wiki markup string for Server/DC instances
+                return result["content"]
+
+        except Exception as e:
+            logger.error(f"Format conversion failed, falling back to legacy: {e}")
+            # Fallback to legacy wiki markup conversion
+            return self._legacy_markdown_to_wiki_markup(input_text)
+
+    def _legacy_markdown_to_wiki_markup(self, input_text: str) -> str:
+        """
+        Legacy method for converting Markdown to Jira wiki markup.
+        
+        This preserves the original conversion logic for backward compatibility
+        and as a fallback when ADF conversion fails.
 
         Args:
             input_text: Text in Markdown format
 
         Returns:
-            Text in Jira markup format
+            Text in Jira wiki markup format
         """
         if not input_text:
             return ""

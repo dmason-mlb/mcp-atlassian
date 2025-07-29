@@ -5,14 +5,10 @@ required by Jira and Confluence Cloud APIs. It uses a visitor pattern to transfo
 markdown AST nodes into proper ADF JSON structure.
 """
 
-import json
 import logging
-import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import markdown
-from markdown.extensions import codehilite, tables
-from markdown.treeprocessors import Treeprocessor
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +21,7 @@ class ADFGenerator:
         self.md = markdown.Markdown(
             extensions=[
                 'codehilite',
-                'tables', 
+                'tables',
                 'fenced_code',
                 'nl2br',
                 'toc'
@@ -37,8 +33,8 @@ class ADFGenerator:
                 }
             }
         )
-        
-    def markdown_to_adf(self, markdown_text: str) -> Dict[str, Any]:
+
+    def markdown_to_adf(self, markdown_text: str) -> dict[str, Any]:
         """
         Convert markdown text to ADF JSON format.
         
@@ -54,36 +50,36 @@ class ADFGenerator:
         try:
             if not markdown_text or not markdown_text.strip():
                 return self._create_empty_document()
-                
+
             # Parse markdown to HTML first, then extract structure
             html_output = self.md.convert(markdown_text)
-            
+
             # Reset the markdown instance for next use
             self.md.reset()
-            
+
             # Parse the HTML and convert to ADF
             adf_content = self._html_to_adf_content(html_output)
-            
+
             return {
                 "version": 1,
                 "type": "doc",
                 "content": adf_content
             }
-            
+
         except Exception as e:
             logger.error(f"Failed to convert markdown to ADF: {e}")
             # Fallback to plain text in a paragraph
             return self._create_plain_text_document(markdown_text)
-            
-    def _create_empty_document(self) -> Dict[str, Any]:
+
+    def _create_empty_document(self) -> dict[str, Any]:
         """Create an empty ADF document."""
         return {
             "version": 1,
-            "type": "doc", 
+            "type": "doc",
             "content": []
         }
-        
-    def _create_plain_text_document(self, text: str) -> Dict[str, Any]:
+
+    def _create_plain_text_document(self, text: str) -> dict[str, Any]:
         """Create ADF document with plain text fallback."""
         return {
             "version": 1,
@@ -100,8 +96,8 @@ class ADFGenerator:
                 }
             ]
         }
-        
-    def _html_to_adf_content(self, html: str) -> List[Dict[str, Any]]:
+
+    def _html_to_adf_content(self, html: str) -> list[dict[str, Any]]:
         """
         Convert HTML to ADF content blocks.
         
@@ -109,11 +105,11 @@ class ADFGenerator:
         and converts them to corresponding ADF structures.
         """
         from bs4 import BeautifulSoup
-        
+
         try:
             soup = BeautifulSoup(html, 'html.parser')
             content = []
-            
+
             # Process each top-level element
             for element in soup.children:
                 if hasattr(element, 'name') and element.name:
@@ -126,19 +122,19 @@ class ADFGenerator:
                         "type": "paragraph",
                         "content": [{"type": "text", "text": element.strip()}]
                     })
-                    
+
             return content if content else [self._create_empty_paragraph()]
-            
+
         except Exception as e:
             logger.error(f"Failed to parse HTML to ADF: {e}")
             return [self._create_plain_text_paragraph(html)]
-            
-    def _convert_html_element_to_adf(self, element) -> Optional[Dict[str, Any]]:
+
+    def _convert_html_element_to_adf(self, element: Any) -> dict[str, Any] | None:
         """Convert a single HTML element to ADF node."""
         if not hasattr(element, 'name') or not element.name:
             return None
         tag_name = element.name.lower()
-        
+
         if tag_name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
             return self._convert_heading(element)
         elif tag_name == 'p':
@@ -162,34 +158,34 @@ class ADFGenerator:
                     "content": [{"type": "text", "text": text_content}]
                 }
         return None
-        
-    def _convert_heading(self, element) -> Dict[str, Any]:
+
+    def _convert_heading(self, element: Any) -> dict[str, Any]:
         """Convert heading element to ADF heading."""
         level = int(element.name[1])  # Extract number from h1, h2, etc.
-        
+
         return {
             "type": "heading",
             "attrs": {"level": level},
             "content": self._convert_inline_content(element)
         }
-        
-    def _convert_paragraph(self, element) -> Dict[str, Any]:
+
+    def _convert_paragraph(self, element: Any) -> dict[str, Any]:
         """Convert paragraph element to ADF paragraph."""
         content = self._convert_inline_content(element)
-        
+
         # Don't create empty paragraphs
         if not content:
             return self._create_empty_paragraph()
-            
+
         return {
             "type": "paragraph",
             "content": content
         }
-        
-    def _convert_list(self, element) -> Dict[str, Any]:
+
+    def _convert_list(self, element: Any) -> dict[str, Any]:
         """Convert list element to ADF bulletList or orderedList."""
         list_type = "orderedList" if element.name == "ol" else "bulletList"
-        
+
         content = []
         for li in element.find_all('li', recursive=False):
             list_item_content = self._convert_list_item_content(li)
@@ -198,16 +194,16 @@ class ADFGenerator:
                     "type": "listItem",
                     "content": list_item_content
                 })
-                
+
         return {
             "type": list_type,
             "content": content
         }
-        
-    def _convert_list_item_content(self, li_element) -> List[Dict[str, Any]]:
+
+    def _convert_list_item_content(self, li_element: Any) -> list[dict[str, Any]]:
         """Convert list item content to ADF format."""
         content = []
-        
+
         # Handle nested elements in list item
         for child in li_element.children:
             if hasattr(child, 'name'):
@@ -227,7 +223,7 @@ class ADFGenerator:
                     text = child.get_text(strip=True)
                     if text:
                         content.append({
-                            "type": "paragraph", 
+                            "type": "paragraph",
                             "content": [{"type": "text", "text": text}]
                         })
             elif child.strip():
@@ -236,16 +232,16 @@ class ADFGenerator:
                     "type": "paragraph",
                     "content": [{"type": "text", "text": child.strip()}]
                 })
-                
+
         # If no content found, create empty paragraph
         return content if content else [self._create_empty_paragraph()]
-        
-    def _convert_code_block(self, element) -> Dict[str, Any]:
+
+    def _convert_code_block(self, element: Any) -> dict[str, Any]:
         """Convert code block to ADF codeBlock."""
         code_element = element.find('code')
         if code_element:
             code_text = code_element.get_text().rstrip('\n')
-            
+
             # Try to extract language from class
             language = None
             if code_element.get('class'):
@@ -253,11 +249,11 @@ class ADFGenerator:
                     if cls.startswith('language-'):
                         language = cls.replace('language-', '')
                         break
-                        
+
             attrs = {}
             if language:
                 attrs['language'] = language
-                
+
             return {
                 "type": "codeBlock",
                 "attrs": attrs,
@@ -274,16 +270,16 @@ class ADFGenerator:
                 "type": "codeBlock",
                 "content": [
                     {
-                        "type": "text", 
+                        "type": "text",
                         "text": element.get_text().rstrip('\n')
                     }
                 ]
             }
-            
-    def _convert_blockquote(self, element) -> Dict[str, Any]:
+
+    def _convert_blockquote(self, element: Any) -> dict[str, Any]:
         """Convert blockquote to ADF blockquote."""
         content = []
-        
+
         for child in element.find_all(['p', 'div'], recursive=False):
             para_content = self._convert_inline_content(child)
             if para_content:
@@ -291,7 +287,7 @@ class ADFGenerator:
                     "type": "paragraph",
                     "content": para_content
                 })
-                
+
         if not content:
             # Fallback to text content
             text = element.get_text(strip=True)
@@ -300,17 +296,17 @@ class ADFGenerator:
                     "type": "paragraph",
                     "content": [{"type": "text", "text": text}]
                 }]
-                
+
         return {
             "type": "blockquote",
             "content": content if content else [self._create_empty_paragraph()]
         }
-        
-    def _convert_table(self, element) -> Dict[str, Any]:
+
+    def _convert_table(self, element: Any) -> dict[str, Any]:
         """Convert table to ADF table (basic implementation)."""
         # This is a simplified table conversion
         # Full table support would require more complex logic
-        
+
         rows = []
         for tr in element.find_all('tr'):
             cells = []
@@ -328,20 +324,20 @@ class ADFGenerator:
                     "type": "tableRow",
                     "content": cells
                 })
-                
+
         return {
             "type": "table",
             "content": rows
         }
-        
-    def _convert_rule(self) -> Dict[str, Any]:
+
+    def _convert_rule(self) -> dict[str, Any]:
         """Convert horizontal rule to ADF rule."""
         return {"type": "rule"}
-        
-    def _convert_inline_content(self, element) -> List[Dict[str, Any]]:
+
+    def _convert_inline_content(self, element: Any) -> list[dict[str, Any]]:
         """Convert inline content (text with formatting) to ADF."""
         content = []
-        
+
         # Handle direct text and inline formatting
         for child in element.children:
             if hasattr(child, 'name') and child.name:  # Check that name is not None
@@ -354,22 +350,22 @@ class ADFGenerator:
                     "type": "text",
                     "text": child.strip()
                 })
-                
+
         return content
-        
-    def _convert_inline_element(self, element) -> Union[Dict[str, Any], List[Dict[str, Any]], None]:
+
+    def _convert_inline_element(self, element: Any) -> dict[str, Any] | list[dict[str, Any]] | None:
         """Convert inline HTML element to ADF inline node."""
         if not hasattr(element, 'name') or element.name is None:
             return None
         tag_name = element.name.lower()
         text_content = element.get_text()
-        
+
         if not text_content.strip():
             return None
-            
+
         # Basic text formatting
         marks = []
-        
+
         if tag_name in ['strong', 'b']:
             marks.append({"type": "strong"})
         elif tag_name in ['em', 'i']:
@@ -387,7 +383,7 @@ class ADFGenerator:
                     "type": "link",
                     "attrs": {"href": href}
                 })
-                
+
         # For nested formatting, we need to handle child elements
         if element.children and any(hasattr(child, 'name') and child.name for child in element.children):
             # Has nested elements - process recursively
@@ -401,11 +397,13 @@ class ADFGenerator:
                         else:
                             nested_content.append(child_content)
                 elif hasattr(child, 'strip') and child.strip():
-                    nested_content.append({
+                    text_node = {
                         "type": "text",
-                        "text": child.strip(),
-                        "marks": marks if marks else None
-                    })
+                        "text": child.strip()
+                    }
+                    if marks:
+                        text_node["marks"] = marks
+                    nested_content.append(text_node)
             return nested_content
         else:
             # Simple text with marks
@@ -415,17 +413,17 @@ class ADFGenerator:
             }
             if marks:
                 text_node["marks"] = marks
-                
+
             return text_node
-            
-    def _create_empty_paragraph(self) -> Dict[str, Any]:
+
+    def _create_empty_paragraph(self) -> dict[str, Any]:
         """Create an empty ADF paragraph."""
         return {
             "type": "paragraph",
             "content": []
         }
-        
-    def _create_plain_text_paragraph(self, text: str) -> Dict[str, Any]:
+
+    def _create_plain_text_paragraph(self, text: str) -> dict[str, Any]:
         """Create ADF paragraph with plain text."""
         return {
             "type": "paragraph",
@@ -436,8 +434,8 @@ class ADFGenerator:
                 }
             ]
         }
-        
-    def validate_adf(self, adf_json: Dict[str, Any]) -> bool:
+
+    def validate_adf(self, adf_json: dict[str, Any]) -> bool:
         """
         Validate ADF JSON structure (basic validation).
         
@@ -451,24 +449,24 @@ class ADFGenerator:
             # Basic structure validation
             if not isinstance(adf_json, dict):
                 return False
-                
+
             required_fields = ["version", "type", "content"]
             if not all(field in adf_json for field in required_fields):
                 return False
-                
+
             if adf_json["type"] != "doc":
                 return False
-                
+
             if not isinstance(adf_json["content"], list):
                 return False
-                
+
             # Validate each content block has required type
             for content_block in adf_json["content"]:
                 if not isinstance(content_block, dict) or "type" not in content_block:
                     return False
-                    
+
             return True
-            
+
         except Exception as e:
             logger.error(f"ADF validation error: {e}")
             return False
