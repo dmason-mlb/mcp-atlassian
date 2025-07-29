@@ -15,7 +15,7 @@ import hashlib
 import logging
 import time
 from functools import lru_cache
-from typing import Any, Optional
+from typing import Any
 
 import markdown
 
@@ -40,7 +40,7 @@ class ADFGenerator:
         self.md = markdown.Markdown(
             extensions=[
                 'codehilite',
-                'tables', 
+                'tables',
                 'fenced_code',
                 'nl2br',
                 'toc'
@@ -52,7 +52,7 @@ class ADFGenerator:
                 }
             }
         )
-        
+
         # Performance metrics
         self.metrics = {
             'conversions_total': 0,
@@ -61,10 +61,10 @@ class ADFGenerator:
             'conversion_errors': 0,
             'last_error': None
         }
-        
+
         # Configure caching based on cache_size
         self._configure_cache(cache_size)
-    
+
     def _configure_cache(self, cache_size: int) -> None:
         """Configure LRU cache for markdown conversion."""
         # Create cached version of _convert_markdown_to_adf
@@ -85,19 +85,19 @@ class ADFGenerator:
         """
         start_time = time.time()
         self.metrics['conversions_total'] += 1
-        
+
         try:
-            # Handle empty input efficiently  
+            # Handle empty input efficiently
             if not markdown_text or not markdown_text.strip():
                 return {
                     "type": "doc",
                     "version": 1,
                     "content": []
                 }
-            
+
             # Create cache key from input
             cache_key = hashlib.md5(markdown_text.encode('utf-8')).hexdigest()
-            
+
             # Try cached conversion first
             try:
                 result = self._cached_convert(cache_key, markdown_text)
@@ -109,23 +109,23 @@ class ADFGenerator:
                 # Fall back to direct conversion
                 result = self._convert_markdown_to_adf_uncached(cache_key, markdown_text)
                 return result
-                
+
         except Exception as e:
             self.metrics['conversion_errors'] += 1
             self.metrics['last_error'] = str(e)
             logger.error(f"ADF conversion failed: {e}")
-            
+
             # Graceful degradation: return a basic ADF with error information
             return self._create_error_adf(markdown_text, str(e))
-            
+
         finally:
             # Update performance metrics
             conversion_time = time.time() - start_time
             self.metrics['conversion_time_total'] += conversion_time
-            
+
             if conversion_time > 0.1:  # Log slow conversions
                 logger.warning(f"Slow ADF conversion: {conversion_time:.3f}s for {len(markdown_text)} chars")
-    
+
     def _convert_markdown_to_adf_uncached(self, cache_key: str, markdown_text: str) -> dict[str, Any]:
         """
         Internal method for actual ADF conversion (uncached version).
@@ -144,7 +144,7 @@ class ADFGenerator:
             # Parse markdown to HTML first, then extract structure
             html_output = self.md.convert(markdown_text)
 
-            # Reset the markdown instance for next use  
+            # Reset the markdown instance for next use
             self.md.reset()
 
             # Parse the HTML and convert to ADF
@@ -279,7 +279,7 @@ class ADFGenerator:
 
         content = []
         item_count = 0
-        
+
         for li in element.find_all('li', recursive=False):
             if item_count >= max_items:
                 # Add truncation notice for very large lists
@@ -291,7 +291,7 @@ class ADFGenerator:
                     }]
                 })
                 break
-            
+
             list_item_content = self._convert_list_item_content(li, nesting_level)
             if list_item_content:
                 content.append({
@@ -309,7 +309,7 @@ class ADFGenerator:
         """Convert list item content to ADF format with lazy evaluation for deep nesting."""
         content = []
         max_nesting = 10  # Prevent excessive nesting for performance
-        
+
         # Prevent infinite recursion and excessive nesting
         if nesting_level > max_nesting:
             logger.warning(f"List nesting exceeded maximum depth ({max_nesting}), truncating")
@@ -321,7 +321,7 @@ class ADFGenerator:
         # Handle nested elements in list item with lazy evaluation
         child_count = 0
         max_children = 50  # Limit children per list item
-        
+
         for child in li_element.children:
             if child_count >= max_children:
                 content.append({
@@ -329,7 +329,7 @@ class ADFGenerator:
                     "content": [{"type": "text", "text": f"... (list item truncated after {max_children} children)"}]
                 })
                 break
-            
+
             if hasattr(child, 'name'):
                 if child.name in ['ul', 'ol']:
                     # Nested list - use lazy evaluation
@@ -363,7 +363,7 @@ class ADFGenerator:
                     "type": "paragraph",
                     "content": [{"type": "text", "text": text}]
                 })
-            
+
             child_count += 1
 
         # If no content found, create empty paragraph
@@ -438,13 +438,13 @@ class ADFGenerator:
     def _convert_table(self, element: Any) -> dict[str, Any]:
         """Convert table to ADF table with lazy evaluation for performance."""
         # Use lazy evaluation for large tables to improve performance
-        
+
         def lazy_convert_rows():
             """Lazily convert table rows to avoid processing large tables upfront."""
             rows = []
             row_count = 0
             max_rows = 50  # Limit large tables for performance
-            
+
             for tr in element.find_all('tr'):
                 if row_count >= max_rows:
                     # Add truncation notice for very large tables
@@ -459,11 +459,11 @@ class ADFGenerator:
                         }]
                     })
                     break
-                
+
                 cells = []
                 cell_count = 0
                 max_cells = 20  # Limit cells per row
-                
+
                 for td in tr.find_all(['td', 'th']):
                     if cell_count >= max_cells:
                         cells.append({
@@ -474,7 +474,7 @@ class ADFGenerator:
                             }]
                         })
                         break
-                    
+
                     # Lazy content conversion - only process when needed
                     cell_content = self._convert_inline_content(td)
                     cells.append({
@@ -485,16 +485,16 @@ class ADFGenerator:
                         }]
                     })
                     cell_count += 1
-                
+
                 if cells:
                     rows.append({
                         "type": "tableRow",
                         "content": cells
                     })
                 row_count += 1
-            
+
             return rows
-        
+
         return {
             "type": "table",
             "content": lazy_convert_rows()
@@ -652,16 +652,16 @@ class ADFGenerator:
             ADF document with error information and original text
         """
         logger.warning(f"Creating error ADF for failed conversion: {error_message}")
-        
+
         # Try to preserve at least the original text content
         try:
             # Remove markdown formatting and use as plain text
             plain_text = original_markdown.replace('*', '').replace('_', '').replace('#', '').strip()
-            
+
             # Limit text length to prevent oversized documents
             if len(plain_text) > 1000:
                 plain_text = plain_text[:997] + "..."
-            
+
             return {
                 "version": 1,
                 "type": "doc",
@@ -682,7 +682,7 @@ class ADFGenerator:
             logger.error(f"Even error ADF creation failed: {fallback_error}")
             return {
                 "version": 1,
-                "type": "doc", 
+                "type": "doc",
                 "content": [
                     {
                         "type": "paragraph",
@@ -703,7 +703,7 @@ class ADFGenerator:
             Dictionary containing performance statistics
         """
         cache_info = self._cached_convert.cache_info() if hasattr(self._cached_convert, 'cache_info') else None
-        
+
         metrics = self.metrics.copy()
         metrics.update({
             'cache_hit_rate': (self.metrics['conversions_cached'] / max(1, self.metrics['conversions_total'])) * 100,
@@ -716,7 +716,7 @@ class ADFGenerator:
                 'currsize': cache_info.currsize if cache_info else 0
             } if cache_info else None
         })
-        
+
         return metrics
 
     def clear_cache(self) -> None:

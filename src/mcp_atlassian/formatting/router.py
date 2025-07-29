@@ -14,7 +14,7 @@ import logging
 import re
 import time
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 from cachetools import TTLCache
@@ -59,13 +59,13 @@ class FormatRouter:
         """
         self.deployment_cache: TTLCache = TTLCache(maxsize=cache_size, ttl=cache_ttl)
         self.adf_generator = ADFGenerator(cache_size=adf_cache_size)
-        
+
         # Compile regex patterns for better performance
         self._cloud_patterns = [
             re.compile(r'.*\.atlassian\.net', re.IGNORECASE),
             re.compile(r'.*\.atlassian\.com', re.IGNORECASE)
         ]
-        
+
         # Performance metrics
         self.metrics = {
             'detections_total': 0,
@@ -98,7 +98,7 @@ class FormatRouter:
         """
         start_time = time.time()
         self.metrics['conversions_total'] += 1
-        
+
         try:
             # Determine format type
             if force_format:
@@ -141,7 +141,7 @@ class FormatRouter:
             # Update performance metrics
             conversion_time = time.time() - start_time
             self.metrics['conversion_time_total'] += conversion_time
-            
+
             if conversion_time > 0.05:  # Log slow conversions (50ms threshold)
                 logger.warning(f"Slow routing conversion: {conversion_time:.3f}s for {len(markdown_text)} chars")
 
@@ -157,7 +157,7 @@ class FormatRouter:
         """
         start_time = time.time()
         self.metrics['detections_total'] += 1
-        
+
         try:
             if not base_url:
                 return DeploymentType.UNKNOWN
@@ -187,7 +187,7 @@ class FormatRouter:
                     self.deployment_cache[cache_key] = deployment_type
                     logger.debug(f"Detected Cloud deployment for {hostname}")
                     return deployment_type
-            
+
             # Check for additional development instances
             if re.match(r'.*\.jira-dev\.com$', hostname):
                 deployment_type = DeploymentType.CLOUD
@@ -217,7 +217,7 @@ class FormatRouter:
             # Update performance metrics
             detection_time = time.time() - start_time
             self.metrics['detection_time_total'] += detection_time
-            
+
             if detection_time > 0.01:  # Log slow detections (10ms threshold)
                 logger.warning(f"Slow deployment detection: {detection_time:.3f}s for {base_url}")
 
@@ -327,7 +327,7 @@ class FormatRouter:
         """
         # Get ADF generator metrics
         adf_metrics = self.adf_generator.get_performance_metrics()
-        
+
         # Calculate router-level metrics
         router_metrics = self.metrics.copy()
         router_metrics.update({
@@ -337,7 +337,7 @@ class FormatRouter:
             'cache_stats': self.get_cache_stats(),
             'adf_generator_metrics': adf_metrics
         })
-        
+
         return router_metrics
 
     def reset_metrics(self) -> None:
