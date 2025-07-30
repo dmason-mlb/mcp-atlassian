@@ -562,11 +562,14 @@ class IssuesMixin(
                 "issuetype": {"name": actual_issue_type},
             }
 
-            # Add description if provided (convert from Markdown to Jira format)
+            # Add description if provided
             if description:
-                description_content = self._markdown_to_jira(description)
-                # Handle both ADF (dict) and wiki markup (str) formats
-                fields["description"] = description_content
+                if isinstance(description, dict) and description.get("type") == "doc":
+                    fields["description"] = description
+                else:
+                    description_content = self._markdown_to_jira(description)
+                    # Handle both ADF (dict) and wiki markup (str) formats
+                    fields["description"] = description_content
 
             # Add assignee if provided
             if assignee:
@@ -1016,9 +1019,13 @@ class IssuesMixin(
 
             # Convert description from Markdown to Jira format if present
             if "description" in update_fields:
-                description_content = self._markdown_to_jira(update_fields["description"])
-                # Handle both ADF (dict) and wiki markup (str) formats
-                update_fields["description"] = description_content
+                desc_val = update_fields["description"]
+                if isinstance(desc_val, dict) and desc_val.get("type") == "doc":
+                    update_fields["description"] = desc_val
+                else:
+                    description_content = self._markdown_to_jira(desc_val)
+                    # Handle both ADF (dict) and wiki markup (str) formats
+                    update_fields["description"] = description_content
 
             # Process kwargs
             for key, value in kwargs.items():
@@ -1047,10 +1054,13 @@ class IssuesMixin(
                         except ValueError as e:
                             logger.warning(f"Could not update assignee: {str(e)}")
                 elif key == "description":
-                    # Handle description with markdown conversion
-                    description_content = self._markdown_to_jira(value)
-                    # Handle both ADF (dict) and wiki markup (str) formats
-                    update_fields["description"] = description_content
+                    # Handle description updates that may already be ADF
+                    if isinstance(value, dict) and value.get("type") == "doc":
+                        update_fields["description"] = value
+                    else:
+                        description_content = self._markdown_to_jira(value)
+                        # Handle both ADF (dict) and wiki markup (str) formats
+                        update_fields["description"] = description_content
                 else:
                     # Process regular fields using _process_additional_fields
                     # Create a temporary dict with just this field
