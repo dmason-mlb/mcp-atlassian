@@ -80,7 +80,8 @@ class FormatRouter:
         self,
         markdown_text: str,
         base_url: str,
-        force_format: FormatType | None = None
+        force_format: FormatType | None = None,
+        user_id: str | None = None
     ) -> dict[str, Any]:
         """
         Convert markdown text to appropriate format based on deployment type with performance monitoring.
@@ -89,12 +90,14 @@ class FormatRouter:
             markdown_text: Input markdown text to convert
             base_url: Base URL of the Atlassian instance
             force_format: Optional format type to force (bypasses auto-detection)
+            user_id: Optional user identifier for rollout evaluation
             
         Returns:
             Dictionary containing:
             - 'content': Converted content (ADF dict or wiki markup string)
             - 'format': Format type used ('adf' or 'wiki_markup')
             - 'deployment_type': Detected deployment type
+            - 'rollout_applied': Whether rollout logic was applied (boolean)
         """
         start_time = time.time()
         self.metrics['conversions_total'] = self.metrics['conversions_total'] + 1
@@ -104,11 +107,14 @@ class FormatRouter:
             if force_format:
                 format_type = force_format
                 deployment_type = DeploymentType.UNKNOWN
+                rollout_applied = False
                 logger.debug(f"Using forced format: {force_format.value}")
             else:
                 deployment_type = self.detect_deployment_type(base_url)
-                format_type = self._get_format_for_deployment(deployment_type)
-                logger.debug(f"Auto-detected format: {format_type.value} for deployment: {deployment_type.value}")
+                format_type, rollout_applied = self._get_format_for_deployment_with_rollout(
+                    deployment_type, user_id
+                )
+                logger.debug(f"Auto-detected format: {format_type.value} for deployment: {deployment_type.value}, rollout applied: {rollout_applied}")
 
             # Convert based on format type
             if format_type == FormatType.ADF:
@@ -116,7 +122,8 @@ class FormatRouter:
                 return {
                     'content': content,
                     'format': 'adf',
-                    'deployment_type': deployment_type.value
+                    'deployment_type': deployment_type.value,
+                    'rollout_applied': rollout_applied
                 }
             else:
                 # Use existing wiki markup conversion (fallback)
@@ -124,7 +131,8 @@ class FormatRouter:
                 return {
                     'content': wiki_content,
                     'format': 'wiki_markup',
-                    'deployment_type': deployment_type.value
+                    'deployment_type': deployment_type.value,
+                    'rollout_applied': rollout_applied
                 }
 
         except Exception as e:
@@ -240,6 +248,47 @@ class FormatRouter:
         else:
             # Server/DC and Unknown use wiki markup
             return FormatType.WIKI_MARKUP
+
+    def _get_format_for_deployment_with_rollout(
+        self, 
+        deployment_type: DeploymentType, 
+        user_id: str | None = None
+    ) -> tuple[FormatType, bool]:
+        """
+        Get the appropriate format type considering rollout flags and user-specific rules.
+        
+        This method provides backward compatibility by allowing gradual rollout of ADF format.
+        Organizations can control the rollout through environment variables.
+        
+        Args:
+            deployment_type: Detected deployment type
+            user_id: Optional user identifier for rollout evaluation
+            
+        Returns:
+            Tuple of (FormatType to use, whether rollout logic was applied)
+            
+        Rollout Strategy:
+            1. If deployment is not Cloud, always use wiki markup (no rollout needed)
+            2. For Cloud deployments, check rollout configuration:
+               - Global disable/enable flags take priority
+               - User-specific include/exclude lists override percentage
+               - Percentage-based rollout using consistent user hash
+        """
+        from ..utils.env import is_adf_rollout_enabled_for_user
+        
+        # For non-Cloud deployments, always use wiki markup (no rollout needed)
+        if deployment_type != DeploymentType.CLOUD:
+            return FormatType.WIKI_MARKUP, False
+            
+        # For Cloud deployments, check rollout configuration
+        adf_enabled_for_user = is_adf_rollout_enabled_for_user(user_id)
+        
+        if adf_enabled_for_user:
+            logger.debug(f"ADF enabled for user {user_id or 'anonymous'} via rollout configuration")
+            return FormatType.ADF, True
+        else:
+            logger.debug(f"ADF disabled for user {user_id or 'anonymous'} via rollout configuration, using wiki markup")
+            return FormatType.WIKI_MARKUP, True
 
     def _markdown_to_wiki_markup(self, markdown_text: str) -> str:
         """
