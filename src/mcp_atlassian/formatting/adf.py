@@ -54,7 +54,7 @@ class ADFGenerator:
         )
 
         # Performance metrics
-        self.metrics = {
+        self.metrics: dict[str, Any] = {
             'conversions_total': 0,
             'conversions_cached': 0,
             'conversion_time_total': 0.0,
@@ -84,7 +84,7 @@ class ADFGenerator:
             ValueError: If markdown conversion fails after all fallback attempts
         """
         start_time = time.time()
-        self.metrics['conversions_total'] += 1
+        self.metrics['conversions_total'] = self.metrics['conversions_total'] + 1
 
         try:
             # Handle empty input efficiently
@@ -101,7 +101,7 @@ class ADFGenerator:
             # Try cached conversion first
             try:
                 result = self._cached_convert(cache_key, markdown_text)
-                self.metrics['conversions_cached'] += 1
+                self.metrics['conversions_cached'] = self.metrics['conversions_cached'] + 1
                 logger.debug(f"ADF conversion cache hit for key: {cache_key[:8]}...")
                 return result
             except Exception as cache_error:
@@ -111,7 +111,7 @@ class ADFGenerator:
                 return result
 
         except Exception as e:
-            self.metrics['conversion_errors'] += 1
+            self.metrics['conversion_errors'] = self.metrics['conversion_errors'] + 1
             self.metrics['last_error'] = str(e)
             logger.error(f"ADF conversion failed: {e}")
 
@@ -121,7 +121,7 @@ class ADFGenerator:
         finally:
             # Update performance metrics
             conversion_time = time.time() - start_time
-            self.metrics['conversion_time_total'] += conversion_time
+            self.metrics['conversion_time_total'] = self.metrics['conversion_time_total'] + conversion_time
 
             if conversion_time > 0.1:  # Log slow conversions
                 logger.warning(f"Slow ADF conversion: {conversion_time:.3f}s for {len(markdown_text)} chars")
@@ -534,7 +534,7 @@ class ADFGenerator:
             return None
 
         # Basic text formatting
-        marks = []
+        marks: list[dict[str, Any]] = []
 
         if tag_name in ['strong', 'b']:
             marks.append({"type": "strong"})
@@ -550,7 +550,7 @@ class ADFGenerator:
             href = element.get('href')
             if href:
                 marks.append({
-                    "type": "link",
+                    "type": "link", 
                     "attrs": {"href": href}
                 })
 
@@ -618,7 +618,7 @@ class ADFGenerator:
         try:
             # Basic structure validation
             if not isinstance(adf_json, dict):
-                return False
+                return False  # type: ignore[unreachable]
 
             required_fields = ["version", "type", "content"]
             if not all(field in adf_json for field in required_fields):

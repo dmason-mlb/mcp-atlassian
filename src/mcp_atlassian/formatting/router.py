@@ -66,8 +66,8 @@ class FormatRouter:
             re.compile(r'.*\.atlassian\.com', re.IGNORECASE)
         ]
 
-        # Performance metrics
-        self.metrics = {
+        # Performance metrics with explicit typing
+        self.metrics: dict[str, Any] = {
             'detections_total': 0,
             'detections_cached': 0,
             'conversions_total': 0,
@@ -97,7 +97,7 @@ class FormatRouter:
             - 'deployment_type': Detected deployment type
         """
         start_time = time.time()
-        self.metrics['conversions_total'] += 1
+        self.metrics['conversions_total'] = self.metrics['conversions_total'] + 1
 
         try:
             # Determine format type
@@ -120,9 +120,9 @@ class FormatRouter:
                 }
             else:
                 # Use existing wiki markup conversion (fallback)
-                content = self._markdown_to_wiki_markup(markdown_text)
+                wiki_content = self._markdown_to_wiki_markup(markdown_text)
                 return {
-                    'content': content,
+                    'content': wiki_content,
                     'format': 'wiki_markup',
                     'deployment_type': deployment_type.value
                 }
@@ -140,7 +140,7 @@ class FormatRouter:
         finally:
             # Update performance metrics
             conversion_time = time.time() - start_time
-            self.metrics['conversion_time_total'] += conversion_time
+            self.metrics['conversion_time_total'] = self.metrics['conversion_time_total'] + conversion_time
 
             if conversion_time > 0.05:  # Log slow conversions (50ms threshold)
                 logger.warning(f"Slow routing conversion: {conversion_time:.3f}s for {len(markdown_text)} chars")
@@ -156,7 +156,7 @@ class FormatRouter:
             DeploymentType indicating the detected deployment type
         """
         start_time = time.time()
-        self.metrics['detections_total'] += 1
+        self.metrics['detections_total'] = self.metrics['detections_total'] + 1
 
         try:
             if not base_url:
@@ -165,9 +165,13 @@ class FormatRouter:
             # Check cache first
             cache_key = base_url.lower().strip()
             if cache_key in self.deployment_cache:
-                self.metrics['detections_cached'] += 1
+                self.metrics['detections_cached'] = self.metrics['detections_cached'] + 1
                 logger.debug(f"Deployment detection cache hit for: {cache_key}")
-                return self.deployment_cache[cache_key]
+                cached_result = self.deployment_cache[cache_key]
+                if isinstance(cached_result, DeploymentType):
+                    return cached_result
+                # Handle legacy cache entries that might not be DeploymentType
+                return DeploymentType.UNKNOWN
             # Check for non-HTTP protocols first (case insensitive)
             lower_url = base_url.lower()
             if lower_url.startswith(('ftp://', 'file://', 'sftp://')):
@@ -216,7 +220,7 @@ class FormatRouter:
         finally:
             # Update performance metrics
             detection_time = time.time() - start_time
-            self.metrics['detection_time_total'] += detection_time
+            self.metrics['detection_time_total'] = self.metrics['detection_time_total'] + detection_time
 
             if detection_time > 0.01:  # Log slow detections (10ms threshold)
                 logger.warning(f"Slow deployment detection: {detection_time:.3f}s for {base_url}")
