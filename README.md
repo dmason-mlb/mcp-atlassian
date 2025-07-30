@@ -36,6 +36,17 @@ https://github.com/user-attachments/assets/7fe9c488-ad0c-4876-9b54-120b666bb785
 | **Jira**       | Cloud              | ✅ Fully supported           |
 | **Jira**       | Server/Data Center | ✅ Supported (version 8.14+) |
 
+### Key Features
+
+- **🔄 Unified Interface**: Single MCP server for both Jira and Confluence
+- **🏗️ AST-Based Markdown Processing**: Robust markdown to ADF conversion using Abstract Syntax Tree parsing
+- **🔌 Extensible Plugin Architecture**: Easy addition of custom ADF nodes through plugins
+- **📝 Rich Content Support**: Full support for panels, expands, layouts, mentions, emojis, and more
+- **🚀 High Performance**: LRU caching and optimized parsing for fast conversions
+- **🔒 Multi-Auth Support**: API tokens, OAuth 2.0, Personal Access Tokens, and multi-user HTTP
+- **🎯 Smart Format Detection**: Automatic detection of Cloud vs Server/DC deployments
+- **⚡ Graceful Degradation**: Fallback from ADF → Wiki markup → Plain text as needed
+
 ## Quick Start Guide
 
 ### 🔐 1. Authentication Setup

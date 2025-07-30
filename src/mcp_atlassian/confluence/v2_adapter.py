@@ -100,11 +100,18 @@ class ConfluenceV2Adapter:
                 "spaceId": space_id,
                 "status": status,
                 "title": title,
-                "body": {
+            }
+            
+            # Handle body format based on representation
+            if representation == "atlas_doc_format" and isinstance(body, dict):
+                # For ADF, the body is the ADF JSON directly
+                data["body"] = body
+            else:
+                # For storage/wiki, wrap in representation structure
+                data["body"] = {
                     "representation": representation,
                     "value": body,
-                },
-            }
+                }
 
             # Add parent if specified
             if parent_id:
@@ -199,14 +206,21 @@ class ConfluenceV2Adapter:
                 "id": page_id,
                 "status": status,
                 "title": title,
-                "body": {
-                    "representation": representation,
-                    "value": body,
-                },
                 "version": {
                     "number": new_version,
                 },
             }
+            
+            # Handle body format based on representation
+            if representation == "atlas_doc_format" and isinstance(body, dict):
+                # For ADF, the body is the ADF JSON directly
+                data["body"] = body
+            else:
+                # For storage/wiki, wrap in representation structure
+                data["body"] = {
+                    "representation": representation,
+                    "value": body,
+                }
 
             # Add version comment if provided
             if version_comment:

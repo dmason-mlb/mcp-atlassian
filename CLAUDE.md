@@ -130,7 +130,21 @@ Central routing system that:
 - Provides performance monitoring and metrics collection
 - Implements compiled regex patterns for efficient URL matching
 
-#### ADFGenerator (`src/mcp_atlassian/formatting/adf.py`)
+#### ASTBasedADFGenerator (`src/mcp_atlassian/formatting/adf_ast.py`)
+Modern AST-based markdown-to-ADF converter using mistune:
+- Robust parsing using Abstract Syntax Tree approach
+- Plugin architecture for extensible node support
+- Comprehensive validation with ADFValidator
+- Support for all standard markdown plus ADF extensions
+
+#### Plugin Architecture (`src/mcp_atlassian/formatting/adf_plugins.py`)
+Extensible plugin system for ADF nodes:
+- Base plugin class for easy extension
+- Built-in plugins: Panel, Media, Expand, Status, Date, Mention, Emoji, Layout
+- Support for both block and inline node types
+- See [ADF Plugin Architecture Documentation](docs/adf-plugin-architecture.md) for details
+
+#### Legacy ADFGenerator (`src/mcp_atlassian/formatting/adf.py`) - Deprecated
 Python-native markdown-to-ADF converter featuring:
 - LRU caching for frequently converted patterns (256 items)
 - Lazy evaluation for complex elements (tables, nested lists)
@@ -160,6 +174,16 @@ Python-native markdown-to-ADF converter featuring:
 - **Tables**: Full table support with 50 row × 20 cell limits
 - **Blockquotes**: Nested quote support with proper structure
 - **Horizontal rules**: HR elements for content separation
+
+#### ADF-Specific Elements (Plugin-based)
+- **Panels**: Info, note, warning, success, error panels with `:::panel` syntax
+- **Expand/Collapse**: Collapsible sections with `:::expand` syntax
+- **Media**: Confluence media embedding with `:::media` syntax
+- **Status badges**: Inline status with `{status:color=green}Text{/status}` syntax
+- **Dates**: Date elements with `{date:YYYY-MM-DD}` syntax
+- **Mentions**: User mentions with `@username` or `@[Full Name]` syntax
+- **Emojis**: Emoji support with `:emoji_name:` syntax
+- **Layouts**: Multi-column layouts with `:::layout` syntax
 
 ### Performance Characteristics
 
@@ -225,11 +249,25 @@ print(f"Average conversion time: {metrics['average_conversion_time']*1000:.2f}ms
 
 #### Direct ADF Generation
 ```python
-from mcp_atlassian.formatting.adf import ADFGenerator
+from mcp_atlassian.formatting.adf_ast import ASTBasedADFGenerator
 
-generator = ADFGenerator(cache_size=512)
+generator = ASTBasedADFGenerator()
 adf_result = generator.markdown_to_adf("**Bold** text with `code`")
 # Returns valid ADF JSON structure
+```
+
+#### Using ADF Plugins
+```python
+# Built-in plugins are automatically registered
+markdown = """:::panel type="info"
+This is an info panel with **bold** text.
+:::
+
+Status: {status:color=green}Complete{/status}
+Due date: {date:2025-02-15}
+CC: @john.doe"""
+
+adf_result = generator.markdown_to_adf(markdown)
 ```
 
 ### Troubleshooting
@@ -270,10 +308,11 @@ print(f'Metrics: {metrics}')
 
 #### Schema Updates
 When Atlassian updates ADF schema:
-1. Update ADF element mappings in `adf.py`
-2. Run comprehensive test suite: `uv run pytest tests/unit/formatting/`
-3. Validate with real API instances using integration tests
-4. Update performance benchmarks if needed
+1. Update plugin implementations in `adf_plugins.py` or create new plugins
+2. Update ADF validator schema in `adf_validator.py` if needed
+3. Run comprehensive test suite: `uv run pytest tests/unit/formatting/`
+4. Validate with real API instances using integration tests
+5. Update performance benchmarks if needed
 
 #### Performance Tuning
 - Monitor cache hit rates and adjust cache sizes accordingly

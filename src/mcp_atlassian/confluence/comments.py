@@ -102,11 +102,18 @@ class CommentsMixin(ConfluenceClient):
             page = self.confluence.get_page_by_id(page_id=page_id, expand="space")
             space_key = page.get("space", {}).get("key", "")
 
-            # Convert markdown to Confluence storage format if needed
-            # The atlassian-python-api expects content in Confluence storage format
+            # Convert markdown to appropriate Confluence format if needed
+            # The atlassian-python-api expects content in appropriate format
             if not content.strip().startswith("<"):
                 # If content doesn't appear to be HTML/XML, treat it as markdown
-                content = self.preprocessor.markdown_to_confluence_storage(content)
+                result = self.preprocessor.markdown_to_confluence(content)
+                if isinstance(result, dict):
+                    # For ADF format, we need to serialize it to JSON string
+                    import json
+                    content = json.dumps(result)
+                else:
+                    # Storage format
+                    content = result
 
             # Add the comment via the Confluence API
             response = self.confluence.add_comment(page_id, content)

@@ -5,7 +5,8 @@ This package provides formatters for converting markdown to various Atlassian fo
 - Wiki markup for Server/Data Center instances
 """
 
-from .adf import ADFGenerator
+from .adf_ast import ASTBasedADFGenerator
+from .adf import ADFGenerator  # Keep for backward compatibility
 from .router import FormatRouter
 
-__all__ = ["ADFGenerator", "FormatRouter"]
+__all__ = ["ASTBasedADFGenerator", "ADFGenerator", "FormatRouter"]

@@ -36,11 +36,15 @@ class ConfluenceConfig:
     no_proxy: str | None = None  # Comma-separated list of hosts to bypass proxy
     socks_proxy: str | None = None  # SOCKS proxy URL (optional)
     custom_headers: dict[str, str] | None = None  # Custom HTTP headers
-    
+
     # ADF and formatting configuration
-    enable_adf: bool | None = None  # Enable ADF format (None = auto-detect based on deployment)
+    enable_adf: bool | None = (
+        None  # Enable ADF format (None = auto-detect based on deployment)
+    )
     force_wiki_markup: bool = False  # Force wiki markup even for Cloud instances
-    deployment_type_override: str | None = None  # Override deployment detection ('cloud', 'server', 'datacenter')
+    deployment_type_override: str | None = (
+        None  # Override deployment detection ('cloud', 'server', 'datacenter')
+    )
 
     @property
     def is_cloud(self) -> bool:
@@ -81,22 +85,43 @@ class ConfluenceConfig:
         Raises:
             ValueError: If any required environment variable is missing
         """
+        # Support both individual service URLs and shared Atlassian URL
         url = os.getenv("CONFLUENCE_URL")
-        if not url and not os.getenv("ATLASSIAN_OAUTH_ENABLE"):
-            error_msg = "Missing required CONFLUENCE_URL environment variable"
-            raise ValueError(error_msg)
+        if not url:
+            # Try to derive from shared ATLASSIAN_URL
+            atlassian_url = os.getenv("ATLASSIAN_URL")
+            if atlassian_url:
+                # For Cloud instances, CONFLUENCE_URL is ATLASSIAN_URL + /wiki
+                base_url = atlassian_url.rstrip("/")
+                if base_url.endswith("/wiki"):
+                    url = base_url
+                else:
+                    url = base_url + "/wiki"
+            elif not os.getenv("ATLASSIAN_OAUTH_ENABLE"):
+                error_msg = "Missing required CONFLUENCE_URL or ATLASSIAN_URL environment variable"
+                raise ValueError(error_msg)
 
-        # Determine authentication type based on available environment variables
-        username = os.getenv("CONFLUENCE_USERNAME")
-        api_token = os.getenv("CONFLUENCE_API_TOKEN")
-        personal_token = os.getenv("CONFLUENCE_PERSONAL_TOKEN")
+        # Support both service-specific and shared credentials
+        username = (
+            os.getenv("CONFLUENCE_USERNAME")
+            or os.getenv("ATLASSIAN_EMAIL")
+            or os.getenv("ATLASSIAN_USERNAME")
+        )
+        api_token = os.getenv("CONFLUENCE_API_TOKEN") or os.getenv(
+            "ATLASSIAN_API_TOKEN"
+        )
+        personal_token = (
+            os.getenv("CONFLUENCE_PERSONAL_TOKEN")
+            or os.getenv("ATLASSIAN_PERSONAL_TOKEN")
+            or os.getenv("ATLASSIAN_PAT")
+        )
 
         # Check for OAuth configuration
         oauth_config = get_oauth_config_from_env()
         auth_type = None
 
         # Use the shared utility function directly
-        is_cloud = is_atlassian_cloud_url(url)
+        is_cloud = is_atlassian_cloud_url(url) if url else False
 
         if oauth_config:
             # OAuth is available - could be full config or minimal config for user-provided tokens
@@ -105,7 +130,7 @@ class ConfluenceConfig:
             if username and api_token:
                 auth_type = "basic"
             else:
-                error_msg = "Cloud authentication requires CONFLUENCE_USERNAME and CONFLUENCE_API_TOKEN, or OAuth configuration (set ATLASSIAN_OAUTH_ENABLE=true for user-provided tokens)"
+                error_msg = "Cloud authentication requires CONFLUENCE_USERNAME and CONFLUENCE_API_TOKEN (or ATLASSIAN_EMAIL and ATLASSIAN_API_TOKEN), or OAuth configuration (set ATLASSIAN_OAUTH_ENABLE=true for user-provided tokens)"
                 raise ValueError(error_msg)
         else:  # Server/Data Center
             if personal_token:
@@ -114,7 +139,7 @@ class ConfluenceConfig:
                 # Allow basic auth for Server/DC too
                 auth_type = "basic"
             else:
-                error_msg = "Server/Data Center authentication requires CONFLUENCE_PERSONAL_TOKEN or CONFLUENCE_USERNAME and CONFLUENCE_API_TOKEN"
+                error_msg = "Server/Data Center authentication requires CONFLUENCE_PERSONAL_TOKEN (or ATLASSIAN_PAT) or CONFLUENCE_USERNAME and CONFLUENCE_API_TOKEN (or ATLASSIAN_EMAIL and ATLASSIAN_API_TOKEN)"
                 raise ValueError(error_msg)
 
         # SSL verification (for Server/DC)
@@ -135,18 +160,45 @@ class ConfluenceConfig:
         # ADF and formatting configuration from environment
         enable_adf = None
         if os.getenv("ATLASSIAN_ENABLE_ADF"):
-            enable_adf = os.getenv("ATLASSIAN_ENABLE_ADF", "").lower() in ("true", "1", "yes")
+            enable_adf = os.getenv("ATLASSIAN_ENABLE_ADF", "").lower() in (
+                "true",
+                "1",
+                "yes",
+            )
         elif os.getenv("ATLASSIAN_DISABLE_ADF"):
-            enable_adf = not (os.getenv("ATLASSIAN_DISABLE_ADF", "").lower() in ("true", "1", "yes"))
+            enable_adf = os.getenv("ATLASSIAN_DISABLE_ADF", "").lower() not in (
+                "true",
+                "1",
+                "yes",
+            )
         elif os.getenv("CONFLUENCE_ENABLE_ADF"):
-            enable_adf = os.getenv("CONFLUENCE_ENABLE_ADF", "").lower() in ("true", "1", "yes")
-        
-        force_wiki_markup = os.getenv("ATLASSIAN_FORCE_WIKI_MARKUP", "").lower() in ("true", "1", "yes")
+            enable_adf = os.getenv("CONFLUENCE_ENABLE_ADF", "").lower() in (
+                "true",
+                "1",
+                "yes",
+            )
+
+        force_wiki_markup = os.getenv("ATLASSIAN_FORCE_WIKI_MARKUP", "").lower() in (
+            "true",
+            "1",
+            "yes",
+        )
         deployment_type_override = os.getenv("ATLASSIAN_DEPLOYMENT_TYPE")
+
+        # Ensure url is not None for the dataclass
+        if not url:
+            raise ValueError(
+                "URL configuration resulted in None - check CONFLUENCE_URL or ATLASSIAN_URL"
+            )
+
+        # Ensure auth_type is properly typed
+        if auth_type not in ("basic", "pat", "oauth"):
+            error_msg = f"Invalid auth_type: {auth_type}"
+            raise ValueError(error_msg)
 
         return cls(
             url=url,
-            auth_type=auth_type,
+            auth_type=auth_type,  # type: ignore[arg-type]
             username=username,
             api_token=api_token,
             personal_token=personal_token,
@@ -206,7 +258,8 @@ class ConfluenceConfig:
             return bool(self.personal_token)
         elif self.auth_type == "basic":
             return bool(self.username and self.api_token)
-        logger.warning(
-            f"Unknown or unsupported auth_type: {self.auth_type} in ConfluenceConfig"
-        )
-        return False
+        else:
+            # Due to validation in from_env, auth_type can only be basic, pat, or oauth
+            # This should never happen, but we raise an exception to be explicit
+            error_msg = f"Unknown auth_type: {self.auth_type}"
+            raise ValueError(error_msg)

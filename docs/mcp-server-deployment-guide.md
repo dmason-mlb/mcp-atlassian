@@ -21,7 +21,7 @@ This guide provides complete instructions for deploying and configuring the MCP 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/mcp-atlassian.git
+git clone https://github.com/dmason-mlb/mcp-atlassian.git
 cd mcp-atlassian
 
 # Install dependencies
@@ -44,26 +44,24 @@ source .venv/bin/activate  # macOS/Linux
 
    **API Token (Cloud - Recommended):**
    ```bash
+   ATLASSIAN_URL=https://your-domain.atlassian.net
    ATLASSIAN_EMAIL=your-email@company.com
    ATLASSIAN_API_TOKEN=your-api-token
-   JIRA_URL=https://your-domain.atlassian.net
-   CONFLUENCE_URL=https://your-domain.atlassian.net/wiki
    ```
 
    **OAuth 2.0 (Cloud - Advanced):**
    ```bash
+   ATLASSIAN_URL=https://your-domain.atlassian.net
    ATLASSIAN_OAUTH_CLIENT_ID=your-client-id
    ATLASSIAN_OAUTH_CLIENT_SECRET=your-client-secret
    ATLASSIAN_OAUTH_REDIRECT_URI=http://localhost:8000/callback
-   JIRA_URL=https://your-domain.atlassian.net
-   CONFLUENCE_URL=https://your-domain.atlassian.net/wiki
    ```
 
    **Personal Access Token (Server/DC):**
    ```bash
-   ATLASSIAN_PAT=your-personal-access-token
    JIRA_URL=https://jira.your-company.com
    CONFLUENCE_URL=https://confluence.your-company.com
+   ATLASSIAN_PAT=your-personal-access-token
    ```
 
 3. **Test configuration:**
@@ -85,10 +83,9 @@ source .venv/bin/activate  # macOS/Linux
 
 ```bash
 # .env file
+ATLASSIAN_URL=https://mycompany.atlassian.net
 ATLASSIAN_EMAIL=john.doe@company.com
 ATLASSIAN_API_TOKEN=ATATT3xFfGF0abcd1234efgh5678ijklmnopqrstuvwxyz
-JIRA_URL=https://mycompany.atlassian.net
-CONFLUENCE_URL=https://mycompany.atlassian.net/wiki
 
 # Optional: Restrict to specific projects/spaces
 JIRA_PROJECTS_FILTER=PROJ,DEV,SUPPORT
@@ -117,11 +114,10 @@ CONFLUENCE_SPACES_FILTER=DEV,DOCS,TEAM
 2. **Configure OAuth:**
    ```bash
    # .env file
+   ATLASSIAN_URL=https://mycompany.atlassian.net
    ATLASSIAN_OAUTH_CLIENT_ID=your-oauth-client-id
    ATLASSIAN_OAUTH_CLIENT_SECRET=your-oauth-client-secret
    ATLASSIAN_OAUTH_REDIRECT_URI=http://localhost:8000/callback
-   JIRA_URL=https://mycompany.atlassian.net
-   CONFLUENCE_URL=https://mycompany.atlassian.net/wiki
    ```
 
 3. **Run OAuth Setup Wizard:**
@@ -143,12 +139,12 @@ CONFLUENCE_SPACES_FILTER=DEV,DOCS,TEAM
 
 ```bash
 # .env file
-ATLASSIAN_PAT=your-personal-access-token
 JIRA_URL=https://jira.mycompany.com
 CONFLUENCE_URL=https://confluence.mycompany.com
+ATLASSIAN_PAT=your-personal-access-token
 
 # Optional: Disable SSL verification for internal instances
-ATLASSIAN_VERIFY_SSL=false
+ATLASSIAN_SSL_VERIFY=false
 ```
 
 ### 4. Multi-User HTTP Authentication
@@ -203,10 +199,9 @@ curl -sSL https://install.claudecode.com | bash
          "args": ["run", "mcp-atlassian"],
          "cwd": "/path/to/mcp-atlassian",
          "env": {
+           "ATLASSIAN_URL": "https://your-domain.atlassian.net",
            "ATLASSIAN_EMAIL": "your-email@company.com",
-           "ATLASSIAN_API_TOKEN": "your-api-token",
-           "JIRA_URL": "https://your-domain.atlassian.net",
-           "CONFLUENCE_URL": "https://your-domain.atlassian.net/wiki"
+           "ATLASSIAN_API_TOKEN": "your-api-token"
          }
        }
      }
@@ -299,10 +294,9 @@ curl -sSL https://install.claudecode.com | bash
          "args": ["run", "mcp-atlassian"],
          "cwd": "/path/to/mcp-atlassian",
          "env": {
+           "ATLASSIAN_URL": "https://your-domain.atlassian.net",
            "ATLASSIAN_EMAIL": "your-email@company.com",
-           "ATLASSIAN_API_TOKEN": "your-api-token",
-           "JIRA_URL": "https://your-domain.atlassian.net",
-           "CONFLUENCE_URL": "https://your-domain.atlassian.net/wiki"
+           "ATLASSIAN_API_TOKEN": "your-api-token"
          }
        }
      }
@@ -339,10 +333,9 @@ curl -sSL https://install.claudecode.com | bash
       "args": ["run", "mcp-atlassian"],
       "cwd": "/path/to/mcp-atlassian",
       "env": {
+        "ATLASSIAN_URL": "https://your-domain.atlassian.net",
         "ATLASSIAN_EMAIL": "your-email@company.com",
-        "ATLASSIAN_API_TOKEN": "your-api-token",
-        "JIRA_URL": "https://your-domain.atlassian.net",
-        "CONFLUENCE_URL": "https://your-domain.atlassian.net/wiki"
+        "ATLASSIAN_API_TOKEN": "your-api-token"
       }
     }
   }
@@ -419,9 +412,11 @@ ATLASSIAN_MULTI_USER=true|false          # Default: false
 
 #### Service URLs
 ```bash
-# Instance URLs
-JIRA_URL=https://company.atlassian.net
-CONFLUENCE_URL=https://company.atlassian.net/wiki
+# Instance URLs  
+ATLASSIAN_URL=https://company.atlassian.net
+# Alternative: Set individually for Server/DC
+# JIRA_URL=https://company.atlassian.net
+# CONFLUENCE_URL=https://company.atlassian.net/wiki
 
 # Server/DC URLs
 JIRA_URL=https://jira.company.com
@@ -499,10 +494,9 @@ MCP_PORT=9000
 ATLASSIAN_MULTI_USER=true
 
 # Optional: Default fallback credentials
+ATLASSIAN_URL=https://company.atlassian.net
 ATLASSIAN_EMAIL=fallback@company.com
 ATLASSIAN_API_TOKEN=fallback-token
-JIRA_URL=https://company.atlassian.net
-CONFLUENCE_URL=https://company.atlassian.net/wiki
 ```
 
 **Per-request authentication:**
@@ -510,7 +504,7 @@ CONFLUENCE_URL=https://company.atlassian.net/wiki
 # Using headers
 curl -H "X-Atlassian-Email: user1@company.com" \
      -H "X-Atlassian-Token: user1-token" \
-     -H "X-Jira-URL: https://company.atlassian.net" \
+     -H "X-Atlassian-URL: https://company.atlassian.net" \
      http://localhost:9000/mcp/call
 
 # Using query parameters
@@ -561,10 +555,9 @@ services:
       - MCP_TRANSPORT=sse
       - MCP_PORT=9000
       - MCP_HOST=0.0.0.0
+      - ATLASSIAN_URL=${ATLASSIAN_URL}
       - ATLASSIAN_EMAIL=${ATLASSIAN_EMAIL}
       - ATLASSIAN_API_TOKEN=${ATLASSIAN_API_TOKEN}
-      - JIRA_URL=${JIRA_URL}
-      - CONFLUENCE_URL=${CONFLUENCE_URL}
       - LOG_LEVEL=INFO
     env_file:
       - .env
@@ -665,10 +658,9 @@ metadata:
   name: atlassian-credentials
 type: Opaque
 data:
+  ATLASSIAN_URL: base64-encoded-atlassian-url
   ATLASSIAN_EMAIL: base64-encoded-email
   ATLASSIAN_API_TOKEN: base64-encoded-token
-  JIRA_URL: base64-encoded-jira-url
-  CONFLUENCE_URL: base64-encoded-confluence-url
 ```
 
 ## Production Deployment Considerations

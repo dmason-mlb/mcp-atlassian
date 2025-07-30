@@ -564,7 +564,9 @@ class IssuesMixin(
 
             # Add description if provided (convert from Markdown to Jira format)
             if description:
-                fields["description"] = self._markdown_to_jira(description)
+                description_content = self._markdown_to_jira(description)
+                # Handle both ADF (dict) and wiki markup (str) formats
+                fields["description"] = description_content
 
             # Add assignee if provided
             if assignee:
@@ -1014,9 +1016,9 @@ class IssuesMixin(
 
             # Convert description from Markdown to Jira format if present
             if "description" in update_fields:
-                update_fields["description"] = self._markdown_to_jira(
-                    update_fields["description"]
-                )
+                description_content = self._markdown_to_jira(update_fields["description"])
+                # Handle both ADF (dict) and wiki markup (str) formats
+                update_fields["description"] = description_content
 
             # Process kwargs
             for key, value in kwargs.items():
@@ -1046,7 +1048,9 @@ class IssuesMixin(
                             logger.warning(f"Could not update assignee: {str(e)}")
                 elif key == "description":
                     # Handle description with markdown conversion
-                    update_fields["description"] = self._markdown_to_jira(value)
+                    description_content = self._markdown_to_jira(value)
+                    # Handle both ADF (dict) and wiki markup (str) formats
+                    update_fields["description"] = description_content
                 else:
                     # Process regular fields using _process_additional_fields
                     # Create a temporary dict with just this field

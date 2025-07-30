@@ -14,7 +14,7 @@ class TestPreprocessingIntegration:
         preprocessor = JiraPreprocessor(base_url=cloud_url)
 
         markdown = "This is **bold** text with *italic* formatting."
-        result = preprocessor.markdown_to_jira(markdown)
+        result = preprocessor.markdown_to_jira(markdown, enable_adf=True)
 
         # Should return ADF JSON dictionary for Cloud
         assert isinstance(result, dict)
@@ -30,7 +30,7 @@ class TestPreprocessingIntegration:
         markdown = "This is **bold** text with *italic* formatting."
         result = preprocessor.markdown_to_jira(markdown)
 
-        # Should return wiki markup string for Server/DC
+        # With ADF enabled by default, Server/DC should still get wiki markup based on URL detection
         assert isinstance(result, str)
         assert "*bold*" in result
         assert "_italic_" in result
@@ -53,7 +53,7 @@ class TestPreprocessingIntegration:
         preprocessor = ConfluencePreprocessor(base_url=cloud_url)
 
         markdown = "This is **bold** text with *italic* formatting."
-        result = preprocessor.markdown_to_confluence(markdown)
+        result = preprocessor.markdown_to_confluence(markdown, enable_adf=True)
 
         # Should return ADF JSON dictionary for Cloud
         assert isinstance(result, dict)
@@ -92,12 +92,12 @@ class TestPreprocessingIntegration:
         preprocessor = JiraPreprocessor(base_url=cloud_url)
 
         # Test empty string
-        result = preprocessor.markdown_to_jira("")
+        result = preprocessor.markdown_to_jira("", enable_adf=True)
         assert isinstance(result, dict)  # Should be empty ADF for Cloud
         assert result["content"] == []
 
         # Test None
-        result = preprocessor.markdown_to_jira(None)
+        result = preprocessor.markdown_to_jira(None, enable_adf=True)
         assert isinstance(result, dict)
         assert result["content"] == []
 
@@ -107,12 +107,12 @@ class TestPreprocessingIntegration:
         preprocessor = ConfluencePreprocessor(base_url=cloud_url)
 
         # Test empty string
-        result = preprocessor.markdown_to_confluence("")
+        result = preprocessor.markdown_to_confluence("", enable_adf=True)
         assert isinstance(result, dict)  # Should be empty ADF for Cloud
         assert result["content"] == []
 
         # Test None
-        result = preprocessor.markdown_to_confluence(None)
+        result = preprocessor.markdown_to_confluence(None, enable_adf=True)
         assert isinstance(result, dict)
         assert result["content"] == []
 
@@ -136,7 +136,7 @@ print("Hello, world!")
 
 Final paragraph."""
 
-        result = preprocessor.markdown_to_jira(complex_markdown)
+        result = preprocessor.markdown_to_jira(complex_markdown, enable_adf=True)
 
         # Should return ADF JSON for Cloud
         assert isinstance(result, dict)

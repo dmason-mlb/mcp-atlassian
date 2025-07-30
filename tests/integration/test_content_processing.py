@@ -66,8 +66,8 @@ This is *bold* and _italic_ text.
         # Convert to Markdown
         markdown = jira_preprocessor.jira_to_markdown(jira_markup)
 
-        # Convert back to Jira
-        jira_result = jira_preprocessor.markdown_to_jira(markdown)
+        # Convert back to Jira (using wiki markup for this test)
+        jira_result = jira_preprocessor.markdown_to_jira(markdown, enable_adf=False)
 
         # Verify key elements are preserved
         assert "h1. Main Title" in jira_result
@@ -135,8 +135,8 @@ with multiple lines
         # Convert to Markdown
         markdown = jira_preprocessor.jira_to_markdown(jira_markup)
 
-        # Convert back to Jira
-        jira_result = jira_preprocessor.markdown_to_jira(markdown)
+        # Convert back to Jira (using wiki markup for this test)
+        jira_result = jira_preprocessor.markdown_to_jira(markdown, enable_adf=False)
 
         # Verify structure is preserved
         assert "h1. Project Documentation" in jira_result
@@ -227,7 +227,7 @@ See [PROJ-123|https://example.atlassian.net/browse/PROJ-123|smart-link] for deta
 # Back to Numbered Level 1"""
 
         markdown = jira_preprocessor.jira_to_markdown(jira_markup)
-        jira_result = jira_preprocessor.markdown_to_jira(markdown)
+        jira_result = jira_preprocessor.markdown_to_jira(markdown, enable_adf=False)
 
         # Verify nested structure is preserved (checking for presence of items)
         assert "Level 1 item" in jira_result
@@ -259,7 +259,7 @@ Quotes: "curly quotes" and 'single quotes'
 Dashes: em—dash and en–dash"""
 
         markdown = jira_preprocessor.jira_to_markdown(jira_markup)
-        jira_result = jira_preprocessor.markdown_to_jira(markdown)
+        jira_result = jira_preprocessor.markdown_to_jira(markdown, enable_adf=False)
 
         # Verify Unicode preservation
         assert "α β γ δ ε ζ η θ" in jira_result
@@ -316,7 +316,7 @@ def function_{i}():
         markdown_time = time.time() - start_time
 
         start_time = time.time()
-        jira_result = jira_preprocessor.markdown_to_jira(markdown)
+        jira_result = jira_preprocessor.markdown_to_jira(markdown, enable_adf=False)
         jira_time = time.time() - start_time
 
         # Performance assertions (should complete in reasonable time)
@@ -334,7 +334,7 @@ def function_{i}():
         """Test edge cases in Jira content processing."""
         # Empty content
         assert jira_preprocessor.jira_to_markdown("") == ""
-        assert jira_preprocessor.markdown_to_jira("") == ""
+        assert jira_preprocessor.markdown_to_jira("", enable_adf=False) == ""
         assert jira_preprocessor.clean_jira_text("") == ""
         assert jira_preprocessor.clean_jira_text(None) == ""
 
@@ -793,7 +793,7 @@ def shared_function():
 | Confluence | ✅    |"""
 
         # Convert to Jira format
-        jira_markup = jira_preprocessor.markdown_to_jira(shared_markdown)
+        jira_markup = jira_preprocessor.markdown_to_jira(shared_markdown, enable_adf=False)
 
         # Convert to Confluence format
         confluence_storage = confluence_preprocessor.markdown_to_confluence_storage(

@@ -306,11 +306,18 @@ class PagesMixin(ConfluenceClient):
         try:
             # Determine body and representation based on content type
             if is_markdown:
-                # Convert markdown to Confluence storage format
-                final_body = self.preprocessor.markdown_to_confluence_storage(
+                # Convert markdown to appropriate Confluence format (ADF for Cloud, storage for Server/DC)
+                result = self.preprocessor.markdown_to_confluence(
                     body, enable_heading_anchors=enable_heading_anchors
                 )
-                representation = "storage"
+                if isinstance(result, dict):
+                    # ADF format for Cloud instances
+                    final_body = result
+                    representation = "atlas_doc_format"
+                else:
+                    # Storage format for Server/DC instances
+                    final_body = result
+                    representation = "storage"
             else:
                 # Use body as-is with specified representation
                 final_body = body
@@ -391,11 +398,18 @@ class PagesMixin(ConfluenceClient):
         try:
             # Determine body and representation based on content type
             if is_markdown:
-                # Convert markdown to Confluence storage format
-                final_body = self.preprocessor.markdown_to_confluence_storage(
+                # Convert markdown to appropriate Confluence format (ADF for Cloud, storage for Server/DC)
+                result = self.preprocessor.markdown_to_confluence(
                     body, enable_heading_anchors=enable_heading_anchors
                 )
-                representation = "storage"
+                if isinstance(result, dict):
+                    # ADF format for Cloud instances
+                    final_body = result
+                    representation = "atlas_doc_format"
+                else:
+                    # Storage format for Server/DC instances
+                    final_body = result
+                    representation = "storage"
             else:
                 # Use body as-is with specified representation
                 final_body = body

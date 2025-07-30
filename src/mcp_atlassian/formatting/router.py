@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 
 from cachetools import TTLCache
 
-from .adf import ADFGenerator
+from .adf_ast import ASTBasedADFGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -48,22 +48,22 @@ class FormatRouter:
     - Efficient ADF generator initialization with caching
     """
 
-    def __init__(self, cache_ttl: int = 3600, cache_size: int = 100, adf_cache_size: int = 256) -> None:
+    def __init__(self, cache_ttl: int = 3600, cache_size: int = 100) -> None:
         """
         Initialize the format router with performance optimizations.
         
         Args:
             cache_ttl: Cache time-to-live in seconds for deployment type detection (default: 1 hour)
             cache_size: Maximum number of deployment detection results to cache (default: 100)
-            adf_cache_size: Maximum number of ADF conversions to cache (default: 256)
         """
         self.deployment_cache: TTLCache = TTLCache(maxsize=cache_size, ttl=cache_ttl)
-        self.adf_generator = ADFGenerator(cache_size=adf_cache_size)
+        self.adf_generator = ASTBasedADFGenerator()
 
         # Compile regex patterns for better performance
         self._cloud_patterns = [
             re.compile(r'.*\.atlassian\.net', re.IGNORECASE),
-            re.compile(r'.*\.atlassian\.com', re.IGNORECASE)
+            re.compile(r'.*\.atlassian\.com', re.IGNORECASE),
+            re.compile(r'.*\.jira-dev\.com$', re.IGNORECASE)
         ]
 
         # Performance metrics with explicit typing
@@ -200,12 +200,7 @@ class FormatRouter:
                     logger.debug(f"Detected Cloud deployment for {hostname}")
                     return deployment_type
 
-            # Check for additional development instances
-            if re.match(r'.*\.jira-dev\.com$', hostname):
-                deployment_type = DeploymentType.CLOUD
-                self.deployment_cache[cache_key] = deployment_type
-                logger.debug(f"Detected Cloud development deployment for {hostname}")
-                return deployment_type
+            # Additional development instances are now handled by pre-compiled patterns above
 
             # Server/DC detection - typically custom domains
             # If it's not a cloud instance and has a valid hostname, assume Server/DC
@@ -378,8 +373,10 @@ class FormatRouter:
         Returns:
             Dictionary containing performance statistics
         """
-        # Get ADF generator metrics
-        adf_metrics = self.adf_generator.get_performance_metrics()
+        # Get ADF generator metrics if available
+        adf_metrics = {}
+        if hasattr(self.adf_generator, 'get_performance_metrics'):
+            adf_metrics = self.adf_generator.get_performance_metrics()
 
         # Calculate router-level metrics
         router_metrics = self.metrics.copy()
@@ -403,5 +400,6 @@ class FormatRouter:
             'conversion_time_total': 0.0,
             'last_error': None
         }
-        self.adf_generator.reset_metrics()
+        if hasattr(self.adf_generator, 'reset_metrics'):
+            self.adf_generator.reset_metrics()
         logger.info("FormatRouter performance metrics reset")

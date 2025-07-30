@@ -19,6 +19,8 @@ from typing import Any
 
 import markdown
 
+from .adf_validator import ADFValidator, get_validation_level
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,11 +33,14 @@ class ADFGenerator:
     - Graceful error handling with fallback mechanisms
     """
 
-    def __init__(self, cache_size: int = 256) -> None:
+    def __init__(self, cache_size: int = 256, max_table_rows: int = 50, 
+                 max_list_items: int = 100) -> None:
         """Initialize the ADF generator with markdown parser and performance optimizations.
         
         Args:
             cache_size: Maximum size of the conversion cache (default: 256)
+            max_table_rows: Maximum number of table rows before truncation (default: 50)
+            max_list_items: Maximum number of list items before truncation (default: 100)
         """
         self.md = markdown.Markdown(
             extensions=[
@@ -52,6 +57,13 @@ class ADFGenerator:
                 }
             }
         )
+        
+        # Configurable limits
+        self.max_table_rows = max_table_rows
+        self.max_list_items = max_list_items
+        
+        # Initialize validator
+        self.validator = ADFValidator(validation_level=get_validation_level())
 
         # Performance metrics
         self.metrics: dict[str, Any] = {
@@ -103,12 +115,19 @@ class ADFGenerator:
                 result = self._cached_convert(cache_key, markdown_text)
                 self.metrics['conversions_cached'] = self.metrics['conversions_cached'] + 1
                 logger.debug(f"ADF conversion cache hit for key: {cache_key[:8]}...")
-                return result
             except Exception as cache_error:
                 logger.warning(f"Cache error, falling back to direct conversion: {cache_error}")
                 # Fall back to direct conversion
                 result = self._convert_markdown_to_adf_uncached(cache_key, markdown_text)
-                return result
+            
+            # Validate the result
+            is_valid, errors = self.validator.validate(result)
+            if not is_valid and self.validator.validation_level == ADFValidator.VALIDATION_ERROR:
+                # If validation fails in error mode, return error document
+                error_msg = "ADF validation failed: " + "; ".join(errors)
+                return self._create_error_adf(markdown_text, error_msg)
+            
+            return result
 
         except Exception as e:
             self.metrics['conversion_errors'] = self.metrics['conversion_errors'] + 1
@@ -275,7 +294,7 @@ class ADFGenerator:
     def _convert_list(self, element: Any, nesting_level: int = 0) -> dict[str, Any]:
         """Convert list element to ADF bulletList or orderedList with lazy evaluation."""
         list_type = "orderedList" if element.name == "ol" else "bulletList"
-        max_items = 100  # Limit list items for performance
+        max_items = self.max_list_items  # Limit list items for performance
 
         content = []
         item_count = 0
@@ -443,7 +462,7 @@ class ADFGenerator:
             """Lazily convert table rows to avoid processing large tables upfront."""
             rows = []
             row_count = 0
-            max_rows = 50  # Limit large tables for performance
+            max_rows = self.max_table_rows  # Limit large tables for performance
 
             for tr in element.find_all('tr'):
                 if row_count >= max_rows:
@@ -464,10 +483,12 @@ class ADFGenerator:
                 cell_count = 0
                 max_cells = 20  # Limit cells per row
 
-                for td in tr.find_all(['td', 'th']):
+                for cell in tr.find_all(['td', 'th']):
                     if cell_count >= max_cells:
+                        # Determine cell type based on tag
+                        cell_type = "tableHeader" if cell.name == 'th' else "tableCell"
                         cells.append({
-                            "type": "tableCell",
+                            "type": cell_type,
                             "content": [{
                                 "type": "paragraph",
                                 "content": [{"type": "text", "text": "... (truncated)"}]
@@ -476,9 +497,13 @@ class ADFGenerator:
                         break
 
                     # Lazy content conversion - only process when needed
-                    cell_content = self._convert_inline_content(td)
+                    cell_content = self._convert_inline_content(cell)
+                    
+                    # Determine cell type based on tag - th for headers, td for regular cells
+                    cell_type = "tableHeader" if cell.name == 'th' else "tableCell"
+                    
                     cells.append({
-                        "type": "tableCell",
+                        "type": cell_type,
                         "content": [{
                             "type": "paragraph",
                             "content": cell_content if cell_content else [{"type": "text", "text": ""}]
