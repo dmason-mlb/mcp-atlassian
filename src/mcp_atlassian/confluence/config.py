@@ -36,6 +36,11 @@ class ConfluenceConfig:
     no_proxy: str | None = None  # Comma-separated list of hosts to bypass proxy
     socks_proxy: str | None = None  # SOCKS proxy URL (optional)
     custom_headers: dict[str, str] | None = None  # Custom HTTP headers
+    
+    # ADF and formatting configuration
+    enable_adf: bool | None = None  # Enable ADF format (None = auto-detect based on deployment)
+    force_wiki_markup: bool = False  # Force wiki markup even for Cloud instances
+    deployment_type_override: str | None = None  # Override deployment detection ('cloud', 'server', 'datacenter')
 
     @property
     def is_cloud(self) -> bool:
@@ -127,6 +132,18 @@ class ConfluenceConfig:
         # Custom headers - service-specific only
         custom_headers = get_custom_headers("CONFLUENCE_CUSTOM_HEADERS")
 
+        # ADF and formatting configuration from environment
+        enable_adf = None
+        if os.getenv("ATLASSIAN_ENABLE_ADF"):
+            enable_adf = os.getenv("ATLASSIAN_ENABLE_ADF", "").lower() in ("true", "1", "yes")
+        elif os.getenv("ATLASSIAN_DISABLE_ADF"):
+            enable_adf = not (os.getenv("ATLASSIAN_DISABLE_ADF", "").lower() in ("true", "1", "yes"))
+        elif os.getenv("CONFLUENCE_ENABLE_ADF"):
+            enable_adf = os.getenv("CONFLUENCE_ENABLE_ADF", "").lower() in ("true", "1", "yes")
+        
+        force_wiki_markup = os.getenv("ATLASSIAN_FORCE_WIKI_MARKUP", "").lower() in ("true", "1", "yes")
+        deployment_type_override = os.getenv("ATLASSIAN_DEPLOYMENT_TYPE")
+
         return cls(
             url=url,
             auth_type=auth_type,
@@ -141,6 +158,9 @@ class ConfluenceConfig:
             no_proxy=no_proxy,
             socks_proxy=socks_proxy,
             custom_headers=custom_headers,
+            enable_adf=enable_adf,
+            force_wiki_markup=force_wiki_markup,
+            deployment_type_override=deployment_type_override,
         )
 
     def is_auth_configured(self) -> bool:
