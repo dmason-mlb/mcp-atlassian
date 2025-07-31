@@ -1,8 +1,8 @@
 # Format Conversion Troubleshooting Guide
 
-**Created:** July 30, 2025  
-**Version:** 1.0.0  
-**Purpose:** Comprehensive troubleshooting guide for ADF and wiki markup format conversion issues  
+**Created:** July 30, 2025
+**Version:** 1.0.0
+**Purpose:** Comprehensive troubleshooting guide for ADF and wiki markup format conversion issues
 
 ## Overview
 
@@ -21,7 +21,7 @@ print('✓ ADF conversion working' if result['format'] == 'adf' else '✗ ADF co
 print('✓ No errors' if 'error' not in result else f'✗ Error: {result[\"error\"]}')
 "
 
-# Test wiki markup conversion  
+# Test wiki markup conversion
 python3 -c "
 from mcp_atlassian.formatting.router import FormatRouter
 router = FormatRouter()
@@ -72,7 +72,7 @@ try:
     print(f"Result: {result}")
 except Exception as e:
     print(f"✗ Conversion failed: {e}")
-    
+
 # Check metrics for error patterns
 metrics = generator.get_performance_metrics()
 print(f"Error rate: {metrics['error_rate']:.1f}%")
@@ -96,11 +96,11 @@ print(f"Last error: {metrics['last_error']}")
    ```python
    # Test markdown parser directly
    import markdown
-   
+
    md = markdown.Markdown(extensions=['codehilite', 'tables', 'fenced_code'])
    html = md.convert("**test**")
    print(f"Markdown output: {html}")
-   
+
    if not html or html == "**test**":
        print("✗ Markdown parser not working correctly")
    ```
@@ -109,10 +109,10 @@ print(f"Last error: {metrics['last_error']}")
    ```python
    # Check if content exceeds limits
    large_content = "# Header\n" + "* Item\n" * 1000  # 1000 list items
-   
+
    generator = ADFGenerator()
    result = generator.markdown_to_adf(large_content)
-   
+
    # Look for truncation indicators
    if "truncated" in str(result):
        print("Content was truncated due to performance limits")
@@ -139,7 +139,7 @@ print(f"ADF valid: {is_valid}")
 if not is_valid:
     print("Invalid ADF structure detected")
     print(f"Result: {result}")
-    
+
     # Check required fields
     required = ["version", "type", "content"]
     missing = [field for field in required if field not in result]
@@ -155,12 +155,12 @@ if not is_valid:
    def fix_adf_structure(adf_json):
        if not isinstance(adf_json, dict):
            return {"version": 1, "type": "doc", "content": []}
-           
+
        # Ensure required fields exist
        adf_json.setdefault("version", 1)
        adf_json.setdefault("type", "doc")
        adf_json.setdefault("content", [])
-       
+
        return adf_json
    ```
 
@@ -192,7 +192,7 @@ router = FormatRouter()
 # Test specific formatting patterns
 test_cases = [
     "**bold text**",
-    "*italic text*", 
+    "*italic text*",
     "# Header 1",
     "- List item",
     "[link text](http://example.com)"
@@ -211,16 +211,16 @@ for test in test_cases:
    ```python
    # Check for markdown parsing conflicts
    import re
-   
+
    def debug_formatting(text):
        # Test bold pattern
        bold_matches = re.findall(r'\*\*([^*]+)\*\*', text)
        print(f"Bold matches: {bold_matches}")
-       
-       # Test italic pattern  
+
+       # Test italic pattern
        italic_matches = re.findall(r'\*([^*]+)\*', text)
        print(f"Italic matches: {italic_matches}")
-       
+
        # Check for conflicts
        if bold_matches and italic_matches:
            print("Potential bold/italic conflict detected")
@@ -235,10 +235,10 @@ for test in test_cases:
      - Nested item
    - Item 3
    """
-   
+
    result = router.convert_markdown(list_markdown, "https://jira.company.com")
    expected_patterns = ["* Item 1", "* Item 2", "** Nested item"]
-   
+
    for pattern in expected_patterns:
        if pattern not in result['content']:
            print(f"Missing expected pattern: {pattern}")
@@ -269,7 +269,7 @@ for url in test_urls:
     detected = router.detect_deployment_type(url)
     print(f"URL: {url}")
     print(f"Detected: {detected}")
-    
+
     # Test conversion
     result = router.convert_markdown("**test**", url)
     print(f"Format used: {result['format']}")
@@ -283,7 +283,7 @@ for url in test_urls:
    # Cache corruption fix
    router = FormatRouter()
    router.clear_cache()
-   
+
    # Retest detection
    detection = router.detect_deployment_type(problematic_url)
    print(f"Detection after cache clear: {detection}")
@@ -293,7 +293,7 @@ for url in test_urls:
    ```python
    # Override for specific domains
    from mcp_atlassian.formatting.router import FormatRouter, DeploymentType
-   
+
    class CustomRouter(FormatRouter):
        def detect_deployment_type(self, base_url: str) -> DeploymentType:
            # Custom logic for your environment
@@ -308,7 +308,7 @@ for url in test_urls:
    ```python
    # Bypass detection entirely
    from mcp_atlassian.formatting.router import FormatType
-   
+
    result = router.convert_markdown(
        markdown_text,
        base_url,
@@ -357,8 +357,7 @@ print(f"Cache hit rate: {metrics['adf_generator_metrics']['cache_hit_rate']:.1f}
    # Increase cache sizes for better performance
    router = FormatRouter(
        cache_ttl=7200,        # 2 hours
-       cache_size=500,        # Larger detection cache
-       adf_cache_size=1000    # Larger ADF cache
+       cache_size=500         # Larger detection cache
    )
    ```
 
@@ -368,28 +367,28 @@ print(f"Cache hit rate: {metrics['adf_generator_metrics']['cache_hit_rate']:.1f}
        """Split large documents for better performance."""
        if len(markdown_text) <= max_size:
            return [markdown_text]
-       
+
        # Split on double newlines (paragraph boundaries)
        paragraphs = markdown_text.split('\n\n')
        chunks = []
        current_chunk = ""
-       
+
        for paragraph in paragraphs:
            if len(current_chunk + paragraph) > max_size and current_chunk:
                chunks.append(current_chunk.strip())
                current_chunk = paragraph
            else:
                current_chunk += '\n\n' + paragraph if current_chunk else paragraph
-       
+
        if current_chunk:
            chunks.append(current_chunk.strip())
-       
+
        return chunks
-   
+
    # Usage
    large_markdown = "..." # Your large document
    chunks = split_large_document(large_markdown)
-   
+
    results = []
    for chunk in chunks:
        result = router.convert_markdown(chunk, base_url)
@@ -400,13 +399,13 @@ print(f"Cache hit rate: {metrics['adf_generator_metrics']['cache_hit_rate']:.1f}
    ```python
    # Regular cache cleanup
    import gc
-   
+
    def periodic_cleanup(router):
        router.clear_cache()
        router.adf_generator.clear_cache()
        gc.collect()
        print("Cache and memory cleanup completed")
-   
+
    # Call periodically in long-running processes
    periodic_cleanup(router)
    ```
@@ -425,10 +424,10 @@ import os
 def monitor_memory_usage():
     process = psutil.Process(os.getpid())
     memory_info = process.memory_info()
-    
+
     print(f"Memory usage: {memory_info.rss / 1024 / 1024:.2f} MB")
     print(f"Virtual memory: {memory_info.vms / 1024 / 1024:.2f} MB")
-    
+
     return memory_info.rss
 
 # Monitor during conversion
@@ -437,7 +436,7 @@ initial_memory = monitor_memory_usage()
 
 for i in range(100):
     result = router.convert_markdown(f"# Document {i}\n**Content**", "https://test.atlassian.net")
-    
+
     if i % 20 == 0:
         current_memory = monitor_memory_usage()
         growth = (current_memory - initial_memory) / 1024 / 1024
@@ -450,26 +449,25 @@ for i in range(100):
    ```python
    # Reduce cache sizes if memory is limited
    router = FormatRouter(
-       cache_size=50,         # Smaller detection cache
-       adf_cache_size=100     # Smaller ADF cache
+       cache_size=50          # Smaller detection cache
    )
    ```
 
 2. **Periodic Cleanup:**
    ```python
    conversion_count = 0
-   
+
    def convert_with_cleanup(router, markdown, url):
        global conversion_count
-       
+
        result = router.convert_markdown(markdown, url)
        conversion_count += 1
-       
+
        # Cleanup every 100 conversions
        if conversion_count % 100 == 0:
            router.clear_cache()
            router.adf_generator.clear_cache()
-           
+
        return result
    ```
 
@@ -511,7 +509,7 @@ else:
    ```python
    # Ensure ADF is enabled for Cloud instances
    from mcp_atlassian.preprocessing.jira import JiraPreprocessor
-   
+
    preprocessor = JiraPreprocessor(
        base_url="https://company.atlassian.net",
        enable_adf=True  # Explicitly enable ADF
@@ -522,7 +520,7 @@ else:
    ```python
    # Verify preprocessor configuration
    from mcp_atlassian.jira.config import JiraConfig
-   
+
    config = JiraConfig(base_url="https://company.atlassian.net")
    print(f"Base URL: {config.base_url}")
    print(f"Enable ADF: {config.enable_adf}")
@@ -565,7 +563,7 @@ from mcp_atlassian.formatting.router import FormatRouter
 
 def profile_conversion():
     router = FormatRouter()
-    
+
     # Large test document
     test_content = """
     # Performance Test Document
@@ -573,15 +571,15 @@ def profile_conversion():
         f"## Section {i}\n**Bold** and *italic* text with [link{i}](http://example.com/{i})"
         for i in range(50)
     ])
-    
+
     # Profile the conversion
     profiler = cProfile.Profile()
     profiler.enable()
-    
+
     result = router.convert_markdown(test_content, "https://test.atlassian.net")
-    
+
     profiler.disable()
-    
+
     # Analyze results
     stats = pstats.Stats(profiler)
     stats.sort_stats('cumulative')
@@ -599,7 +597,7 @@ Create tests to catch conversion regressions:
 def test_format_conversion_regression():
     """Test to catch format conversion regressions."""
     router = FormatRouter()
-    
+
     # Test cases with expected outputs
     test_cases = [
         {
@@ -613,16 +611,16 @@ def test_format_conversion_regression():
             'server_expected': 'h1.Header'
         }
     ]
-    
+
     for case in test_cases:
         # Test Cloud format
         cloud_result = router.convert_markdown(case['input'], 'https://test.atlassian.net')
         assert cloud_result['format'] == 'adf'
-        
-        # Test Server format  
+
+        # Test Server format
         server_result = router.convert_markdown(case['input'], 'https://jira.company.com')
         assert server_result['format'] == 'wiki_markup'
-        
+
         print(f"✓ {case['input']} conversion working correctly")
 
 # Run regression test
@@ -683,7 +681,7 @@ print('Caches cleared and metrics reset')
 python3 -c "
 import time
 from mcp_atlassian.formatting.router import FormatRouter
-router = FormatRouter(cache_size=10, adf_cache_size=25)
+router = FormatRouter(cache_size=10)
 start = time.time()
 result = router.convert_markdown('**test**', 'https://test.atlassian.net')
 duration = time.time() - start

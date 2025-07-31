@@ -1,8 +1,8 @@
 # ADF Generator API Documentation
 
-**Created:** July 29, 2025  
-**Version:** 1.0.0  
-**Purpose:** Comprehensive API documentation for ADF (Atlassian Document Format) generation system  
+**Created:** July 29, 2025
+**Version:** 1.0.0
+**Purpose:** Comprehensive API documentation for ADF (Atlassian Document Format) generation system
 
 ## Overview
 
@@ -19,15 +19,13 @@ Central routing system that automatically detects deployment types and selects a
 ```python
 FormatRouter(
     cache_ttl: int = 3600,
-    cache_size: int = 100,
-    adf_cache_size: int = 256
+    cache_size: int = 100
 )
 ```
 
 **Parameters:**
 - `cache_ttl`: Cache time-to-live in seconds for deployment detection (default: 1 hour)
 - `cache_size`: Maximum deployment detection results to cache (default: 100)
-- `adf_cache_size`: Maximum ADF conversions to cache (default: 256)
 
 #### Methods
 
@@ -46,7 +44,7 @@ Converts markdown text to appropriate format based on deployment type.
 
 **Parameters:**
 - `markdown_text`: Input markdown text to convert
-- `base_url`: Base URL of the Atlassian instance  
+- `base_url`: Base URL of the Atlassian instance
 - `force_format`: Optional format type to force (bypasses auto-detection)
 
 **Returns:**
@@ -189,7 +187,7 @@ Valid ADF JSON structure:
 
 **Performance Limits:**
 - **Tables**: 50 rows × 20 cells maximum
-- **Lists**: 100 items per list, 10 nesting levels maximum  
+- **Lists**: 100 items per list, 10 nesting levels maximum
 - **Text**: 1000 characters per element maximum
 - **List children**: 50 children per list item maximum
 
@@ -336,7 +334,7 @@ for text in markdown_samples:
     result = router.convert_markdown(text, base_url)
 
 # Analyze performance
-metrics = router.get_performance_metrics() 
+metrics = router.get_performance_metrics()
 
 if metrics['average_conversion_time'] > 0.1:  # >100ms
     print("Consider increasing cache size or optimizing content")
@@ -359,19 +357,19 @@ router = FormatRouter()
 
 try:
     result = router.convert_markdown(markdown_text, base_url)
-    
+
     if 'error' in result:
         print(f"Conversion error: {result['error']}")
         print(f"Fallback format: {result['format']}")
-    
+
     # Use result regardless of format
     content = result['content']
-    
+
 except Exception as e:
     # Ultimate fallback
     print(f"Critical error: {e}")
     fallback_result = router.convert_markdown(
-        markdown_text, 
+        markdown_text,
         base_url,
         force_format=FormatType.WIKI_MARKUP
     )
@@ -441,7 +439,7 @@ logger.setLevel(logging.DEBUG)
 
 # Logs include:
 # - Deployment detection results
-# - Cache hit/miss information  
+# - Cache hit/miss information
 # - Conversion timing and performance warnings
 # - Error details with context
 # - Truncation notices
