@@ -1,8 +1,8 @@
 # ADF Maintenance Procedures
 
-**Created:** July 29, 2025  
-**Version:** 1.0.0  
-**Purpose:** Comprehensive maintenance procedures for ADF (Atlassian Document Format) implementation  
+**Created:** July 29, 2025
+**Version:** 1.0.0
+**Purpose:** Comprehensive maintenance procedures for ADF (Atlassian Document Format) implementation
 
 ## Overview
 
@@ -23,7 +23,7 @@ Atlassian periodically updates the ADF specification. Monitor these channels for
    ```bash
    # Check current ADF version in implementation
    grep -r "version.*1" src/mcp_atlassian/formatting/adf.py
-   
+
    # Monitor API responses for schema version updates
    curl -H "Accept: application/json" \
         -H "Authorization: Bearer $TOKEN" \
@@ -45,7 +45,7 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Create assessment branch
    git checkout -b feature/adf-schema-update-vX.X
-   
+
    # Document changes
    mkdir -p docs/schema-updates/vX.X
    curl -o docs/schema-updates/vX.X/new-schema.json \
@@ -74,7 +74,7 @@ When Atlassian releases ADF schema updates:
 1. **Update Core ADF Generator**
    ```python
    # Update src/mcp_atlassian/formatting/adf.py
-   
+
    # Add new element types
    def _convert_new_element_type(self, element: Any) -> dict[str, Any]:
        """Convert new element type to ADF format."""
@@ -83,7 +83,7 @@ When Atlassian releases ADF schema updates:
            "attrs": self._extract_attributes(element),
            "content": self._convert_children(element)
        }
-   
+
    # Update _convert_html_element_to_adf method
    elif tag_name == 'new-element':
        return self._convert_new_element_type(element)
@@ -97,7 +97,7 @@ When Atlassian releases ADF schema updates:
        # Check version compatibility
        if adf_json.get("version") > self.SUPPORTED_VERSION:
            logger.warning(f"ADF version {adf_json['version']} > supported {self.SUPPORTED_VERSION}")
-       
+
        # Add new element type validations
        return self._validate_schema_v2(adf_json)
    ```
@@ -106,7 +106,7 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Update API documentation
    vim docs/adf-api-documentation.md
-   
+
    # Add new element examples
    # Update supported element table
    # Document any breaking changes
@@ -116,10 +116,10 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Add tests for new elements
    vim tests/unit/test_adf_new_elements.py
-   
+
    # Update regression tests
    vim tests/unit/test_regression_adf.py
-   
+
    # Add real-world test cases
    vim tests/integration/test_adf_schema_v2.py
    ```
@@ -130,10 +130,10 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Run full test suite
    uv run pytest --cov=src/mcp_atlassian/formatting --cov-report=term-missing
-   
+
    # Performance regression testing
    uv run python3 scripts/benchmark_adf_performance.py --baseline
-   
+
    # Real API testing
    uv run pytest tests/integration/test_adf_api_compatibility.py --live-api
    ```
@@ -149,10 +149,10 @@ When Atlassian releases ADF schema updates:
    ```python
    # Check performance metrics
    from mcp_atlassian.formatting.router import FormatRouter
-   
+
    router = FormatRouter()
    metrics = router.get_performance_metrics()
-   
+
    assert metrics['average_conversion_time'] < 0.1  # <100ms target
    assert metrics['error_rate'] < 1.0  # <1% error rate
    ```
@@ -163,10 +163,10 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Deploy to staging environment
    git push origin feature/adf-schema-update-vX.X
-   
+
    # Test staging deployment
    curl -X POST https://staging.mcp-atlassian.com/healthz
-   
+
    # Run integration tests against staging
    STAGING=true uv run pytest tests/integration/
    ```
@@ -176,11 +176,11 @@ When Atlassian releases ADF schema updates:
    # Merge to main branch
    git checkout main
    git merge feature/adf-schema-update-vX.X
-   
+
    # Tag release
    git tag -a "v1.X.0" -m "ADF Schema Update vX.X support"
    git push origin main --tags
-   
+
    # Deploy to production
    ./scripts/deploy_production.sh
    ```
@@ -189,10 +189,10 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Monitor deployment health
    curl -X GET https://api.mcp-atlassian.com/healthz | jq '.adf_status'
-   
+
    # Check error rates
    ./scripts/monitor_adf_errors.sh --duration 1h
-   
+
    # Validate with real instances
    uv run python3 scripts/validate_live_deployment.py
    ```
@@ -205,7 +205,7 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Generate performance report
    uv run python3 scripts/generate_performance_report.py --week
-   
+
    # Check cache hit rates
    uv run python3 -c "
    from mcp_atlassian.formatting.router import FormatRouter
@@ -221,15 +221,15 @@ When Atlassian releases ADF schema updates:
    # Analyze slow conversions
    import logging
    logging.basicConfig(level=logging.DEBUG)
-   
+
    # Enable performance debugging
    from mcp_atlassian.formatting.adf import ADFGenerator
    generator = ADFGenerator()
-   
+
    # Process large document and monitor
    result = generator.markdown_to_adf(large_markdown_content)
    metrics = generator.get_performance_metrics()
-   
+
    if metrics['average_conversion_time'] > 0.05:  # >50ms
        print("Performance tuning needed")
    ```
@@ -238,7 +238,7 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Monitor cache effectiveness
    uv run python3 scripts/analyze_cache_patterns.py --period 7d
-   
+
    # Adjust cache sizes based on usage
    # Edit FormatRouter cache_size parameters
    # Edit ADFGenerator cache_size parameters
@@ -251,15 +251,15 @@ When Atlassian releases ADF schema updates:
    # Monitor memory usage over time
    import psutil
    import time
-   
+
    from mcp_atlassian.formatting.router import FormatRouter
-   
+
    router = FormatRouter()
-   
+
    # Process many documents and monitor memory
    process = psutil.Process()
    initial_memory = process.memory_info().rss
-   
+
    for i in range(1000):
        result = router.convert_markdown(f"# Document {i}\n\n**Content**", "https://test.atlassian.net")
        if i % 100 == 0:
@@ -271,13 +271,13 @@ When Atlassian releases ADF schema updates:
    ```python
    # Regular cache cleanup
    from mcp_atlassian.formatting.router import FormatRouter
-   
+
    router = FormatRouter()
-   
+
    # Clear caches periodically
    router.clear_cache()  # Deployment detection cache
    router.adf_generator.clear_cache()  # ADF conversion cache
-   
+
    # Reset metrics for fresh monitoring
    router.reset_metrics()
    ```
@@ -286,7 +286,7 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Run memory leak detection
    uv run python3 scripts/detect_memory_leaks.py --duration 1h
-   
+
    # Use memory profiler for detailed analysis
    pip install memory-profiler
    uv run python3 -m memory_profiler scripts/profile_adf_memory.py
@@ -300,14 +300,14 @@ When Atlassian releases ADF schema updates:
    ```python
    # Monitor error rates
    from mcp_atlassian.formatting.router import FormatRouter
-   
+
    router = FormatRouter()
    metrics = router.get_performance_metrics()
-   
+
    if metrics['adf_generator_metrics']['error_rate'] > 5.0:  # >5% error rate
        print(f"High error rate detected: {metrics['adf_generator_metrics']['error_rate']:.1f}%")
        print(f"Last error: {metrics['last_error']}")
-       
+
        # Alert system administrators
        # Log detailed error information
        # Trigger automatic fallback mode
@@ -319,7 +319,7 @@ When Atlassian releases ADF schema updates:
    grep -E "(ADF conversion failed|Failed to convert markdown)" /var/log/mcp-atlassian.log | \
        tail -100 | \
        python3 scripts/analyze_error_patterns.py
-   
+
    # Check for common failure modes
    grep -c "Cache error" /var/log/mcp-atlassian.log
    grep -c "Performance limit" /var/log/mcp-atlassian.log
@@ -336,7 +336,7 @@ When Atlassian releases ADF schema updates:
    router = FormatRouter()
    router.clear_cache()
    router.adf_generator.clear_cache()
-   
+
    # Monitor recovery
    test_result = router.convert_markdown("**test**", "https://test.atlassian.net")
    assert 'error' not in test_result
@@ -346,13 +346,13 @@ When Atlassian releases ADF schema updates:
    ```python
    # Resolution: Adjust performance limits
    # Edit src/mcp_atlassian/formatting/adf.py
-   
+
    # Increase table row limit
    max_rows = 100  # Increased from 50
-   
+
    # Increase list item limit
    max_items = 200  # Increased from 100
-   
+
    # Increase text length limit
    if len(text) > 2000:  # Increased from 1000
        text = text[:1997] + "..."
@@ -366,11 +366,11 @@ When Atlassian releases ADF schema updates:
            # Add more flexible validation
            if not isinstance(adf_json, dict):
                return False
-           
+
            # Allow newer schema versions with warnings
            if adf_json.get("version", 1) > 1:
                logger.warning(f"Newer ADF version detected: {adf_json['version']}")
-           
+
            return True  # More permissive validation
        except Exception as e:
            logger.error(f"Validation error: {e}")
@@ -383,9 +383,9 @@ When Atlassian releases ADF schema updates:
    ```python
    # Emergency fallback to wiki markup
    from mcp_atlassian.preprocessing.jira import JiraPreprocessor
-   
+
    processor = JiraPreprocessor(base_url="https://company.atlassian.net")
-   
+
    # Force wiki markup mode
    result = processor.markdown_to_jira(markdown_text, enable_adf=False)
    assert isinstance(result, str)  # Should be wiki markup
@@ -395,16 +395,16 @@ When Atlassian releases ADF schema updates:
    ```python
    # Disable caching temporarily
    from mcp_atlassian.formatting.router import FormatRouter
-   
+
    # Create router with minimal caching
-   router = FormatRouter(cache_ttl=60, cache_size=10, adf_cache_size=50)
-   
+   router = FormatRouter(cache_ttl=60, cache_size=10)
+
    # Monitor performance recovery
    import time
    start = time.time()
    result = router.convert_markdown(markdown_text, base_url)
    duration = time.time() - start
-   
+
    assert duration < 0.1  # Should be fast
    ```
 
@@ -417,7 +417,7 @@ When Atlassian releases ADF schema updates:
    # Create health check script
    cat > scripts/check_adf_health.sh << 'EOF'
    #!/bin/bash
-   
+
    # Test ADF conversion
    python3 -c "
    from mcp_atlassian.formatting.router import FormatRouter
@@ -427,7 +427,7 @@ When Atlassian releases ADF schema updates:
    assert 'error' not in result
    print('✓ ADF conversion healthy')
    "
-   
+
    # Test deployment detection
    python3 -c "
    from mcp_atlassian.formatting.router import FormatRouter, DeploymentType
@@ -438,7 +438,7 @@ When Atlassian releases ADF schema updates:
    assert server_type == DeploymentType.SERVER
    print('✓ Deployment detection healthy')
    "
-   
+
    # Test performance
    python3 -c "
    from mcp_atlassian.formatting.router import FormatRouter
@@ -450,10 +450,10 @@ When Atlassian releases ADF schema updates:
    assert duration < 0.1
    print(f'✓ Performance healthy: {duration*1000:.1f}ms')
    "
-   
+
    echo "All ADF health checks passed"
    EOF
-   
+
    chmod +x scripts/check_adf_health.sh
    ```
 
@@ -461,7 +461,7 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Add to crontab for regular monitoring
    # */5 * * * * /path/to/mcp-atlassian/scripts/check_adf_health.sh >> /var/log/adf-health.log 2>&1
-   
+
    # Monitor health check results
    tail -f /var/log/adf-health.log
    ```
@@ -475,12 +475,12 @@ When Atlassian releases ADF schema updates:
        'error_rate': 0.0,                # 0%
        'detection_cache_hit_rate': 50.0  # 50%
    }
-   
+
    # Regular comparison against baselines
    from mcp_atlassian.formatting.router import FormatRouter
    router = FormatRouter()
    current_metrics = router.get_performance_metrics()
-   
+
    for metric, baseline in baseline_metrics.items():
        current_value = current_metrics.get(metric, 0)
        if metric == 'error_rate' and current_value > baseline * 2:
@@ -499,11 +499,11 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Check for outdated examples
    grep -r "atlassian.net" docs/ | grep -v "test.atlassian.net"
-   
+
    # Update performance metrics in documentation
    vim docs/adf-api-documentation.md
    # Update benchmarks table with current metrics
-   
+
    # Check for broken links
    find docs/ -name "*.md" -exec grep -l "http" {} \; | \
        xargs python3 scripts/check_documentation_links.py
@@ -513,7 +513,7 @@ When Atlassian releases ADF schema updates:
    ```bash
    # Document ADF implementation version
    echo "ADF Implementation Version: $(date +%Y.%m.%d)" > docs/VERSION
-   
+
    # Update changelog
    vim CHANGELOG.md
    # Add recent changes, performance improvements, bug fixes
@@ -541,7 +541,7 @@ When Atlassian releases ADF schema updates:
 ### Emergency Contacts
 
 - **Development Team**: adf-dev-team@company.com
-- **Operations Team**: ops@company.com  
+- **Operations Team**: ops@company.com
 - **Atlassian Support**: (for schema-related issues)
 
 ### Quick Recovery Commands
