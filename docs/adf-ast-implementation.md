@@ -21,7 +21,7 @@ The MCP Atlassian server now uses an AST (Abstract Syntax Tree) based approach f
 3. **Plugin Architecture** (`adf_plugins.py`)
    - Extensible system for adding custom ADF nodes
    - Supports both block and inline plugins
-   - Currently includes 8 built-in plugins
+   - Currently includes 10 built-in plugins
 
 4. **FormatRouter** (`router.py`)
    - Routes content to appropriate formatter based on deployment type
@@ -214,7 +214,7 @@ Validation levels:
    ```python
    # Old
    from mcp_atlassian.formatting.adf import ADFGenerator
-   
+
    # New (backward compatible)
    from mcp_atlassian.formatting.adf_ast import ASTBasedADFGenerator as ADFGenerator
    ```
