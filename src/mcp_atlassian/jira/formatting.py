@@ -45,7 +45,7 @@ class FormattingMixin(
             base_url = self.config.url
         self.preprocessor = JiraPreprocessor(base_url=base_url)
 
-    def markdown_to_jira(self, markdown_text: str) -> str:
+    def markdown_to_jira(self, markdown_text: str) -> str | dict[str, Any]:
         """
         Convert Markdown syntax to Jira markup syntax.
 
@@ -56,7 +56,8 @@ class FormattingMixin(
             markdown_text: Text in Markdown format
 
         Returns:
-            Text in Jira markup format
+            For Cloud instances: Dictionary containing ADF JSON structure
+            For Server/DC instances: String in Jira wiki markup format
         """
         if not markdown_text:
             return ""

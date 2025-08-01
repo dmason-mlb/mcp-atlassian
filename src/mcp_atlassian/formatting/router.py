@@ -101,6 +101,14 @@ class FormatRouter:
         """
         start_time = time.time()
         self.metrics['conversions_total'] = self.metrics['conversions_total'] + 1
+        
+        # DEBUG: Log entry
+        logger.info(f"[DEBUG] convert_markdown called with:")
+        logger.info(f"[DEBUG]   base_url: '{base_url}'")
+        logger.info(f"[DEBUG]   force_format: {force_format}")
+        logger.info(f"[DEBUG]   user_id: '{user_id}'")
+        logger.info(f"[DEBUG]   markdown_text length: {len(markdown_text)}")
+        logger.debug(f"[DEBUG]   markdown_text preview: {markdown_text[:200]}...")
 
         try:
             # Determine format type
@@ -108,17 +116,27 @@ class FormatRouter:
                 format_type = force_format
                 deployment_type = DeploymentType.UNKNOWN
                 rollout_applied = False
-                logger.debug(f"Using forced format: {force_format.value}")
+                logger.info(f"[DEBUG] Using forced format: {force_format.value}")
             else:
+                logger.info("[DEBUG] Auto-detecting deployment type...")
                 deployment_type = self.detect_deployment_type(base_url)
+                logger.info(f"[DEBUG] Deployment type detected: {deployment_type.value}")
+                
+                logger.info("[DEBUG] Getting format for deployment with rollout...")
                 format_type, rollout_applied = self._get_format_for_deployment_with_rollout(
                     deployment_type, user_id
                 )
-                logger.debug(f"Auto-detected format: {format_type.value} for deployment: {deployment_type.value}, rollout applied: {rollout_applied}")
+                logger.info(f"[DEBUG] Format decision: {format_type.value}, rollout applied: {rollout_applied}")
 
             # Convert based on format type
+            logger.info(f"[DEBUG] Starting conversion to {format_type.value}...")
+            
             if format_type == FormatType.ADF:
+                logger.info("[DEBUG] Converting markdown to ADF...")
                 content = self.adf_generator.markdown_to_adf(markdown_text)
+                logger.info(f"[DEBUG] ADF conversion complete. Content type: {type(content)}")
+                logger.debug(f"[DEBUG] ADF content preview: {str(content)[:200]}...")
+                
                 return {
                     'content': content,
                     'format': 'adf',
@@ -127,7 +145,11 @@ class FormatRouter:
                 }
             else:
                 # Use existing wiki markup conversion (fallback)
+                logger.info("[DEBUG] Converting markdown to wiki markup...")
                 wiki_content = self._markdown_to_wiki_markup(markdown_text)
+                logger.info(f"[DEBUG] Wiki markup conversion complete. Content length: {len(wiki_content)}")
+                logger.debug(f"[DEBUG] Wiki content preview: {wiki_content[:200]}...")
+                
                 return {
                     'content': wiki_content,
                     'format': 'wiki_markup',
@@ -165,68 +187,93 @@ class FormatRouter:
         """
         start_time = time.time()
         self.metrics['detections_total'] = self.metrics['detections_total'] + 1
+        
+        # DEBUG: Log entry
+        logger.info(f"[DEBUG] detect_deployment_type called with base_url: '{base_url}'")
 
         try:
             if not base_url:
+                logger.warning("[DEBUG] Empty base_url provided, returning UNKNOWN")
                 return DeploymentType.UNKNOWN
 
             # Check cache first
             cache_key = base_url.lower().strip()
+            logger.debug(f"[DEBUG] Cache key: '{cache_key}'")
+            
             if cache_key in self.deployment_cache:
                 self.metrics['detections_cached'] = self.metrics['detections_cached'] + 1
-                logger.debug(f"Deployment detection cache hit for: {cache_key}")
+                logger.debug(f"[DEBUG] Deployment detection cache hit for: {cache_key}")
                 cached_result = self.deployment_cache[cache_key]
                 if isinstance(cached_result, DeploymentType):
+                    logger.info(f"[DEBUG] Returning cached deployment type: {cached_result.value}")
                     return cached_result
                 # Handle legacy cache entries that might not be DeploymentType
+                logger.warning("[DEBUG] Legacy cache entry found, returning UNKNOWN")
                 return DeploymentType.UNKNOWN
+                
+            logger.debug("[DEBUG] No cache hit, proceeding with detection")
+            
             # Check for non-HTTP protocols first (case insensitive)
             lower_url = base_url.lower()
             if lower_url.startswith(('ftp://', 'file://', 'sftp://')):
                 # Non-HTTP protocols are not Atlassian services
+                logger.info(f"[DEBUG] Non-HTTP protocol detected in URL: {lower_url[:20]}...")
                 return DeploymentType.UNKNOWN
             elif not lower_url.startswith(('http://', 'https://')):
                 # URLs without proper schemes are treated as unknown
+                logger.info(f"[DEBUG] No proper scheme in URL: {lower_url[:20]}...")
                 return DeploymentType.UNKNOWN
 
             parsed_url = urlparse(base_url.lower())
             hostname = parsed_url.hostname or ""
+            logger.info(f"[DEBUG] Parsed hostname: '{hostname}'")
 
             # Use compiled patterns for better performance
-            for pattern in self._cloud_patterns:
+            logger.debug(f"[DEBUG] Checking {len(self._cloud_patterns)} cloud patterns")
+            for i, pattern in enumerate(self._cloud_patterns):
+                logger.debug(f"[DEBUG] Testing pattern {i}: {pattern.pattern}")
                 if pattern.match(hostname):
                     deployment_type = DeploymentType.CLOUD
                     self.deployment_cache[cache_key] = deployment_type
-                    logger.debug(f"Detected Cloud deployment for {hostname}")
+                    logger.info(f"[DEBUG] MATCH! Detected Cloud deployment for {hostname} using pattern {pattern.pattern}")
                     return deployment_type
+                else:
+                    logger.debug(f"[DEBUG] No match for pattern {pattern.pattern}")
 
             # Additional development instances are now handled by pre-compiled patterns above
+            logger.debug("[DEBUG] No cloud patterns matched")
 
             # Server/DC detection - typically custom domains
             # If it's not a cloud instance and has a valid hostname, assume Server/DC
-            if hostname and not any(cloud_domain in hostname for cloud_domain in ['atlassian.net', 'atlassian.com']):
+            cloud_domains = ['atlassian.net', 'atlassian.com']
+            logger.debug(f"[DEBUG] Checking if hostname contains cloud domains: {cloud_domains}")
+            
+            if hostname and not any(cloud_domain in hostname for cloud_domain in cloud_domains):
                 deployment_type = DeploymentType.SERVER
                 self.deployment_cache[cache_key] = deployment_type
-                logger.debug(f"Detected Server/DC deployment for {hostname}")
+                logger.info(f"[DEBUG] Detected Server/DC deployment for {hostname} (no cloud domains found)")
                 return deployment_type
 
             # Unknown deployment type
             deployment_type = DeploymentType.UNKNOWN
             self.deployment_cache[cache_key] = deployment_type
-            logger.warning(f"Could not determine deployment type for {hostname}")
+            logger.warning(f"[DEBUG] Could not determine deployment type for {hostname}, returning UNKNOWN")
             return deployment_type
 
         except Exception as e:
             self.metrics['last_error'] = str(e)
-            logger.error(f"Error detecting deployment type for {base_url}: {e}")
+            logger.error(f"[DEBUG] Error detecting deployment type for {base_url}: {e}")
             return DeploymentType.UNKNOWN
         finally:
             # Update performance metrics
             detection_time = time.time() - start_time
             self.metrics['detection_time_total'] = self.metrics['detection_time_total'] + detection_time
+            
+            deployment_result = self.deployment_cache.get(cache_key, DeploymentType.UNKNOWN)
+            logger.info(f"[DEBUG] Deployment detection completed in {detection_time:.3f}s - Result: {deployment_result.value if hasattr(deployment_result, 'value') else deployment_result}")
 
             if detection_time > 0.01:  # Log slow detections (10ms threshold)
-                logger.warning(f"Slow deployment detection: {detection_time:.3f}s for {base_url}")
+                logger.warning(f"[DEBUG] Slow deployment detection: {detection_time:.3f}s for {base_url}")
 
     def _get_format_for_deployment(self, deployment_type: DeploymentType) -> FormatType:
         """

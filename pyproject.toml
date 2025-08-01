@@ -5,7 +5,6 @@ description = "The Model Context Protocol (MCP) Atlassian integration is an open
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "atlassian-python-api>=4.0.0",
     "requests[socks]>=2.31.0",
     "beautifulsoup4>=4.12.3",
     "httpx>=0.28.0",
@@ -123,10 +122,6 @@ explicit_package_bases = true
 module = "tests.*"
 disallow_untyped_defs = false
 check_untyped_defs = false
-
-[[tool.mypy.overrides]]
-module = "atlassian.*"
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "markdownify.*"

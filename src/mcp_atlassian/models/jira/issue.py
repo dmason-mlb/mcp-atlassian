@@ -59,7 +59,7 @@ class JiraIssue(ApiModel, TimestampMixin):
     id: str = JIRA_DEFAULT_ID
     key: str = JIRA_DEFAULT_KEY
     summary: str = EMPTY_STRING
-    description: str | None = None
+    description: str | dict | None = None
     created: str = EMPTY_STRING
     updated: str = EMPTY_STRING
     status: JiraStatus | None = None
