@@ -30,8 +30,8 @@ def check_write_access(func: F) -> F:
         )
         logger.debug(f"check_write_access: ctx.fastmcp={ctx.fastmcp}")
 
-        # Access through fastmcp.request_context (which is what Context.request_context returns)
-        request_context = ctx.fastmcp.request_context if ctx.fastmcp else None
+        # Access request_context directly from the Context object
+        request_context = ctx.request_context
         logger.debug(
             f"check_write_access: request_context from fastmcp={request_context}"
         )
