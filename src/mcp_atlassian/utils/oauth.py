@@ -20,6 +20,8 @@ from typing import Any, Optional
 import keyring
 import requests
 
+from mcp_atlassian.utils.logging import mask_sensitive
+
 # Configure logging
 logger = logging.getLogger("mcp-atlassian.oauth")
 
@@ -104,7 +106,16 @@ class OAuthConfig:
             }
 
             logger.info(f"Exchanging authorization code for tokens at {TOKEN_URL}")
-            logger.debug(f"Token exchange payload: {pprint.pformat(payload)}")
+            # Mask sensitive data before logging
+            safe_payload = {
+                "grant_type": payload["grant_type"],
+                "client_id": payload["client_id"],
+                "client_secret": mask_sensitive(payload["client_secret"]),
+                "code": mask_sensitive(payload["code"]),
+                "redirect_uri": payload["redirect_uri"],
+            }
+            logger.debug(f"Token exchange payload: {pprint.pformat(safe_payload)}")
+            del safe_payload  # Clear from memory
 
             response = requests.post(TOKEN_URL, data=payload)
 

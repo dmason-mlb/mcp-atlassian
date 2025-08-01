@@ -14,6 +14,7 @@ from fastmcp.server.dependencies import get_http_request
 from starlette.requests import Request
 
 from mcp_atlassian.confluence import ConfluenceConfig, ConfluenceFetcher
+from mcp_atlassian.exceptions import MCPAtlassianAuthenticationError
 from mcp_atlassian.jira import JiraConfig, JiraFetcher
 from mcp_atlassian.servers.context import MainAppContext
 from mcp_atlassian.utils.oauth import OAuthConfig
@@ -227,12 +228,25 @@ async def get_jira_fetcher(ctx: Context) -> JiraFetcher:
                 )
                 request.state.jira_fetcher = user_jira_fetcher
                 return user_jira_fetcher
+            except MCPAtlassianAuthenticationError as auth_error:
+                # Preserve authentication errors with proper context
+                logger.error(
+                    f"get_jira_fetcher: Authentication failed for user-specific JiraFetcher: {auth_error}",
+                    exc_info=True,
+                )
+                raise ValueError(
+                    f"Jira authentication failed: {str(auth_error)}. "
+                    f"Auth type: {user_auth_type}, Token provided: {'yes' if user_token else 'no'}"
+                ) from auth_error
             except Exception as e:
+                # Log the full exception for debugging
                 logger.error(
                     f"get_jira_fetcher: Failed to create/validate user-specific JiraFetcher: {e}",
                     exc_info=True,
                 )
-                raise ValueError(f"Invalid user Jira token or configuration: {e}")
+                raise ValueError(
+                    f"Invalid user Jira token or configuration: {e}"
+                ) from e
         else:
             logger.debug(
                 f"get_jira_fetcher: No user-specific JiraFetcher. Auth type: {user_auth_type}. Token present: {hasattr(request.state, 'user_atlassian_token')}. Will use global fallback."
@@ -353,11 +367,25 @@ async def get_confluence_fetcher(ctx: Context) -> ConfluenceFetcher:
                 ):
                     request.state.user_atlassian_email = current_user_data["email"]
                 return user_confluence_fetcher
-            except Exception as e:
+            except MCPAtlassianAuthenticationError as auth_error:
+                # Preserve authentication errors with proper context
                 logger.error(
-                    f"get_confluence_fetcher: Failed to create/validate user-specific ConfluenceFetcher: {e}"
+                    f"get_confluence_fetcher: Authentication failed for user-specific ConfluenceFetcher: {auth_error}",
+                    exc_info=True,
                 )
-                raise ValueError(f"Invalid user Confluence token or configuration: {e}")
+                raise ValueError(
+                    f"Confluence authentication failed: {str(auth_error)}. "
+                    f"Auth type: {user_auth_type}, Token provided: {'yes' if user_token else 'no'}"
+                ) from auth_error
+            except Exception as e:
+                # Log the full exception for debugging
+                logger.error(
+                    f"get_confluence_fetcher: Failed to create/validate user-specific ConfluenceFetcher: {e}",
+                    exc_info=True,
+                )
+                raise ValueError(
+                    f"Invalid user Confluence token or configuration: {e}"
+                ) from e
         else:
             logger.debug(
                 f"get_confluence_fetcher: No user-specific ConfluenceFetcher. Auth type: {user_auth_type}. Token present: {hasattr(request.state, 'user_atlassian_token')}. Will use global fallback."

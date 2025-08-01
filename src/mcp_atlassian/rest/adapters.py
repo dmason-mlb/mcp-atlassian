@@ -230,16 +230,16 @@ class JiraAdapter:
         expand: str | None = None,
     ) -> list[dict[str, Any]]:
         """Enhanced JQL search for cloud instances that returns just issues list.
-        
+
         This method is used specifically for Jira Cloud instances and returns
         only the issues array without pagination metadata.
-        
+
         Args:
             jql: JQL query string
             fields: Fields to return (comma-separated string or list)
             limit: Maximum number of issues to return
             expand: Fields to expand
-            
+
         Returns:
             List of issue dictionaries
         """
@@ -251,7 +251,7 @@ class JiraAdapter:
             fields=fields,
             expand=expand,
         )
-        
+
         # Return just the issues array
         return result.get("issues", [])
 

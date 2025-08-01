@@ -18,6 +18,7 @@ import urllib.parse
 import webbrowser
 from dataclasses import dataclass
 
+from ..utils.logging import mask_sensitive
 from ..utils.oauth import OAuthConfig
 
 # Configure logging
@@ -278,7 +279,9 @@ def run_oauth_flow(args: OAuthSetupArgs) -> bool:
             )
             logger.info("------------------------------------------------------------")
             logger.info(f"ATLASSIAN_OAUTH_CLIENT_ID={oauth_config.client_id}")
-            logger.info(f"ATLASSIAN_OAUTH_CLIENT_SECRET={oauth_config.client_secret}")
+            logger.info(
+                f"ATLASSIAN_OAUTH_CLIENT_SECRET={mask_sensitive(oauth_config.client_secret)}"
+            )
             logger.info(f"ATLASSIAN_OAUTH_REDIRECT_URI={oauth_config.redirect_uri}")
             logger.info(f"ATLASSIAN_OAUTH_SCOPE={oauth_config.scope}")
             logger.info(f"ATLASSIAN_OAUTH_CLOUD_ID={oauth_config.cloud_id}")

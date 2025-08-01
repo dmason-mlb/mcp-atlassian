@@ -1,0 +1,17 @@
+--- a/src/mcp_atlassian/utils/oauth_setup.py
++++ b/src/mcp_atlassian/utils/oauth_setup.py
+@@ -12,6 +12,7 @@ from pathlib import Path
+ 
+ import click
+ 
++from mcp_atlassian.utils.logging import mask_sensitive
+ from mcp_atlassian.utils.oauth import (
+     ATLASSIAN_API_URL,
+     AUTHORIZATION_URL,
+@@ -278,7 +279,7 @@ class OAuthSetupWizard:
+             logger.info(f"ATLASSIAN_URL={oauth_config.url or self.cloud_url}")
+             logger.info(f"ATLASSIAN_OAUTH_CLIENT_ID={oauth_config.client_id}")
+-            logger.info(f"ATLASSIAN_OAUTH_CLIENT_SECRET={oauth_config.client_secret}")
++            logger.info(f"ATLASSIAN_OAUTH_CLIENT_SECRET={mask_sensitive(oauth_config.client_secret)}")
+             logger.info(f"ATLASSIAN_OAUTH_ACCESS_TOKEN={oauth_config.access_token}")
+             if oauth_config.refresh_token:

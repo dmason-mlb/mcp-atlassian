@@ -16,16 +16,16 @@ F = TypeVar("F", bound=Callable[..., Awaitable[Any]])
 def safe_tool_result(func: F) -> F:
     """
     Decorator to ensure tool functions always return JSON responses.
-    
+
     This decorator catches any exceptions raised within a tool function
     and converts them to JSON error responses. This ensures that FastMCP
     can properly emit tool_result messages with is_error=true, preventing
     API 400 errors about missing tool_result blocks.
-    
+
     The decorator should be applied to all MCP tool functions after the
     @tool decorator but before any other decorators like @check_write_access.
     """
-    
+
     @wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> str:
         try:
@@ -37,32 +37,43 @@ def safe_tool_result(func: F) -> F:
         except MCPAtlassianAuthenticationError as e:
             # Authentication errors get special treatment
             logger.error(f"Authentication error in tool '{func.__name__}': {e}")
-            return json.dumps({
-                "error": str(e),
-                "success": False,
-                "error_type": "authentication_error",
-                "tool": func.__name__
-            }, indent=2, ensure_ascii=False)
+            return json.dumps(
+                {
+                    "error": str(e),
+                    "success": False,
+                    "error_type": "authentication_error",
+                    "tool": func.__name__,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
         except ValueError as e:
             # ValueError often indicates configuration or validation issues
             logger.warning(f"ValueError in tool '{func.__name__}': {e}")
-            return json.dumps({
-                "error": str(e),
-                "success": False,
-                "error_type": "validation_error",
-                "tool": func.__name__
-            }, indent=2, ensure_ascii=False)
+            return json.dumps(
+                {
+                    "error": str(e),
+                    "success": False,
+                    "error_type": "validation_error",
+                    "tool": func.__name__,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
         except Exception as e:
             # Catch all other exceptions
             logger.error(
-                f"Unexpected error in tool '{func.__name__}': {e}",
-                exc_info=True
+                f"Unexpected error in tool '{func.__name__}': {e}", exc_info=True
             )
-            return json.dumps({
-                "error": f"An unexpected error occurred: {str(e)}",
-                "success": False,
-                "error_type": "unexpected_error",
-                "tool": func.__name__
-            }, indent=2, ensure_ascii=False)
-    
+            return json.dumps(
+                {
+                    "error": f"An unexpected error occurred: {str(e)}",
+                    "success": False,
+                    "error_type": "unexpected_error",
+                    "tool": func.__name__,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+
     return wrapper  # type: ignore

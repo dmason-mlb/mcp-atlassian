@@ -182,7 +182,7 @@ When multiple decorators are used, they're applied bottom to top:
 
 ```python
 @jira_mcp.tool(tags={"jira", "write"})  # Applied third
-@check_write_access                      # Applied second  
+@check_write_access                      # Applied second
 @safe_tool_result                        # Applied first (closest to function)
 async def create_issue(...):
     pass

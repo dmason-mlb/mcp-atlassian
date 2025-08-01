@@ -1,6 +1,7 @@
 """Main FastMCP server setup for Atlassian integration."""
 
 import logging
+import threading
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any, Literal, Optional
@@ -202,9 +203,11 @@ class AtlassianMCP(FastMCP[MainAppContext]):
         return app
 
 
+# Thread-safe token validation cache
 token_validation_cache: TTLCache[
     int, tuple[bool, str | None, JiraFetcher | None, ConfluenceFetcher | None]
 ] = TTLCache(maxsize=100, ttl=300)
+token_cache_lock = threading.Lock()
 
 
 class UserTokenMiddleware(BaseHTTPMiddleware):

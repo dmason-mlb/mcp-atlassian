@@ -12,6 +12,7 @@ Performance optimizations:
 
 import logging
 import re
+import threading
 import time
 from enum import Enum
 from typing import Any
@@ -59,6 +60,7 @@ class FormatRouter:
             cache_size: Maximum number of deployment detection results to cache (default: 100)
         """
         self.deployment_cache: TTLCache = TTLCache(maxsize=cache_size, ttl=cache_ttl)
+        self.cache_lock = threading.Lock()
         self.adf_generator = ASTBasedADFGenerator()
 
         # Compile regex patterns for better performance
@@ -218,20 +220,25 @@ class FormatRouter:
             cache_key = base_url.lower().strip()
             logger.debug(f"[DEBUG] Cache key: '{cache_key}'")
 
-            if cache_key in self.deployment_cache:
-                self.metrics["detections_cached"] = (
-                    self.metrics["detections_cached"] + 1
-                )
-                logger.debug(f"[DEBUG] Deployment detection cache hit for: {cache_key}")
-                cached_result = self.deployment_cache[cache_key]
-                if isinstance(cached_result, DeploymentType):
-                    logger.info(
-                        f"[DEBUG] Returning cached deployment type: {cached_result.value}"
+            with self.cache_lock:
+                if cache_key in self.deployment_cache:
+                    self.metrics["detections_cached"] = (
+                        self.metrics["detections_cached"] + 1
                     )
-                    return cached_result
-                # Handle legacy cache entries that might not be DeploymentType
-                logger.warning("[DEBUG] Legacy cache entry found, returning UNKNOWN")
-                return DeploymentType.UNKNOWN
+                    logger.debug(
+                        f"[DEBUG] Deployment detection cache hit for: {cache_key}"
+                    )
+                    cached_result = self.deployment_cache[cache_key]
+                    if isinstance(cached_result, DeploymentType):
+                        logger.info(
+                            f"[DEBUG] Returning cached deployment type: {cached_result.value}"
+                        )
+                        return cached_result
+                    # Handle legacy cache entries that might not be DeploymentType
+                    logger.warning(
+                        "[DEBUG] Legacy cache entry found, returning UNKNOWN"
+                    )
+                    return DeploymentType.UNKNOWN
 
             logger.debug("[DEBUG] No cache hit, proceeding with detection")
 
@@ -258,7 +265,8 @@ class FormatRouter:
                 logger.debug(f"[DEBUG] Testing pattern {i}: {pattern.pattern}")
                 if pattern.match(hostname):
                     deployment_type = DeploymentType.CLOUD
-                    self.deployment_cache[cache_key] = deployment_type
+                    with self.cache_lock:
+                        self.deployment_cache[cache_key] = deployment_type
                     logger.info(
                         f"[DEBUG] MATCH! Detected Cloud deployment for {hostname} using pattern {pattern.pattern}"
                     )
@@ -280,7 +288,8 @@ class FormatRouter:
                 cloud_domain in hostname for cloud_domain in cloud_domains
             ):
                 deployment_type = DeploymentType.SERVER
-                self.deployment_cache[cache_key] = deployment_type
+                with self.cache_lock:
+                    self.deployment_cache[cache_key] = deployment_type
                 logger.info(
                     f"[DEBUG] Detected Server/DC deployment for {hostname} (no cloud domains found)"
                 )
@@ -288,7 +297,8 @@ class FormatRouter:
 
             # Unknown deployment type
             deployment_type = DeploymentType.UNKNOWN
-            self.deployment_cache[cache_key] = deployment_type
+            with self.cache_lock:
+                self.deployment_cache[cache_key] = deployment_type
             logger.warning(
                 f"[DEBUG] Could not determine deployment type for {hostname}, returning UNKNOWN"
             )

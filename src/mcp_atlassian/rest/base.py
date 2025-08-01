@@ -17,6 +17,7 @@ from mcp_atlassian.exceptions import (
     MCPAtlassianPermissionError,
     MCPAtlassianValidationError,
 )
+from mcp_atlassian.utils.logging import mask_sensitive
 
 logger = logging.getLogger(__name__)
 
@@ -222,7 +223,7 @@ class BaseRESTClient:
         url = self._build_url(endpoint, absolute)
 
         # Merge headers
-        request_headers = self.session.headers.copy()
+        request_headers = dict(self.session.headers)
         if headers:
             request_headers.update(headers)
 
@@ -234,12 +235,68 @@ class BaseRESTClient:
             f"data: {'<data>' if data else None})"
         )
 
-        # Log full JSON payload for debugging
+        # Log sanitized JSON payload for debugging
         if json_data:
             import json as json_module
 
-            logger.info("[DEBUG] Full JSON payload being sent to API:")
-            logger.info(f"[DEBUG] {json_module.dumps(json_data, indent=2)}")
+            def sanitize_json_data(data: Any) -> Any:
+                """Recursively sanitize sensitive data in JSON payloads."""
+                if isinstance(data, dict):
+                    sanitized = {}
+                    sensitive_keys = {
+                        "password",
+                        "api_key",
+                        "apikey",
+                        "token",
+                        "secret",
+                        "client_secret",
+                        "refresh_token",
+                        "access_token",
+                        "authorization",
+                        "auth",
+                        "key",
+                        "private_key",
+                        "webhook_secret",
+                        "oauth",
+                        "bearer",
+                        "pat",
+                        "ssn",
+                        "creditcard",
+                        "credit_card",
+                        "dateofbirth",
+                        "date_of_birth",
+                        "dob",
+                    }
+
+                    for key, value in data.items():
+                        key_lower = key.lower().replace("_", "").replace("-", "")
+                        if any(sensitive in key_lower for sensitive in sensitive_keys):
+                            sanitized[key] = (
+                                mask_sensitive(str(value)) if value else None
+                            )
+                        elif isinstance(value, (dict, list)):
+                            sanitized[key] = sanitize_json_data(value)
+                        elif isinstance(value, str) and "@" in value and "." in value:
+                            # Potentially an email - mask the local part
+                            parts = value.split("@")
+                            if len(parts) == 2:
+                                sanitized[key] = (
+                                    f"{mask_sensitive(parts[0], keep_chars=2)}@{parts[1]}"
+                                )
+                            else:
+                                sanitized[key] = value
+                        else:
+                            sanitized[key] = value
+                    return sanitized
+                elif isinstance(data, list):
+                    return [sanitize_json_data(item) for item in data]
+                else:
+                    return data
+
+            safe_data = sanitize_json_data(json_data)
+            logger.debug(
+                f"API request payload (sanitized): {json_module.dumps(safe_data, indent=2)}"
+            )
 
         try:
             response = self.session.request(
