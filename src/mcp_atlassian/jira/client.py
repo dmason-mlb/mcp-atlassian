@@ -7,8 +7,8 @@ from typing import Any, Literal
 from requests import Session
 
 from mcp_atlassian.exceptions import MCPAtlassianAuthenticationError
-from mcp_atlassian.rest.adapters import JiraAdapter
 from mcp_atlassian.preprocessing import JiraPreprocessor
+from mcp_atlassian.rest.adapters import JiraAdapter
 from mcp_atlassian.utils.logging import (
     get_masked_session_headers,
     log_config_param,

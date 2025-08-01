@@ -22,6 +22,7 @@ from mcp_atlassian.jira.config import JiraConfig
 from mcp_atlassian.utils.environment import get_available_services
 from mcp_atlassian.utils.io import is_read_only_mode
 from mcp_atlassian.utils.logging import mask_sensitive
+from mcp_atlassian.utils.tool_wrapper import wrap_all_tools_with_error_handling
 from mcp_atlassian.utils.tools import get_enabled_tools, should_include_tool
 
 from .confluence import confluence_mcp
@@ -328,6 +329,10 @@ class UserTokenMiddleware(BaseHTTPMiddleware):
 main_mcp = AtlassianMCP(name="Atlassian MCP", lifespan=main_lifespan)
 main_mcp.mount("jira", jira_mcp)
 main_mcp.mount("confluence", confluence_mcp)
+
+# Wrap all tools with error handling after mounting
+wrap_all_tools_with_error_handling(jira_mcp)
+wrap_all_tools_with_error_handling(confluence_mcp)
 
 
 @main_mcp.custom_route("/healthz", methods=["GET"], include_in_schema=False)

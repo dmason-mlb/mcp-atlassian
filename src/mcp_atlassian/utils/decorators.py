@@ -1,3 +1,4 @@
+import json
 import logging
 from collections.abc import Awaitable, Callable
 from functools import wraps
@@ -24,12 +25,31 @@ def check_write_access(func: F) -> F:
 
     @wraps(func)
     async def wrapper(ctx: Context, *args: Any, **kwargs: Any) -> Any:
-        lifespan_ctx_dict = ctx.request_context.lifespan_context
+        logger.debug(
+            f"check_write_access: ctx={ctx}, ctx.request_context={ctx.request_context}"
+        )
+        logger.debug(f"check_write_access: ctx.fastmcp={ctx.fastmcp}")
+
+        # Access through fastmcp.request_context (which is what Context.request_context returns)
+        request_context = ctx.fastmcp.request_context if ctx.fastmcp else None
+        logger.debug(
+            f"check_write_access: request_context from fastmcp={request_context}"
+        )
+
+        lifespan_ctx_dict = (
+            request_context.lifespan_context if request_context else None
+        )
+        logger.debug(f"check_write_access: lifespan_ctx_dict={lifespan_ctx_dict}")
+
         app_lifespan_ctx = (
             lifespan_ctx_dict.get("app_lifespan_context")
             if isinstance(lifespan_ctx_dict, dict)
             else None
         )  # type: ignore
+
+        logger.debug(
+            f"check_write_access: app_lifespan_ctx={app_lifespan_ctx}, read_only={getattr(app_lifespan_ctx, 'read_only', None) if app_lifespan_ctx else None}"
+        )
 
         if app_lifespan_ctx is not None and app_lifespan_ctx.read_only:
             tool_name = func.__name__
@@ -37,7 +57,17 @@ def check_write_access(func: F) -> F:
                 "_", " "
             )  # e.g., "create_issue" -> "create issue"
             logger.warning(f"Attempted to call tool '{tool_name}' in read-only mode.")
-            raise ValueError(f"Cannot {action_description} in read-only mode.")
+            # Return JSON error response instead of raising exception
+            # This ensures FastMCP can properly emit a tool_result with is_error=true
+            return json.dumps(
+                {
+                    "error": f"Cannot {action_description} in read-only mode.",
+                    "success": False,
+                    "read_only_mode": True,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
 
         return await func(ctx, *args, **kwargs)
 

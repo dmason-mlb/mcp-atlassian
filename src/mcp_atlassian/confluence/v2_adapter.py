@@ -101,7 +101,7 @@ class ConfluenceV2Adapter:
                 "status": status,
                 "title": title,
             }
-            
+
             # Handle body format based on representation
             if representation == "atlas_doc_format" and isinstance(body, dict):
                 # For ADF, the body is the ADF JSON directly
@@ -210,7 +210,7 @@ class ConfluenceV2Adapter:
                     "number": new_version,
                 },
             }
-            
+
             # Handle body format based on representation
             if representation == "atlas_doc_format" and isinstance(body, dict):
                 # For ADF, the body is the ADF JSON directly

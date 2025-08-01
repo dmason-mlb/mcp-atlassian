@@ -5,8 +5,9 @@ import os
 
 from requests import Session
 
-from ..exceptions import MCPAtlassianAuthenticationError
 from mcp_atlassian.rest.adapters import ConfluenceAdapter
+
+from ..exceptions import MCPAtlassianAuthenticationError
 from ..utils.logging import get_masked_session_headers, log_config_param, mask_sensitive
 from ..utils.oauth import configure_oauth_session
 from ..utils.ssl import configure_ssl_verification

@@ -1,8 +1,8 @@
 # MCP Atlassian Formatting Issues Guide
 
-**Created:** July 29, 2025  
-**Updated:** July 29, 2025  
-**Purpose:** Guide to resolving markdown formatting issues in Jira/Confluence through Claude Code  
+**Created:** July 29, 2025
+**Updated:** July 29, 2025
+**Purpose:** Guide to resolving markdown formatting issues in Jira/Confluence through Claude Code
 
 ## Overview
 
@@ -39,7 +39,7 @@ The formatting issues have been resolved through a comprehensive ADF implementat
 
 #### 2. Intelligent Format Routing
 - **Cloud instances** (*.atlassian.net): Convert markdown → ADF JSON
-- **Server/DC instances**: Continue using wiki markup strings  
+- **Server/DC instances**: Continue using wiki markup strings
 - **Unknown deployments**: Default to wiki markup with graceful fallback
 - **Manual override**: Force format selection when needed
 
@@ -58,7 +58,7 @@ result = router.convert_markdown("**Bold** text", "https://company.atlassian.net
 # Returns: {'content': {...}, 'format': 'adf', 'deployment_type': 'cloud'}
 ```
 
-#### ADFGenerator (`src/mcp_atlassian/formatting/adf.py`) 
+#### ADFGenerator (`src/mcp_atlassian/formatting/adf.py`)
 ```python
 generator = ADFGenerator(cache_size=256)
 adf_result = generator.markdown_to_adf("**Bold** text with `code`")
@@ -193,11 +193,11 @@ The implementation has been tested with:
 
 **The formatting issues described in this guide have been completely resolved** through the implementation of comprehensive ADF support. Users can now expect:
 
-✅ **Perfect formatting** in Jira/Confluence Cloud instances  
-✅ **Unchanged behavior** for Server/DC instances  
-✅ **Automatic operation** with no configuration required  
-✅ **High performance** with intelligent optimization  
-✅ **Robust error handling** with graceful fallbacks  
+✅ **Perfect formatting** in Jira/Confluence Cloud instances
+✅ **Unchanged behavior** for Server/DC instances
+✅ **Automatic operation** with no configuration required
+✅ **High performance** with intelligent optimization
+✅ **Robust error handling** with graceful fallbacks
 
 The solution is production-ready and maintains full backward compatibility while solving the original formatting problems.
 

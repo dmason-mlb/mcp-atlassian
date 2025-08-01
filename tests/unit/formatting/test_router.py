@@ -23,7 +23,9 @@ class TestFormatRouter:
 
         for url in cloud_urls:
             deployment_type = self.router.detect_deployment_type(url)
-            assert deployment_type == DeploymentType.CLOUD, f"Failed to detect cloud for {url}"
+            assert deployment_type == DeploymentType.CLOUD, (
+                f"Failed to detect cloud for {url}"
+            )
 
     def test_server_deployment_detection(self):
         """Test detection of Server/Data Center deployments."""
@@ -36,7 +38,9 @@ class TestFormatRouter:
 
         for url in server_urls:
             deployment_type = self.router.detect_deployment_type(url)
-            assert deployment_type == DeploymentType.SERVER, f"Failed to detect server for {url}"
+            assert deployment_type == DeploymentType.SERVER, (
+                f"Failed to detect server for {url}"
+            )
 
     def test_unknown_deployment_detection(self):
         """Test handling of unknown deployment types."""
@@ -49,7 +53,9 @@ class TestFormatRouter:
 
         for url in unknown_urls:
             deployment_type = self.router.detect_deployment_type(url)
-            assert deployment_type == DeploymentType.UNKNOWN, f"Should be unknown for {url}"
+            assert deployment_type == DeploymentType.UNKNOWN, (
+                f"Should be unknown for {url}"
+            )
 
     def test_deployment_cache(self):
         """Test that deployment detection uses cache."""
@@ -125,9 +131,7 @@ class TestFormatRouter:
         server_url = "https://jira.mycompany.com"  # Would normally use wiki markup
 
         result = self.router.convert_markdown(
-            markdown,
-            server_url,
-            force_format=FormatType.ADF
+            markdown, server_url, force_format=FormatType.ADF
         )
 
         assert result["format"] == "adf"
@@ -139,9 +143,7 @@ class TestFormatRouter:
         cloud_url = "https://test.atlassian.net"  # Would normally use ADF
 
         result = self.router.convert_markdown(
-            markdown,
-            cloud_url,
-            force_format=FormatType.WIKI_MARKUP
+            markdown, cloud_url, force_format=FormatType.WIKI_MARKUP
         )
 
         assert result["format"] == "wiki_markup"
@@ -177,11 +179,12 @@ class TestFormatRouter:
     def test_error_handling_conversion(self):
         """Test error handling during conversion."""
         # Mock ADF generator to raise exception
-        with patch.object(self.router.adf_generator, 'markdown_to_adf', side_effect=Exception("Test error")):
-            result = self.router.convert_markdown(
-                "test",
-                "https://test.atlassian.net"
-            )
+        with patch.object(
+            self.router.adf_generator,
+            "markdown_to_adf",
+            side_effect=Exception("Test error"),
+        ):
+            result = self.router.convert_markdown("test", "https://test.atlassian.net")
 
             # Should fallback to plain text
             assert result["content"] == "test"
@@ -194,7 +197,7 @@ class TestFormatRouter:
         urls = [
             "https://cloud1.atlassian.net",
             "https://cloud2.atlassian.net",
-            "https://server.example.com"
+            "https://server.example.com",
         ]
 
         for url in urls:
@@ -213,8 +216,7 @@ class TestFormatRouter:
 
         for empty_input in empty_inputs:
             result = self.router.convert_markdown(
-                empty_input,
-                "https://test.atlassian.net"
+                empty_input, "https://test.atlassian.net"
             )
 
             assert result["format"] == "adf"
@@ -241,8 +243,7 @@ print("Hello, world!")
 Final paragraph."""
 
         result = self.router.convert_markdown(
-            complex_markdown,
-            "https://test.atlassian.net"
+            complex_markdown, "https://test.atlassian.net"
         )
 
         assert result["format"] == "adf"
@@ -264,8 +265,7 @@ This paragraph has **bold**, *italic*, and `code` text.
 - List item 2"""
 
         result = self.router.convert_markdown(
-            complex_markdown,
-            "https://jira.example.com"
+            complex_markdown, "https://jira.example.com"
         )
 
         assert result["format"] == "wiki_markup"
@@ -282,7 +282,10 @@ This paragraph has **bold**, *italic*, and `code` text.
         edge_cases = [
             ("HTTPS://TEST.ATLASSIAN.NET", DeploymentType.CLOUD),  # Uppercase
             ("https://test.atlassian.net/", DeploymentType.CLOUD),  # Trailing slash
-            ("https://test.atlassian.net/jira/browse/", DeploymentType.CLOUD),  # Deep path
+            (
+                "https://test.atlassian.net/jira/browse/",
+                DeploymentType.CLOUD,
+            ),  # Deep path
             ("http://localhost:8080", DeploymentType.SERVER),  # Localhost
             ("jira.company.com", DeploymentType.SERVER),  # No protocol
         ]

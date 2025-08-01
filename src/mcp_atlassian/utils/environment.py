@@ -17,12 +17,12 @@ def get_available_services() -> dict[str, bool | None]:
         atlassian_url = os.getenv("ATLASSIAN_URL")
         if atlassian_url:
             # For Cloud instances, CONFLUENCE_URL is ATLASSIAN_URL + /wiki
-            base_url = atlassian_url.rstrip('/')
-            if base_url.endswith('/wiki'):
+            base_url = atlassian_url.rstrip("/")
+            if base_url.endswith("/wiki"):
                 confluence_url = base_url
             else:
-                confluence_url = base_url + '/wiki'
-    
+                confluence_url = base_url + "/wiki"
+
     confluence_is_setup = False
     if confluence_url:
         is_cloud = is_atlassian_cloud_url(confluence_url)
@@ -57,13 +57,12 @@ def get_available_services() -> dict[str, bool | None]:
         elif is_cloud:  # Cloud non-OAuth
             # Support both service-specific and shared credentials
             username = (
-                os.getenv("CONFLUENCE_USERNAME") or 
-                os.getenv("ATLASSIAN_EMAIL") or 
-                os.getenv("ATLASSIAN_USERNAME")
+                os.getenv("CONFLUENCE_USERNAME")
+                or os.getenv("ATLASSIAN_EMAIL")
+                or os.getenv("ATLASSIAN_USERNAME")
             )
-            api_token = (
-                os.getenv("CONFLUENCE_API_TOKEN") or 
-                os.getenv("ATLASSIAN_API_TOKEN")
+            api_token = os.getenv("CONFLUENCE_API_TOKEN") or os.getenv(
+                "ATLASSIAN_API_TOKEN"
             )
             if username and api_token:
                 confluence_is_setup = True
@@ -71,18 +70,17 @@ def get_available_services() -> dict[str, bool | None]:
         else:  # Server/Data Center non-OAuth
             # Support both service-specific and shared credentials
             personal_token = (
-                os.getenv("CONFLUENCE_PERSONAL_TOKEN") or 
-                os.getenv("ATLASSIAN_PERSONAL_TOKEN") or 
-                os.getenv("ATLASSIAN_PAT")
+                os.getenv("CONFLUENCE_PERSONAL_TOKEN")
+                or os.getenv("ATLASSIAN_PERSONAL_TOKEN")
+                or os.getenv("ATLASSIAN_PAT")
             )
             username = (
-                os.getenv("CONFLUENCE_USERNAME") or 
-                os.getenv("ATLASSIAN_EMAIL") or 
-                os.getenv("ATLASSIAN_USERNAME")
+                os.getenv("CONFLUENCE_USERNAME")
+                or os.getenv("ATLASSIAN_EMAIL")
+                or os.getenv("ATLASSIAN_USERNAME")
             )
-            api_token = (
-                os.getenv("CONFLUENCE_API_TOKEN") or 
-                os.getenv("ATLASSIAN_API_TOKEN")
+            api_token = os.getenv("CONFLUENCE_API_TOKEN") or os.getenv(
+                "ATLASSIAN_API_TOKEN"
             )
             if personal_token or (username and api_token):
                 confluence_is_setup = True
@@ -102,8 +100,8 @@ def get_available_services() -> dict[str, bool | None]:
         atlassian_url = os.getenv("ATLASSIAN_URL")
         if atlassian_url:
             # For Cloud instances, JIRA_URL is the same as ATLASSIAN_URL
-            jira_url = atlassian_url.rstrip('/')
-    
+            jira_url = atlassian_url.rstrip("/")
+
     jira_is_setup = False
     if jira_url:
         is_cloud = is_atlassian_cloud_url(jira_url)
@@ -136,33 +134,27 @@ def get_available_services() -> dict[str, bool | None]:
         elif is_cloud:  # Cloud non-OAuth
             # Support both service-specific and shared credentials
             username = (
-                os.getenv("JIRA_USERNAME") or 
-                os.getenv("ATLASSIAN_EMAIL") or 
-                os.getenv("ATLASSIAN_USERNAME")
+                os.getenv("JIRA_USERNAME")
+                or os.getenv("ATLASSIAN_EMAIL")
+                or os.getenv("ATLASSIAN_USERNAME")
             )
-            api_token = (
-                os.getenv("JIRA_API_TOKEN") or 
-                os.getenv("ATLASSIAN_API_TOKEN")
-            )
+            api_token = os.getenv("JIRA_API_TOKEN") or os.getenv("ATLASSIAN_API_TOKEN")
             if username and api_token:
                 jira_is_setup = True
                 logger.info("Using Jira Cloud Basic Authentication (API Token)")
         else:  # Server/Data Center non-OAuth
             # Support both service-specific and shared credentials
             personal_token = (
-                os.getenv("JIRA_PERSONAL_TOKEN") or 
-                os.getenv("ATLASSIAN_PERSONAL_TOKEN") or 
-                os.getenv("ATLASSIAN_PAT")
+                os.getenv("JIRA_PERSONAL_TOKEN")
+                or os.getenv("ATLASSIAN_PERSONAL_TOKEN")
+                or os.getenv("ATLASSIAN_PAT")
             )
             username = (
-                os.getenv("JIRA_USERNAME") or 
-                os.getenv("ATLASSIAN_EMAIL") or 
-                os.getenv("ATLASSIAN_USERNAME")
+                os.getenv("JIRA_USERNAME")
+                or os.getenv("ATLASSIAN_EMAIL")
+                or os.getenv("ATLASSIAN_USERNAME")
             )
-            api_token = (
-                os.getenv("JIRA_API_TOKEN") or 
-                os.getenv("ATLASSIAN_API_TOKEN")
-            )
+            api_token = os.getenv("JIRA_API_TOKEN") or os.getenv("ATLASSIAN_API_TOKEN")
             if personal_token or (username and api_token):
                 jira_is_setup = True
                 logger.info(

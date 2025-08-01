@@ -18,21 +18,13 @@ class TestADFGenerator:
     def test_empty_input(self):
         """Test handling of empty input."""
         result = self.generator.markdown_to_adf("")
-        expected = {
-            "version": 1,
-            "type": "doc",
-            "content": []
-        }
+        expected = {"version": 1, "type": "doc", "content": []}
         assert result == expected
 
     def test_none_input(self):
         """Test handling of None input."""
         result = self.generator.markdown_to_adf(None)
-        expected = {
-            "version": 1,
-            "type": "doc",
-            "content": []
-        }
+        expected = {"version": 1, "type": "doc", "content": []}
         assert result == expected
 
     def test_plain_text(self):
@@ -98,7 +90,7 @@ class TestADFGenerator:
 
         # Check each heading level
         for i, level in enumerate([1, 2, 3], 1):
-            heading = result["content"][i-1]
+            heading = result["content"][i - 1]
             assert heading["type"] == "heading"
             assert heading["attrs"]["level"] == level
             assert heading["content"][0]["text"] == f"Heading {level}"
@@ -140,7 +132,9 @@ class TestADFGenerator:
 
         code_block = result["content"][0]
         assert code_block["type"] == "codeBlock"
-        assert "language" in code_block.get("attrs", {}) or True  # Language detection may vary
+        assert (
+            "language" in code_block.get("attrs", {}) or True
+        )  # Language detection may vary
         assert code_block["content"][0]["text"] == "print('Hello, world!')"
 
     def test_inline_code(self):
@@ -244,16 +238,8 @@ class TestADFGenerator:
             "version": 1,
             "type": "doc",
             "content": [
-                {
-                    "type": "paragraph",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Hello"
-                        }
-                    ]
-                }
-            ]
+                {"type": "paragraph", "content": [{"type": "text", "text": "Hello"}]}
+            ],
         }
 
         assert self.generator.validate_adf(valid_adf) is True
@@ -262,7 +248,7 @@ class TestADFGenerator:
         """Test ADF validation with invalid structure."""
         invalid_adf = {
             "version": 1,
-            "type": "doc"
+            "type": "doc",
             # Missing content field
         }
 
@@ -273,7 +259,7 @@ class TestADFGenerator:
         invalid_adf = {
             "version": 1,
             "type": "paragraph",  # Should be "doc"
-            "content": []
+            "content": [],
         }
 
         assert self.generator.validate_adf(invalid_adf) is False
@@ -281,7 +267,9 @@ class TestADFGenerator:
     def test_error_handling(self):
         """Test error handling with problematic input."""
         # Mock markdown conversion to raise exception
-        with patch.object(self.generator.md, 'convert', side_effect=Exception("Test error")):
+        with patch.object(
+            self.generator.md, "convert", side_effect=Exception("Test error")
+        ):
             result = self.generator.markdown_to_adf("test")
 
             # Should fallback to plain text document
@@ -347,8 +335,8 @@ Final paragraph."""
             "__",  # Incomplete italic
             "``",  # Incomplete code
             "[]",  # Empty link text
-            "()",   # Empty link URL
-            "# ",   # Empty heading
+            "()",  # Empty link URL
+            "# ",  # Empty heading
         ]
 
         for markdown in edge_cases:
@@ -383,10 +371,10 @@ Final paragraph."""
 | Cell 3   | Cell 4   |"""
 
         result = self.generator.markdown_to_adf(markdown)
-        
+
         assert result["type"] == "doc"
         assert len(result["content"]) >= 1
-        
+
         # Look for table content in the result
         content_str = str(result["content"])
         assert "table" in content_str.lower() or "header" in content_str.lower()
@@ -401,7 +389,7 @@ Final paragraph."""
   2. Nested ordered 2"""
 
         result = self.generator.markdown_to_adf(markdown)
-        
+
         assert result["type"] == "doc"
         assert result["version"] == 1
         assert len(result["content"]) >= 1
@@ -425,7 +413,7 @@ def function():
   - Nested with `code`"""
 
         result = self.generator.markdown_to_adf(markdown)
-        
+
         assert result["type"] == "doc"
         assert result["version"] == 1
         assert len(result["content"]) >= 4  # Multiple blocks
@@ -443,7 +431,7 @@ def function():
 
         for markdown in malformed_cases:
             result = self.generator.markdown_to_adf(markdown)
-            
+
             # Should not crash and produce valid structure
             assert result["type"] == "doc"
             assert result["version"] == 1
@@ -458,7 +446,7 @@ def function():
         </div>"""
 
         result = self.generator.markdown_to_adf(markdown)
-        
+
         assert result["type"] == "doc"
         assert result["version"] == 1
         assert len(result["content"]) >= 1
@@ -469,14 +457,16 @@ def function():
         large_content = []
         for i in range(50):
             large_content.append(f"## Section {i}")
-            large_content.append(f"This is paragraph {i} with **bold** and *italic* text.")
+            large_content.append(
+                f"This is paragraph {i} with **bold** and *italic* text."
+            )
             large_content.append(f"- List item {i}.1")
             large_content.append(f"- List item {i}.2")
             large_content.append("")
 
         markdown = "\n".join(large_content)
         result = self.generator.markdown_to_adf(markdown)
-        
+
         assert result["type"] == "doc"
         assert result["version"] == 1
         assert len(result["content"]) >= 100  # Should have many blocks
@@ -494,7 +484,7 @@ Mathematical symbols: α β γ ∞ ≤ ≥ ±
 Languages: Español, Français, Deutsch, 日本語, العربية"""
 
         result = self.generator.markdown_to_adf(markdown)
-        
+
         assert result["type"] == "doc"
         assert result["version"] == 1
         assert len(result["content"]) >= 1
@@ -503,22 +493,22 @@ Languages: Español, Français, Deutsch, 日本語, العربية"""
         """Test error handling during conversion."""
         # Mock the markdown processor to raise an exception
         original_convert = self.generator.md.convert
-        
+
         def mock_convert_error(text):
             raise Exception("Mocked conversion error")
-        
+
         self.generator.md.convert = mock_convert_error
-        
+
         try:
             result = self.generator.markdown_to_adf("test content")
-            
+
             # Should fallback to plain text
             assert result["type"] == "doc"
             assert result["version"] == 1
             assert len(result["content"]) == 1
             assert result["content"][0]["type"] == "paragraph"
             assert "test content" in str(result["content"][0])
-            
+
         finally:
             # Restore original method
             self.generator.md.convert = original_convert
@@ -537,7 +527,7 @@ Languages: Español, Français, Deutsch, 日本語, العربية"""
 
         for markdown in test_cases:
             result = self.generator.markdown_to_adf(markdown)
-            
+
             # Validate basic ADF schema compliance
             assert isinstance(result, dict), "Result must be a dictionary"
             assert "version" in result, "Must have version field"
@@ -546,20 +536,22 @@ Languages: Español, Français, Deutsch, 日本語, العربية"""
             assert result["version"] == 1, "Version must be 1"
             assert result["type"] == "doc", "Type must be 'doc'"
             assert isinstance(result["content"], list), "Content must be a list"
-            
+
             # Validate each content block
             for block in result["content"]:
                 assert isinstance(block, dict), "Each content block must be a dict"
                 assert "type" in block, "Each block must have a type"
-                
+
                 # If block has content, validate it
                 if "content" in block:
-                    assert isinstance(block["content"], list), "Block content must be a list"
+                    assert isinstance(block["content"], list), (
+                        "Block content must be a list"
+                    )
 
     def test_performance_basic_benchmark(self):
         """Basic performance test to ensure conversion is reasonably fast."""
         import time
-        
+
         markdown = """# Performance Test Document
 
 This document contains various elements to test conversion performance:
@@ -593,12 +585,14 @@ This paragraph has **bold**, *italic*, `code`, and ~~strikethrough~~ text."""
         start_time = time.time()
         result = self.generator.markdown_to_adf(markdown)
         end_time = time.time()
-        
+
         conversion_time = end_time - start_time
-        
+
         # Should complete within reasonable time (target: <100ms for this size)
-        assert conversion_time < 0.1, f"Conversion took {conversion_time:.3f}s, should be < 0.1s"
-        
+        assert conversion_time < 0.1, (
+            f"Conversion took {conversion_time:.3f}s, should be < 0.1s"
+        )
+
         # Verify the result is valid
         assert result["type"] == "doc"
         assert len(result["content"]) >= 5  # Multiple sections

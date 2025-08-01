@@ -1,6 +1,5 @@
 """Module for Jira issue operations."""
 
-import json
 import logging
 from collections import defaultdict
 from typing import Any
@@ -35,20 +34,20 @@ class IssuesMixin(
     UsersOperationsProto,
 ):
     """Mixin for Jira issue operations."""
-    
+
     def _markdown_to_jira(self, markdown_text: str) -> str | dict[str, Any]:
         """Helper method to convert markdown to Jira format.
-        
+
         This wraps the FormattingMixin method for convenience.
-        
+
         Args:
             markdown_text: Text in Markdown format
-            
+
         Returns:
             For Cloud instances: Dictionary containing ADF JSON structure
             For Server/DC instances: String in Jira wiki markup format
         """
-        return self.markdown_to_jira(markdown_text)
+        return self._markdown_to_jira(markdown_text)
 
     def get_issue(
         self,
@@ -1021,11 +1020,11 @@ class IssuesMixin(
         Raises:
             Exception: If there is an error updating the issue
         """
-        logger.info(f"[DEBUG] JiraIssueService.update_issue called with:")
+        logger.info("[DEBUG] JiraIssueService.update_issue called with:")
         logger.info(f"[DEBUG]   issue_key: '{issue_key}'")
         logger.info(f"[DEBUG]   fields: {list(fields.keys()) if fields else 'None'}")
         logger.info(f"[DEBUG]   kwargs: {list(kwargs.keys()) if kwargs else 'None'}")
-        
+
         try:
             # Validate required fields
             if not issue_key:
@@ -1035,16 +1034,16 @@ class IssuesMixin(
             # Start with fields parameter, then merge in kwargs
             update_fields = fields.copy() if fields else {}
             attachments_result = None
-            
+
             # Extract special kwargs that need separate handling (don't modify original kwargs)
             status_value = kwargs.get("status")
             attachments_value = kwargs.get("attachments")
-            
+
             # Merge kwargs into update_fields, excluding special fields (kwargs override fields)
             for key, value in kwargs.items():
                 if key not in ["status", "attachments"]:
                     update_fields[key] = value
-            
+
             logger.debug(f"[DEBUG] Unified update_fields: {list(update_fields.keys())}")
 
             # Handle status changes first (they require special processing)
@@ -1057,16 +1056,24 @@ class IssuesMixin(
             # SINGLE PROCESSING PATH: Convert description from Markdown to Jira format if present
             if "description" in update_fields:
                 logger.info("[DEBUG] Processing description field...")
-                logger.debug(f"[DEBUG] Original description: {update_fields['description'][:200]}...")
-                
-                description_content = self._markdown_to_jira(update_fields["description"])
-                
-                logger.info(f"[DEBUG] Description content after conversion:")
+                logger.debug(
+                    f"[DEBUG] Original description: {update_fields['description'][:200]}..."
+                )
+
+                description_content = self._markdown_to_jira(
+                    update_fields["description"]
+                )
+
+                logger.info("[DEBUG] Description content after conversion:")
                 logger.info(f"[DEBUG]   Type: {type(description_content)}")
-                logger.info(f"[DEBUG]   Is dict: {isinstance(description_content, dict)}")
+                logger.info(
+                    f"[DEBUG]   Is dict: {isinstance(description_content, dict)}"
+                )
                 logger.info(f"[DEBUG]   Is str: {isinstance(description_content, str)}")
-                logger.debug(f"[DEBUG]   Content preview: {str(description_content)[:300]}...")
-                
+                logger.debug(
+                    f"[DEBUG]   Content preview: {str(description_content)[:300]}..."
+                )
+
                 # Handle both ADF (dict) and wiki markup (str) formats
                 # With the new REST client, ADF is passed as-is (dict)
                 update_fields["description"] = description_content
@@ -1087,17 +1094,18 @@ class IssuesMixin(
 
             # Process any remaining fields that need additional processing
             # (Note: description and assignee are already handled above)
-            fields_to_process = {k: v for k, v in update_fields.items() 
-                               if k not in ["description", "assignee", "status"]}
+            fields_to_process = {
+                k: v
+                for k, v in update_fields.items()
+                if k not in ["description", "assignee", "status"]
+            }
             if fields_to_process:
                 self._process_additional_fields(update_fields, fields_to_process)
 
             # Update the issue fields
             if update_fields:
                 self.jira.update_issue(
-                    issue_key=issue_key, 
-                    fields=update_fields,
-                    update=None
+                    issue_key=issue_key, fields=update_fields, update=None
                 )
 
             # Handle attachments if provided
