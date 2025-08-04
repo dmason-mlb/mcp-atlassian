@@ -362,6 +362,12 @@ def main(
             asyncio.run(main_mcp.run_async(**run_kwargs))
     except (KeyboardInterrupt, SystemExit) as e:
         logger.info(f"Server shutdown initiated: {type(e).__name__}")
+    except BrokenPipeError as e:
+        # Handle client disconnect during shutdown gracefully
+        logger.debug(f"Client disconnected during shutdown (expected): {e}")
+    except (ConnectionResetError, ConnectionAbortedError, OSError) as e:
+        # Handle other I/O errors during client disconnect
+        logger.debug(f"I/O error during client disconnect (expected): {e}")
     except Exception as e:
         logger.error(f"Server encountered an error: {e}", exc_info=True)
         sys.exit(1)
