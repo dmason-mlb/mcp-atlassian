@@ -351,7 +351,13 @@ def main(
         # For stdio transport, don't monitor stdin as MCP server handles it internally
         # This prevents race conditions where both try to read from the same stdin
         if final_transport == "stdio":
-            asyncio.run(main_mcp.run_async(**run_kwargs))
+            try:
+                asyncio.run(main_mcp.run_async(**run_kwargs))
+            except BrokenPipeError as e:
+                # Handle client disconnect during FastMCP stdio transport operations
+                logger.debug(
+                    f"FastMCP stdio transport client disconnected (expected): {e}"
+                )
         else:
             # For HTTP transports (SSE, streamable-http), don't use stdin monitoring
             # as it causes premature shutdown when the client closes stdin
@@ -359,7 +365,11 @@ def main(
             logger.debug(
                 f"Running server for {final_transport} transport without stdin monitoring"
             )
-            asyncio.run(main_mcp.run_async(**run_kwargs))
+            try:
+                asyncio.run(main_mcp.run_async(**run_kwargs))
+            except BrokenPipeError as e:
+                # Handle client disconnect during FastMCP transport operations
+                logger.debug(f"FastMCP transport client disconnected (expected): {e}")
     except (KeyboardInterrupt, SystemExit) as e:
         logger.info(f"Server shutdown initiated: {type(e).__name__}")
     except BrokenPipeError as e:
