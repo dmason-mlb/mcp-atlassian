@@ -730,6 +730,42 @@ class JiraV3Client(BaseRESTClient):
             # Return the redirect URL from Location header
             return response.headers.get("Location", "")
 
+    def add_attachment(
+        self,
+        issue_key: str,
+        filename: str,
+    ) -> dict[str, Any]:
+        """Add attachment to an issue.
+
+        Args:
+            issue_key: Issue key (e.g., 'PROJ-123')
+            filename: Path to the file to attach
+
+        Returns:
+            List of created attachments
+        """
+        import os
+
+        if not os.path.exists(filename):
+            msg = f"File not found: {filename}"
+            raise FileNotFoundError(msg)
+
+        # Prepare file for upload
+        files = {"file": (os.path.basename(filename), open(filename, "rb"))}
+
+        try:
+            response = self.session.post(
+                f"{self.base_url}/rest/api/3/issue/{issue_key}/attachments",
+                files=files,
+                headers={"X-Atlassian-Token": "no-check"},
+            )
+            response.raise_for_status()
+            return response.json()
+        finally:
+            # Make sure to close the file
+            if "file" in files:
+                files["file"][1].close()
+
     # === Bulk Operations ===
 
     def get_issues_by_keys(

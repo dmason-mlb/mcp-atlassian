@@ -406,6 +406,14 @@ class JiraAdapter:
 
     # === Attachments ===
 
+    def add_attachment(
+        self,
+        issue_key: str,
+        filename: str,
+    ) -> dict[str, Any]:
+        """Add attachment to issue."""
+        return self.client.add_attachment(issue_key=issue_key, filename=filename)
+
     def download_attachments_from_issue(
         self,
         issue_key: str,

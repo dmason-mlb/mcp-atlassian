@@ -113,34 +113,30 @@ class CommentsMixin(JiraClient):
             raise_msg = f"Error adding comment: {str(e)}"
             raise Exception(raise_msg) from e
 
-    def _markdown_to_jira(self, markdown_text: str) -> str:
+    def _markdown_to_jira(self, markdown_text: str) -> str | dict[str, Any]:
         """
         Convert Markdown syntax to Jira markup syntax.
 
         This method uses the preprocessor for consistent conversion between
-        Markdown and Jira markup. Always returns string for API compatibility.
+        Markdown and Jira markup.
 
         Args:
             markdown_text: Text in Markdown format
 
         Returns:
-            Text in Jira markup format (string for API compatibility)
+            For Cloud instances: Dictionary containing ADF JSON structure
+            For Server/DC instances: String in Jira wiki markup format
         """
         # Use the preprocessor directly for conversion
         if not markdown_text:
             return ""
 
         try:
-            # Use the preprocessor
-            result = self.preprocessor.markdown_to_jira(markdown_text)
-
-            # Handle ADF dict objects for Cloud instances
-            if isinstance(result, dict):
-                import json
-                return json.dumps(result)  # Return JSON string for API compatibility
-
-            # Return string result for Server/DC instances
-            return str(result)
+            # Use the preprocessor with return_raw_adf=True to get proper ADF dicts
+            result = self.preprocessor.markdown_to_jira(
+                markdown_text, return_raw_adf=True
+            )
+            return result
 
         except Exception:  # noqa: BLE001
             logger.warning(
