@@ -745,13 +745,19 @@ class JiraV3Client(BaseRESTClient):
             List of created attachments
         """
         import os
+        import mimetypes
 
         if not os.path.exists(filename):
             msg = f"File not found: {filename}"
             raise FileNotFoundError(msg)
 
-        # Prepare file for upload
-        files = {"file": (os.path.basename(filename), open(filename, "rb"))}
+        # Determine MIME type
+        mime_type, _ = mimetypes.guess_type(filename)
+        if not mime_type:
+            mime_type = "application/octet-stream"  # Default fallback
+
+        # Prepare file for upload with explicit MIME type
+        files = {"file": (os.path.basename(filename), open(filename, "rb"), mime_type)}
 
         try:
             response = self.session.post(

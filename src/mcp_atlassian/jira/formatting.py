@@ -83,10 +83,10 @@ class FormattingMixin(
         Args:
             markdown_text: Text in Markdown format
             return_raw_adf: If True, returns raw ADF dict for Cloud instances.
-                If False, returns JSON string for API compatibility.
+                If False, returns ADF dict for Cloud (FIXED - was JSON string).
 
         Returns:
-            For Cloud instances: ADF dict (if return_raw_adf=True) or JSON string
+            For Cloud instances: ADF dict (always returns dict, never JSON string)
             For Server/DC instances: String in Jira wiki markup format
         """
         if not markdown_text:
@@ -98,11 +98,9 @@ class FormattingMixin(
 
             # Handle ADF dict objects for Cloud instances
             if isinstance(result, dict):
-                if return_raw_adf:
-                    return result  # Return raw dict for internal use
-                else:
-                    # Return JSON string for API compatibility
-                    return self._convert_adf_to_json(result)
+                # FIXED: Always return ADF dict for Cloud instances
+                # JiraV3Client.add_comment() expects dict objects, not JSON strings
+                return result
 
             # Return string result for Server/DC instances
             return str(result)
