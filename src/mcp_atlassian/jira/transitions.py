@@ -198,23 +198,12 @@ class TransitionsMixin(JiraClient, IssueOperationsProto, UsersOperationsProto):
             if target_status_name:
                 # If we have a status name, use set_issue_status
                 logger.info(f"Using status name '{target_status_name}' for transition")
-                # Extract comment from update structure for the API call
-                comment_for_api = None
-                if update_for_api and "comment" in update_for_api:
-                    comment_entries = update_for_api["comment"]
-                    if comment_entries and isinstance(comment_entries[0], dict):
-                        comment_body = comment_entries[0].get("add", {}).get("body")
-                        if isinstance(comment_body, str):
-                            comment_for_api = comment_body
-                        elif isinstance(comment_body, dict):
-                            # Handle ADF format - convert to string representation
-                            comment_for_api = str(comment_body)
-
+                
                 self.jira.set_issue_status(
                     issue_key=issue_key,
                     status_name=target_status_name,
                     fields=fields_for_api,
-                    comment=comment_for_api,
+                    update=update_for_api,
                 )
             else:
                 # If no status name is found, try direct transition ID method

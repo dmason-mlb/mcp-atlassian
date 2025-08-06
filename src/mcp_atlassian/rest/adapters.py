@@ -163,6 +163,7 @@ class JiraAdapter:
         transition_id: str,
         fields: dict[str, Any] | None = None,
         comment: str | None = None,
+        update: dict[str, Any] | None = None,
     ) -> None:
         """Transition issue by ID."""
         comment_data = None
@@ -174,6 +175,7 @@ class JiraAdapter:
             transition_id=transition_id,
             fields=fields,
             comment=comment_data,
+            update=update,
         )
 
     def set_issue_status(
@@ -182,6 +184,7 @@ class JiraAdapter:
         status_name: str,
         fields: dict[str, Any] | None = None,
         comment: str | None = None,
+        update: dict[str, Any] | None = None,
     ) -> None:
         """Transition issue by status name."""
         # Get transitions and find matching one
@@ -193,6 +196,7 @@ class JiraAdapter:
                     transition["id"],
                     fields,
                     comment,
+                    update,
                 )
                 return
 
@@ -740,6 +744,15 @@ class ConfluenceAdapter:
         else:
             # Server/DC
             return self.client.get_user(username=username)
+
+    def get_user_details_by_accountid(self, account_id: str, expand: str | None = None) -> dict[str, Any]:
+        """Get user details by account ID."""
+        if self.cloud:
+            # Cloud primarily uses account ID
+            return self.client.get_user(account_id=account_id)
+        else:
+            # Server/DC - account ID might be treated as username
+            return self.client.get_user(username=account_id)
 
     # === Page Operations ===
 

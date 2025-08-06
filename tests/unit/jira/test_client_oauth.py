@@ -37,7 +37,7 @@ class TestJiraClientOAuth:
 
         # Mock dependencies
         with (
-            patch("mcp_atlassian.jira.client.Jira") as mock_jira,
+            patch("mcp_atlassian.jira.client.JiraAdapter") as mock_jira,
             patch(
                 "mcp_atlassian.jira.client.configure_oauth_session"
             ) as mock_configure_oauth,
@@ -123,7 +123,7 @@ class TestJiraClientOAuth:
 
         # Mock dependencies with OAuth configuration failure
         with (
-            patch("mcp_atlassian.jira.client.Jira") as mock_jira,
+            patch("mcp_atlassian.jira.client.JiraAdapter") as mock_jira,
             # Patch where the function is imported, not where it's defined
             patch(
                 "mcp_atlassian.jira.client.configure_oauth_session"
@@ -170,7 +170,7 @@ class TestJiraClientOAuth:
 
         # Mock dependencies
         with (
-            patch("mcp_atlassian.jira.client.Jira") as mock_jira,
+            patch("mcp_atlassian.jira.client.JiraAdapter") as mock_jira,
             patch(
                 "mcp_atlassian.jira.client.configure_oauth_session"
             ) as mock_configure_oauth,
@@ -236,7 +236,7 @@ class TestJiraClientOAuth:
 
         # Mock dependencies with OAuth configuration failure
         with (
-            patch("mcp_atlassian.jira.client.Jira"),  # No need to assert mock_jira
+            patch("mcp_atlassian.jira.client.JiraAdapter"),  # No need to assert mock_jira
             patch(
                 "mcp_atlassian.jira.client.configure_oauth_session"
             ) as mock_configure_oauth,
@@ -269,7 +269,7 @@ class TestJiraClientOAuth:
 
         # Mock dependencies - configure_oauth_session will be called with real logic
         with (
-            patch("mcp_atlassian.jira.client.Jira"),
+            patch("mcp_atlassian.jira.client.JiraAdapter"),
             patch("mcp_atlassian.jira.client.configure_ssl_verification"),
             # We want to test the actual behavior of configure_oauth_session here for empty token
         ):
@@ -314,7 +314,7 @@ class TestJiraClientOAuth:
             patch.object(
                 mock_oauth_config, "ensure_valid_token", return_value=True
             ) as mock_ensure_valid_env,
-            patch("mcp_atlassian.jira.client.Jira") as mock_jira,
+            patch("mcp_atlassian.jira.client.JiraAdapter") as mock_jira,
             patch(
                 "mcp_atlassian.jira.client.configure_oauth_session", return_value=True
             ) as mock_configure_oauth,
@@ -367,7 +367,7 @@ class TestJiraClientOAuth:
                 "mcp_atlassian.jira.config.get_oauth_config_from_env",
                 return_value=mock_byo_oauth_config,
             ),
-            patch("mcp_atlassian.jira.client.Jira") as mock_jira,
+            patch("mcp_atlassian.jira.client.JiraAdapter") as mock_jira,
             patch(
                 "mcp_atlassian.jira.client.configure_oauth_session", return_value=True
             ) as mock_configure_oauth,
@@ -413,6 +413,6 @@ class TestJiraClientOAuth:
         ):
             with pytest.raises(
                 ValueError,  # Adjusted to actual error raised by JiraConfig.from_env
-                match=r"Cloud authentication requires JIRA_USERNAME and JIRA_API_TOKEN, or OAuth configuration.*",
+                match=r"Cloud authentication requires JIRA_USERNAME and JIRA_API_TOKEN.*or.*OAuth configuration.*",
             ):
                 JiraClient()

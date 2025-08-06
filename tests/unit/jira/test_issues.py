@@ -256,11 +256,12 @@ class TestIssuesMixin:
         )
 
         # Verify API calls
+        # For Cloud instances, the description is converted to ADF format
         expected_fields = {
             "project": {"key": "TEST"},
             "summary": "Test Issue",
             "issuetype": {"name": "Bug"},
-            "description": "This is a test issue",
+            "description": '{"version": 1, "type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "This is a test issue"}]}]}',
         }
         issues_mixin.jira.create_issue.assert_called_once_with(fields=expected_fields)
         issues_mixin.jira.get_issue.assert_called_once_with("TEST-123")
@@ -301,11 +302,12 @@ class TestIssuesMixin:
         )
 
         # Verify API calls
+        # For Cloud instances, the description is converted to ADF format
         expected_fields = {
             "project": {"key": "TEST"},
             "summary": "Test Issue",
             "issuetype": {"name": "Bug"},
-            "description": "This is a test issue",
+            "description": '{"version": 1, "type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "This is a test issue"}]}]}',
         }
         issues_mixin.jira.create_issue.assert_called_once_with(fields=expected_fields)
 
@@ -349,7 +351,7 @@ class TestIssuesMixin:
             "project": {"key": "TEST"},
             "summary": "Test Issue",
             "issuetype": {"name": "Bug"},
-            "description": "This is a test issue",
+            "description": '{"version": 1, "type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "This is a test issue"}]}]}',
             "components": [{"name": "UI"}],
         }
         issues_mixin.jira.create_issue.assert_called_once_with(fields=expected_fields)
@@ -396,7 +398,7 @@ class TestIssuesMixin:
             "project": {"key": "TEST"},
             "summary": "Test Issue",
             "issuetype": {"name": "Bug"},
-            "description": "This is a test issue",
+            "description": '{"version": 1, "type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "This is a test issue"}]}]}',
             "components": [{"name": "UI"}, {"name": "API"}],
         }
         issues_mixin.jira.create_issue.assert_called_once_with(fields=expected_fields)
@@ -446,7 +448,7 @@ class TestIssuesMixin:
             "project": {"key": "TEST"},
             "summary": "Test Issue",
             "issuetype": {"name": "Bug"},
-            "description": "This is a test issue",
+            "description": '{"version": 1, "type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "This is a test issue"}]}]}',
             "components": [{"name": "Valid"}, {"name": "Backend"}],
         }
         issues_mixin.jira.create_issue.assert_called_once_with(fields=expected_fields)
@@ -839,7 +841,8 @@ class TestIssuesMixin:
         assert fields["project"]["key"] == "TEST"
         assert fields["summary"] == "Test Issue"
         assert fields["issuetype"]["name"] == "Bug"
-        assert fields["description"] == "This is a test issue"
+        # For Cloud instances, the description is converted to ADF format
+        assert fields["description"] == '{"version": 1, "type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "This is a test issue"}]}]}'
         assert "fixVersions" in fields
         assert fields["fixVersions"] == [{"name": "1.0.0"}]
 

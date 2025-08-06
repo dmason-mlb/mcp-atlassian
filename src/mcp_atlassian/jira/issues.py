@@ -47,7 +47,7 @@ class IssuesMixin(
             For Cloud instances: Dictionary containing ADF JSON structure
             For Server/DC instances: String in Jira wiki markup format
         """
-        return self._markdown_to_jira(markdown_text)
+        return self.markdown_to_jira(markdown_text, return_raw_adf=True)
 
     def get_issue(
         self,
