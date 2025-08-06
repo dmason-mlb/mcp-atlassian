@@ -124,7 +124,7 @@ class TestTransitionsMixin:
 
         # Verify
         transitions_mixin.jira.set_issue_status.assert_called_once_with(
-            issue_key="TEST-123", status_name="In Progress", fields=None, update=None
+            issue_key="TEST-123", status_name="In Progress", fields=None, comment=None
         )
         transitions_mixin.get_issue.assert_called_once_with("TEST-123")
         assert isinstance(result, JiraIssue)

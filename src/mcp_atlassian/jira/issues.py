@@ -1383,7 +1383,10 @@ class IssuesMixin(
         """
         try:
             self.jira.set_issue_status(
-                issue_key=issue_key, status_name=transition_id, fields=None, update=None
+                issue_key=issue_key,
+                status_name=transition_id,
+                fields=None,
+                comment=None,
             )
             return self.get_issue(issue_key)
         except Exception as e:
@@ -1445,7 +1448,9 @@ class IssuesMixin(
 
                 # Add optional fields
                 if description:
-                    fields["description"] = description
+                    # Convert description from Markdown to Jira format (ADF or wiki markup)
+                    description_content = self._markdown_to_jira(description)
+                    fields["description"] = description_content
 
                 # Add assignee if provided
                 if assignee:

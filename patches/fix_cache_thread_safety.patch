@@ -6,7 +6,7 @@
  import time
 +import threading
  from typing import Any, Literal, TypedDict
- 
+
  from cachetools import TTLCache
 @@ -58,6 +59,7 @@ class FormatRouter:
          self.adf_generator = ASTBasedADFGenerator()
@@ -18,7 +18,7 @@
              "cache_hits": 0,
 @@ -104,11 +106,13 @@ class FormatRouter:
          key = base_url.lower().strip()
-         
+
          # Check cache first
 -        cached_type = self.deployment_cache.get(key)
 -        if cached_type is not None:
@@ -31,17 +31,17 @@
 +                self.detection_metrics["cache_hits"] += 1
 +                logger.debug(f"Cache hit for {key}: {cached_type}")
 +                return cached_type
-+        
++
          self.detection_metrics["cache_misses"] += 1
-         
+
          # Normalize URL for pattern matching
 @@ -129,7 +133,8 @@ class FormatRouter:
              deployment_type = "unknown"
-         
+
          # Cache the result
 -        self.deployment_cache[key] = deployment_type
 +        with self.cache_lock:
 +            self.deployment_cache[key] = deployment_type
-         
+
          end_time = time.time()
          detection_time = end_time - start_time

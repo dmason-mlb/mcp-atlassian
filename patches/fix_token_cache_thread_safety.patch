@@ -1,22 +1,22 @@
 --- a/src/mcp_atlassian/servers/main.py
 +++ b/src/mcp_atlassian/servers/main.py
 @@ -2,6 +2,7 @@
- 
+
  import logging
  from collections.abc import AsyncIterator
 +import threading
  from contextlib import asynccontextmanager
  from typing import Any, Literal, Optional
- 
+
 @@ -202,9 +203,11 @@ class AtlassianMCP(FastMCP[MainAppContext]):
          return app
- 
- 
+
+
 +# Thread-safe token validation cache
  token_validation_cache: TTLCache[
      int, tuple[bool, str | None, JiraFetcher | None, ConfluenceFetcher | None]
  ] = TTLCache(maxsize=100, ttl=300)
 +token_cache_lock = threading.Lock()
- 
- 
+
+
  class UserTokenMiddleware(BaseHTTPMiddleware):

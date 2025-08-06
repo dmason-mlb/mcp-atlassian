@@ -244,10 +244,8 @@ class TestCommentsMixin:
 
     def test_markdown_to_jira(self, comments_mixin):
         """Test markdown to Jira conversion."""
-        # Setup - need to replace the mock entirely
-        comments_mixin.preprocessor.markdown_to_jira = MagicMock(
-            return_value="Jira text"
-        )
+        # Setup - mock the preprocessor
+        comments_mixin.preprocessor.markdown_to_jira = MagicMock(return_value="Jira text")
 
         # Call the method
         result = comments_mixin._markdown_to_jira("Markdown text")
@@ -263,7 +261,24 @@ class TestCommentsMixin:
         # Call the method with empty text
         result = comments_mixin._markdown_to_jira("")
 
-        # Verify
+        # Verify - should return empty string directly without calling preprocessor
         assert result == ""
-        # The preprocessor should not be called with empty text
         comments_mixin.preprocessor.markdown_to_jira.assert_not_called()
+
+    def test_markdown_to_jira_with_adf_dict_conversion(self, comments_mixin):
+        """Test markdown to Jira conversion when result needs dict->string conversion."""
+        # Setup - mock the preprocessor to return an ADF dict
+        adf_dict = {"type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Bold text"}]}]}
+        comments_mixin.preprocessor.markdown_to_jira = MagicMock(return_value=adf_dict)
+
+        # Call the method
+        result = comments_mixin._markdown_to_jira("**Bold text**")
+
+        # Verify - should get JSON string for API compatibility
+        import json
+        expected_json = json.dumps(adf_dict)
+        assert result == expected_json
+        assert isinstance(result, str)
+        comments_mixin.preprocessor.markdown_to_jira.assert_called_once_with(
+            "**Bold text**"
+        )

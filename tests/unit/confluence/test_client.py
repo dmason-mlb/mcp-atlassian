@@ -18,9 +18,9 @@ def test_init_with_basic_auth():
         api_token="test_token",
     )
 
-    # Mock the Confluence class, ConfluencePreprocessor, and configure_ssl_verification
+    # Mock the ConfluenceAdapter class, ConfluencePreprocessor, and configure_ssl_verification
     with (
-        patch("mcp_atlassian.confluence.client.Confluence") as mock_confluence,
+        patch("mcp_atlassian.rest.adapters.ConfluenceAdapter") as mock_confluence,
         patch(
             "mcp_atlassian.preprocessing.confluence.ConfluencePreprocessor"
         ) as mock_preprocessor,
@@ -62,9 +62,9 @@ def test_init_with_token_auth():
         ssl_verify=False,
     )
 
-    # Mock the Confluence class, ConfluencePreprocessor, and configure_ssl_verification
+    # Mock the ConfluenceAdapter class, ConfluencePreprocessor, and configure_ssl_verification
     with (
-        patch("mcp_atlassian.confluence.client.Confluence") as mock_confluence,
+        patch("mcp_atlassian.rest.adapters.ConfluenceAdapter") as mock_confluence,
         patch(
             "mcp_atlassian.preprocessing.confluence.ConfluencePreprocessor"
         ) as mock_preprocessor,
@@ -102,7 +102,7 @@ def test_init_from_env():
         patch(
             "mcp_atlassian.confluence.config.ConfluenceConfig.from_env"
         ) as mock_from_env,
-        patch("mcp_atlassian.confluence.client.Confluence") as mock_confluence,
+        patch("mcp_atlassian.rest.adapters.ConfluenceAdapter") as mock_confluence,
         patch("mcp_atlassian.preprocessing.confluence.ConfluencePreprocessor"),
         patch("mcp_atlassian.confluence.client.configure_ssl_verification"),
     ):
@@ -122,7 +122,7 @@ def test_process_html_content():
     # Arrange
     with (
         patch("mcp_atlassian.confluence.client.ConfluenceConfig.from_env"),
-        patch("mcp_atlassian.confluence.client.Confluence"),
+        patch("mcp_atlassian.rest.adapters.ConfluenceAdapter"),
         patch(
             "mcp_atlassian.preprocessing.confluence.ConfluencePreprocessor"
         ) as mock_preprocessor_class,
@@ -152,7 +152,7 @@ def test_get_user_details_by_accountid():
     # Arrange
     with (
         patch("mcp_atlassian.confluence.client.ConfluenceConfig.from_env"),
-        patch("mcp_atlassian.confluence.client.Confluence") as mock_confluence_class,
+        patch("mcp_atlassian.rest.adapters.ConfluenceAdapter") as mock_confluence_class,
         patch("mcp_atlassian.preprocessing.confluence.ConfluencePreprocessor"),
         patch("mcp_atlassian.confluence.client.configure_ssl_verification"),
     ):
@@ -202,7 +202,7 @@ def test_init_sets_proxies_and_no_proxy(monkeypatch):
     mock_session.proxies = {}  # Use a real dict for proxies
     mock_confluence._session = mock_session
     monkeypatch.setattr(
-        "mcp_atlassian.confluence.client.Confluence", lambda **kwargs: mock_confluence
+        "mcp_atlassian.rest.adapters.ConfluenceAdapter", lambda **kwargs: mock_confluence
     )
     monkeypatch.setattr(
         "mcp_atlassian.confluence.client.configure_ssl_verification",
@@ -241,7 +241,7 @@ def test_init_no_proxies(monkeypatch):
     mock_session.proxies = {}  # Use a real dict for proxies
     mock_confluence._session = mock_session
     monkeypatch.setattr(
-        "mcp_atlassian.confluence.client.Confluence", lambda **kwargs: mock_confluence
+        "mcp_atlassian.rest.adapters.ConfluenceAdapter", lambda **kwargs: mock_confluence
     )
     monkeypatch.setattr(
         "mcp_atlassian.confluence.client.configure_ssl_verification",

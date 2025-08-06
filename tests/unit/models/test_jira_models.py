@@ -38,13 +38,13 @@ from src.mcp_atlassian.models.jira import (
 
 # Optional: Import real API client for optional real-data testing
 try:
-    from atlassian import Jira
+    from mcp_atlassian.rest.adapters import JiraAdapter
 
-    from src.mcp_atlassian.jira import JiraConfig, JiraFetcher
-    from src.mcp_atlassian.jira.issues import IssuesMixin
-    from src.mcp_atlassian.jira.projects import ProjectsMixin
-    from src.mcp_atlassian.jira.transitions import TransitionsMixin
-    from src.mcp_atlassian.jira.worklog import WorklogMixin
+    from mcp_atlassian.jira import JiraConfig, JiraFetcher
+    from mcp_atlassian.jira.issues import IssuesMixin
+    from mcp_atlassian.jira.projects import ProjectsMixin
+    from mcp_atlassian.jira.transitions import TransitionsMixin
+    from mcp_atlassian.jira.worklog import WorklogMixin
 
     real_api_available = True
 except ImportError:
@@ -74,7 +74,7 @@ except ImportError:
         class WorklogMixin:
             pass
 
-        class Jira:
+        class JiraAdapter:
             pass
 
     # Assign dummy classes to module namespace
@@ -84,7 +84,7 @@ except ImportError:
     ProjectsMixin = _DummyClasses.ProjectsMixin
     TransitionsMixin = _DummyClasses.TransitionsMixin
     WorklogMixin = _DummyClasses.WorklogMixin
-    Jira = _DummyClasses.Jira
+    JiraAdapter = _DummyClasses.JiraAdapter
 
 
 class TestJiraUser:
@@ -1751,7 +1751,7 @@ class TestRealJiraData:
             pytest.skip("Real Jira environment not configured")
             return None
 
-    def _get_base_jira_client(self) -> Jira | None:
+    def _get_base_jira_client(self) -> JiraAdapter | None:
         if not real_api_available:
             return None
         try:

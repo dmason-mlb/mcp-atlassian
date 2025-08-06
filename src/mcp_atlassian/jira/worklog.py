@@ -131,7 +131,7 @@ class WorklogMixin(JiraClient):
             base_url = self.jira.resource_url("issue")
             url = f"{base_url}/{issue_key}/worklog"
 
-            result = self.jira.post(url, data=worklog_data, params=params)
+            result = self.jira.post(url, json=worklog_data, params=params)
             if not isinstance(result, dict):
                 msg = f"Unexpected return value type from `jira.post`: {type(result)}"
                 logger.error(msg)

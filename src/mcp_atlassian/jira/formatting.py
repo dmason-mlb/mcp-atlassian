@@ -3,7 +3,7 @@
 import html
 import logging
 import re
-from typing import Any
+from typing import Any, Literal, overload
 
 from ..preprocessing.jira import JiraPreprocessor
 from .client import JiraClient
@@ -45,7 +45,35 @@ class FormattingMixin(
             base_url = self.config.url
         self.preprocessor = JiraPreprocessor(base_url=base_url)
 
-    def markdown_to_jira(self, markdown_text: str) -> str | dict[str, Any]:
+    def _convert_adf_to_json(self, adf_dict: dict[str, Any]) -> str:
+        """Convert ADF dict to JSON string for API compatibility.
+
+        Args:
+            adf_dict: ADF dictionary object
+
+        Returns:
+            JSON string representation of the ADF dict
+        """
+        import json
+        return json.dumps(adf_dict)
+
+    @overload
+    def markdown_to_jira(
+        self, markdown_text: str, *, return_raw_adf: Literal[False] = ...
+    ) -> str:
+        """When return_raw_adf=False (default), always returns string."""
+        ...
+
+    @overload
+    def markdown_to_jira(
+        self, markdown_text: str, *, return_raw_adf: Literal[True]
+    ) -> str | dict[str, Any]:
+        """When return_raw_adf=True, returns dict for ADF or str for wiki."""
+        ...
+
+    def markdown_to_jira(
+        self, markdown_text: str, *, return_raw_adf: bool = False
+    ) -> str | dict[str, Any]:
         """
         Convert Markdown syntax to Jira markup syntax.
 
@@ -54,9 +82,11 @@ class FormattingMixin(
 
         Args:
             markdown_text: Text in Markdown format
+            return_raw_adf: If True, returns raw ADF dict for Cloud instances.
+                If False, returns JSON string for API compatibility.
 
         Returns:
-            For Cloud instances: Dictionary containing ADF JSON structure
+            For Cloud instances: ADF dict (if return_raw_adf=True) or JSON string
             For Server/DC instances: String in Jira wiki markup format
         """
         if not markdown_text:
@@ -64,10 +94,24 @@ class FormattingMixin(
 
         try:
             # Use the existing preprocessor
-            return self.preprocessor.markdown_to_jira(markdown_text)
+            result = self.preprocessor.markdown_to_jira(markdown_text)
 
-        except Exception as e:
-            logger.warning(f"Error converting markdown to Jira format: {str(e)}")
+            # Handle ADF dict objects for Cloud instances
+            if isinstance(result, dict):
+                if return_raw_adf:
+                    return result  # Return raw dict for internal use
+                else:
+                    # Return JSON string for API compatibility
+                    return self._convert_adf_to_json(result)
+
+            # Return string result for Server/DC instances
+            return str(result)
+
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "Error converting markdown to Jira format for text: %s",
+                markdown_text[:50] + "..." if len(markdown_text) > 50 else markdown_text
+            )
             # Return the original text if conversion fails
             return markdown_text
 
@@ -215,29 +259,30 @@ Description:
 
             # Get the epic link field ID
             epic_link_field = field_ids.get("Epic Link")
-            if (
-                epic_link_field
-                and epic_link_field in fields
-                and fields[epic_link_field]
-            ):
-                epic_info["epic_key"] = fields[epic_link_field]
+            if epic_link_field and epic_link_field in fields:
+                epic_value = fields[epic_link_field]
+                if epic_value:
+                    epic_info["epic_key"] = epic_value
 
-                # If the issue is linked to an epic, try to get the epic name
-                if epic_info["epic_key"] and hasattr(self, "get_issue"):
-                    try:
-                        epic_issue = self.get_issue(epic_info["epic_key"])
-                        epic_fields = epic_issue.get("fields", {})
+                    # If the issue is linked to an epic, try to get the epic name
+                    if hasattr(self, "get_issue") and epic_info["epic_key"]:  # type: ignore[unreachable]
+                        try:  # type: ignore[unreachable]
+                            epic_issue = self.get_issue(epic_info["epic_key"])
+                            epic_fields = epic_issue.get("fields", {})
 
-                        # Get the epic name field ID
-                        epic_name_field = field_ids.get("Epic Name")
-                        if epic_name_field and epic_name_field in epic_fields:
-                            epic_info["epic_name"] = epic_fields[epic_name_field]
+                            # Get the epic name field ID
+                            epic_name_field = field_ids.get("Epic Name")
+                            if epic_name_field and epic_name_field in epic_fields:
+                                epic_info["epic_name"] = epic_fields[epic_name_field]
 
-                    except Exception as e:
-                        logger.warning(f"Error getting epic details: {str(e)}")
+                        except Exception:  # noqa: BLE001
+                            logger.warning(
+                                "Error getting epic details for epic key: %s",
+                                epic_info["epic_key"]
+                            )
 
-        except Exception as e:
-            logger.warning(f"Error extracting epic information: {str(e)}")
+        except Exception:  # noqa: BLE001
+            logger.warning("Error extracting epic information from issue")
 
         return epic_info
 
@@ -264,8 +309,8 @@ Description:
 
             return plain_text
 
-        except Exception as e:
-            logger.warning(f"Error sanitizing HTML: {str(e)}")
+        except Exception:  # noqa: BLE001
+            logger.warning("Error sanitizing HTML content")
             return html_content
 
     def sanitize_transition_fields(self, fields: dict[str, Any]) -> dict[str, Any]:
@@ -302,9 +347,9 @@ Description:
                         account_id = self._get_account_id(value)
                         if account_id:
                             sanitized_fields[key] = {"accountId": account_id}
-                    except Exception as e:
+                    except Exception:  # noqa: BLE001
                         logger.warning(
-                            f"Error getting account ID for {value}: {str(e)}"
+                            "Error getting account ID for user: %s", value
                         )
             # All other fields pass through as is
             else:
@@ -328,8 +373,8 @@ Description:
         if not comment:
             return transition_data
 
-        # Convert markdown to Jira format
-        jira_formatted_comment = self.markdown_to_jira(comment)
+        # Convert markdown to Jira format (return ADF dict for transitions)
+        jira_formatted_comment = self.markdown_to_jira(comment, return_raw_adf=True)
 
         # Add the comment to the transition data
         transition_data["update"] = {

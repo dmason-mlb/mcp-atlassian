@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ============================================================================
 # MCP Atlassian Server Setup Script
-# 
+#
 # A platform-agnostic setup script that works on macOS, Linux, and WSL.
 # Handles environment setup, dependency installation, and configuration.
 # ============================================================================
@@ -29,7 +29,7 @@ readonly RED='\033[0;31m'
 readonly NC='\033[0m' # No Color
 
 # Configuration
-readonly VENV_PATH=".mcp-atlassian_venv"
+readonly VENV_PATH=".venv"
 
 # ----------------------------------------------------------------------------
 # Utility Functions
@@ -72,7 +72,7 @@ clear_python_cache() {
 # Get cross-platform Python executable path from venv
 get_venv_python_path() {
     local venv_path="$1"
-    
+
     # Check for both Unix and Windows Python executable paths
     if [[ -f "$venv_path/bin/python" ]]; then
         echo "$venv_path/bin/python"
@@ -87,7 +87,7 @@ get_venv_python_path() {
 detect_os() {
     case "$OSTYPE" in
         darwin*)  echo "macos" ;;
-        linux*)   
+        linux*)
             if grep -qi microsoft /proc/version 2>/dev/null; then
                 echo "wsl"
             else
@@ -102,7 +102,7 @@ detect_os() {
 # Get Claude config path based on platform
 get_claude_config_path() {
     local os_type=$(detect_os)
-    
+
     case "$os_type" in
         macos)
             echo "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
@@ -115,7 +115,7 @@ get_claude_config_path() {
             if command -v wslvar &> /dev/null; then
                 win_appdata=$(wslvar APPDATA 2>/dev/null)
             fi
-            
+
             if [[ -n "$win_appdata" ]]; then
                 echo "$(wslpath "$win_appdata")/Claude/claude_desktop_config.json"
             else
@@ -148,39 +148,40 @@ find_python() {
         # Ensure pyenv respects the local .python-version
         pyenv local &>/dev/null || true
     fi
-    
+
     # Prefer Python 3.12 for best compatibility
     local python_cmds=("python3.12" "python3.13" "python3.11" "python3.10" "python3" "python" "py")
-    
+
     for cmd in "${python_cmds[@]}"; do
         if command -v "$cmd" &> /dev/null; then
             local version=$($cmd --version 2>&1)
-            if [[ $version =~ Python\ 3\.([0-9]+)\.([0-9]+) ]]; then
+            if [[ $version =~ Python\ ([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
                 local major_version=${BASH_REMATCH[1]}
                 local minor_version=${BASH_REMATCH[2]}
-                
+                local patch_version=${BASH_REMATCH[3]}
+
                 # Check minimum version (3.10) for better library compatibility
-                if [[ $major_version -ge 10 ]]; then
+                if [[ $major_version -eq 3 && $minor_version -ge 10 ]] || [[ $major_version -gt 3 ]]; then
                     # Verify the command actually exists (important for pyenv)
                     if command -v "$cmd" &> /dev/null; then
                         echo "$cmd"
                         print_success "Found Python: $version"
-                        
+
                         # Recommend Python 3.12
-                        if [[ $major_version -ne 12 ]]; then
+                        if [[ $major_version -eq 3 && $minor_version -ne 12 ]]; then
                             print_info "Note: Python 3.12 is recommended for best compatibility."
                         fi
-                        
+
                         return 0
                     fi
                 fi
             fi
         fi
     done
-    
+
     print_error "Python 3.10+ not found. MCP Atlassian requires Python 3.10+."
     echo "" >&2
-    
+
     local os_type=$(detect_os)
     if [[ "$os_type" == "macos" ]]; then
         echo "To install Python:" >&2
@@ -192,7 +193,7 @@ find_python() {
         echo "  Arch:          sudo pacman -S python python-pip" >&2
     fi
     echo "" >&2
-    
+
     return 1
 }
 
@@ -200,12 +201,11 @@ find_python() {
 setup_venv() {
     local python_cmd="$1"
     local venv_python=""
-    local venv_pip=""
-    
+
     # Create venv if it doesn't exist
     if [[ ! -d "$VENV_PATH" ]]; then
         print_info "Creating isolated environment..."
-        
+
         # Try creating virtual environment
         if $python_cmd -m venv "$VENV_PATH" >/dev/null 2>&1; then
             print_success "Created isolated environment"
@@ -217,14 +217,14 @@ setup_venv() {
             exit 1
         fi
     fi
-    
+
     # Get venv Python path based on platform
     venv_python=$(get_venv_python_path "$VENV_PATH")
     if [[ $? -ne 0 ]]; then
         print_error "Virtual environment Python not found"
         exit 1
     fi
-    
+
     # Verify pip is working
     if ! $venv_python -m pip --version &>/dev/null 2>&1; then
         print_error "pip is not working correctly in the virtual environment"
@@ -234,9 +234,9 @@ setup_venv() {
         echo "  ./install-server.sh" >&2
         exit 1
     fi
-    
+
     print_success "Virtual environment ready with pip"
-    
+
     # Convert to absolute path for MCP registration
     local abs_venv_python=$(cd "$(dirname "$venv_python")" && pwd)/$(basename "$venv_python")
     echo "$abs_venv_python"
@@ -253,20 +253,20 @@ check_package() {
 # Install dependencies using uv
 install_dependencies() {
     local python_cmd="$1"
-    
+
     # Check if uv is available in the venv
     if ! $python_cmd -m pip show uv &>/dev/null; then
         print_info "Installing uv package manager..."
         $python_cmd -m pip install -q uv
         print_success "uv installed"
     fi
-    
+
     # Check if project dependencies are already installed
     if $python_cmd -c "import mcp_atlassian" 2>/dev/null; then
         print_success "Dependencies already installed"
         return 0
     fi
-    
+
     echo ""
     print_info "Setting up MCP Atlassian Server..."
     echo "Installing required components:"
@@ -275,17 +275,17 @@ install_dependencies() {
     echo "  • Data validation and formatting"
     echo "  • OAuth and security components"
     echo ""
-    
+
     # Use uv to install from pyproject.toml
     local install_cmd="$python_cmd -m uv sync --all-extras"
-    
+
     echo -n "Downloading packages..."
     local install_output
-    
+
     # Capture both stdout and stderr
     install_output=$($install_cmd 2>&1)
     local exit_code=$?
-    
+
     if [[ $exit_code -ne 0 ]]; then
         echo -e "\r${RED}✗ Setup failed${NC}                      "
         echo ""
@@ -311,9 +311,9 @@ setup_env_file() {
         print_success ".env file already exists"
         return 0
     fi
-    
+
     print_info "Creating .env file with example configuration..."
-    
+
     cat > .env << 'EOF'
 # Atlassian Configuration
 # Choose one authentication method and configure the appropriate settings
@@ -355,30 +355,48 @@ setup_env_file() {
 # LOG_LEVEL=INFO
 # LOG_FORMAT=json
 EOF
-    
+
     print_success "Created .env file with example configuration"
     print_warning "Please edit .env and configure your Atlassian credentials!"
-    
+
     return 0
+}
+
+# Safely parse .env file without executing arbitrary code
+parse_env_safely() {
+    local env_file=".env"
+    [[ -f "$env_file" ]] || return 0
+
+    while IFS='=' read -r key value; do
+        # Skip comments and empty lines
+        [[ $key =~ ^[[:space:]]*# ]] && continue
+        [[ -z "$key" ]] && continue
+
+        # Validate key format (only allow alphanumeric and underscore)
+        if [[ $key =~ ^[A-Z0-9_]+$ ]]; then
+            # Remove quotes from value if present
+            value=${value#\"}
+            value=${value%\"}
+            export "$key=$value"
+        fi
+    done < <(grep -E '^[A-Z0-9_]+=' "$env_file" 2>/dev/null || true)
 }
 
 # Validate configuration
 validate_config() {
     local has_config=false
-    
-    # Source the .env file to check values
+
+    # Safely parse the .env file to check values
     if [[ -f .env ]]; then
-        set -a
-        source .env 2>/dev/null || true
-        set +a
+        parse_env_safely
     fi
-    
+
     # Check for any valid authentication method
     if [[ -n "${ATLASSIAN_URL:-}" ]]; then
         print_success "ATLASSIAN_URL configured"
         has_config=true
-        
-        if [[ -n "${ATLASSIAN_TOKEN:-}" && -n "${ATLASSIAN_USERNAME:-}" ]]; then
+
+        if [[ -n "${ATLASSIAN_TOKEN:-}${ATLASSIAN_API_TOKEN:-}" && -n "${ATLASSIAN_USERNAME:-}${ATLASSIAN_EMAIL:-}" ]]; then
             print_success "API Token authentication configured"
         elif [[ -n "${ATLASSIAN_PAT:-}" ]]; then
             print_success "Personal Access Token authentication configured"
@@ -388,7 +406,7 @@ validate_config() {
             has_config=false
         fi
     fi
-    
+
     if [[ "$has_config" == false ]]; then
         print_error "Atlassian credentials not found in .env!"
         echo "" >&2
@@ -410,7 +428,7 @@ validate_config() {
         echo "" >&2
         return 1
     fi
-    
+
     return 0
 }
 
@@ -424,38 +442,42 @@ update_ide_config() {
     local config_path="$2"
     local python_cmd="$3"
     local server_args="$4"
-    
+
     # Create config directory if it doesn't exist
     local config_dir=$(dirname "$config_path")
     mkdir -p "$config_dir" 2>/dev/null || true
-    
+
     # Handle existing config
     if [[ -f "$config_path" ]]; then
-        # Add new config with duplicate detection
+        # Add new config with duplicate detection - consolidated atomic operation
         local temp_file=$(mktemp)
-        python3 -c "
+        local python_output=$("$python_cmd" -c "
 import json
 import sys
 
+config_path = '$config_path'
+temp_file = '$temp_file'
+
 try:
-    with open('$config_path', 'r') as f:
+    with open(config_path, 'r') as f:
         config = json.load(f)
 except Exception as e:
-    print('Warning: Could not parse existing config file, creating new one')
-    config = {}
+    print(f'ERROR: Could not parse existing config file: {e}')
+    print('Backup your config before running this script again.')
+    sys.exit(1)
 
 # Ensure mcpServers exists
 if 'mcpServers' not in config:
     config['mcpServers'] = {}
 
-# Check if mcp-atlassian server already exists
+# Check if atlassian server already exists
 new_config = {
     'command': '$python_cmd',
-    'args': ['$server_args']
+    'args': '$server_args'.split(',')
 }
 
-if 'mcp-atlassian' in config['mcpServers']:
-    existing_config = config['mcpServers']['mcp-atlassian']
+if 'atlassian' in config['mcpServers']:
+    existing_config = config['mcpServers']['atlassian']
     if existing_config == new_config:
         print('ALREADY_CONFIGURED')
         sys.exit(0)
@@ -466,67 +488,41 @@ if 'mcp-atlassian' in config['mcpServers']:
 else:
     print('ADDING_NEW')
 
-# Add/update mcp-atlassian server
-config['mcpServers']['mcp-atlassian'] = new_config
+# Add/update atlassian server
+config['mcpServers']['atlassian'] = new_config
 
-with open('$temp_file', 'w') as f:
-    json.dump(config, f, indent=2)
-" 2>/dev/null
-        
-        local python_exit_code=$?
-        local python_output=$(python3 -c "
-import json
-import sys
-
+# Write to temp file atomically
 try:
-    with open('$config_path', 'r') as f:
-        config = json.load(f)
+    with open(temp_file, 'w') as f:
+        json.dump(config, f, indent=2)
+    print('SUCCESS')
 except Exception as e:
-    print('Warning: Could not parse existing config file, creating new one')
-    config = {}
-
-# Ensure mcpServers exists
-if 'mcpServers' not in config:
-    config['mcpServers'] = {}
-
-# Check if mcp-atlassian server already exists
-new_config = {
-    'command': '$python_cmd',
-    'args': ['$server_args']
-}
-
-if 'mcp-atlassian' in config['mcpServers']:
-    existing_config = config['mcpServers']['mcp-atlassian']
-    if existing_config == new_config:
-        print('ALREADY_CONFIGURED')
-        sys.exit(0)
-    else:
-        print('UPDATING_EXISTING')
-else:
-    print('ADDING_NEW')
-
-# Add/update mcp-atlassian server
-config['mcpServers']['mcp-atlassian'] = new_config
-
-with open('$temp_file', 'w') as f:
-    json.dump(config, f, indent=2)
+    print(f'ERROR: Failed to write config: {e}')
+    sys.exit(1)
 " 2>&1)
-        
+
+        local python_exit_code=$?
+
         # Handle different scenarios based on Python output
         if [[ "$python_output" == "ALREADY_CONFIGURED" ]]; then
             print_success "$ide_name configuration is already up to date"
             echo "  Config: $config_path"
             rm -f "$temp_file" 2>/dev/null || true
             return 0
-        elif [[ "$python_output" == "UPDATING_EXISTING" ]]; then
-            print_info "Updating existing $ide_name 'mcp-atlassian' server configuration..."
+        elif echo "$python_output" | grep -q "UPDATING_EXISTING"; then
+            print_info "Updating existing $ide_name 'atlassian' server configuration..."
             echo "  Previous configuration will be overwritten"
-        elif [[ "$python_output" == "ADDING_NEW" ]]; then
-            print_info "Adding 'mcp-atlassian' server to existing $ide_name configuration..."
+        elif echo "$python_output" | grep -q "ADDING_NEW"; then
+            print_info "Adding 'atlassian' server to existing $ide_name configuration..."
+        elif echo "$python_output" | grep -q "ERROR:"; then
+            print_error "Python configuration error:"
+            echo "$python_output" >&2
+            rm -f "$temp_file" 2>/dev/null || true
+            return 1
         else
             print_info "Updating existing $ide_name config..."
         fi
-        
+
         # Move temp file to final location if Python succeeded
         if [[ $python_exit_code -eq 0 ]] && [[ -f "$temp_file" ]] && mv "$temp_file" "$config_path"; then
             print_success "Successfully configured $ide_name"
@@ -540,7 +536,7 @@ with open('$temp_file', 'w') as f:
             cat << EOF
 {
   "mcpServers": {
-    "mcp-atlassian": {
+    "atlassian": {
       "command": "$python_cmd",
       "args": ["$server_args"]
     }
@@ -548,20 +544,20 @@ with open('$temp_file', 'w') as f:
 }
 EOF
         fi
-        
+
     else
         print_info "Creating new $ide_name config..."
         cat > "$config_path" << EOF
 {
   "mcpServers": {
-    "mcp-atlassian": {
+    "atlassian": {
       "command": "$python_cmd",
       "args": ["$server_args"]
     }
   }
 }
 EOF
-        
+
         if [[ $? -eq 0 ]]; then
             print_success "Successfully configured $ide_name"
             echo "  Config: $config_path"
@@ -573,7 +569,7 @@ EOF
             cat << EOF
 {
   "mcpServers": {
-    "mcp-atlassian": {
+    "atlassian": {
       "command": "$python_cmd",
       "args": ["$server_args"]
     }
@@ -588,13 +584,13 @@ EOF
 check_claude_desktop_integration() {
     local python_cmd="$1"
     local server_args="$2"
-    
+
     local config_path=$(get_claude_config_path)
     if [[ -z "$config_path" ]]; then
         print_warning "Unable to determine Claude Desktop config path for this platform"
         return 0
     fi
-    
+
     echo ""
     read -p "Configure MCP Atlassian for Claude Desktop? (Y/n): " -n 1 -r
     echo ""
@@ -602,7 +598,7 @@ check_claude_desktop_integration() {
         print_info "Skipping Claude Desktop integration"
         return 0
     fi
-    
+
     # Use shared configuration function
     update_ide_config "Claude Desktop" "$config_path" "$python_cmd" "$server_args"
 }
@@ -611,9 +607,9 @@ check_claude_desktop_integration() {
 check_cursor_ide_integration() {
     local python_cmd="$1"
     local server_args="$2"
-    
+
     local config_path=$(get_cursor_config_path)
-    
+
     echo ""
     read -p "Configure MCP Atlassian for Cursor IDE? (Y/n): " -n 1 -r
     echo ""
@@ -621,7 +617,7 @@ check_cursor_ide_integration() {
         print_info "Skipping Cursor IDE integration"
         return 0
     fi
-    
+
     # Use shared configuration function
     update_ide_config "Cursor IDE" "$config_path" "$python_cmd" "$server_args"
 }
@@ -630,7 +626,7 @@ check_cursor_ide_integration() {
 display_config_instructions() {
     local python_cmd="$1"
     local server_args="$2"
-    
+
     echo ""
     local config_header="MCP ATLASSIAN SERVER CONFIGURATION"
     echo "===== $config_header ====="
@@ -638,21 +634,21 @@ display_config_instructions() {
     echo ""
     echo "To use MCP Atlassian Server with your Claude clients:"
     echo ""
-    
+
     print_info "1. For Claude Desktop:"
     echo "   Add this configuration to your Claude Desktop config file:"
     echo ""
     cat << EOF
    {
      "mcpServers": {
-       "mcp-atlassian": {
+       "atlassian": {
          "command": "$python_cmd",
          "args": ["$server_args"]
        }
      }
    }
 EOF
-    
+
     # Show platform-specific config location
     local config_path=$(get_claude_config_path)
     if [[ -n "$config_path" ]]; then
@@ -660,7 +656,7 @@ EOF
         print_info "   Config file location:"
         echo -e "   ${YELLOW}$config_path${NC}"
     fi
-    
+
     echo ""
     print_info "2. For Cursor IDE:"
     echo "   Add this configuration to your Cursor IDE config file:"
@@ -668,23 +664,23 @@ EOF
     cat << EOF
    {
      "mcpServers": {
-       "mcp-atlassian": {
+       "atlassian": {
          "command": "$python_cmd",
          "args": ["$server_args"]
        }
      }
    }
 EOF
-    
+
     local cursor_config_path=$(get_cursor_config_path)
     echo ""
     print_info "   Config file location:"
     echo -e "   ${YELLOW}$cursor_config_path${NC}"
     echo ""
-    
+
     print_info "3. Restart Claude Desktop/Cursor IDE after updating config files"
     echo ""
-    
+
     print_info "4. For FastMCP CLI:"
     echo -e "   ${GREEN}fastmcp run mcp-atlassian${NC}"
     echo ""
@@ -694,7 +690,7 @@ EOF
 display_setup_instructions() {
     local python_cmd="$1"
     local server_args="$2"
-    
+
     echo ""
     local setup_header="SETUP COMPLETE"
     echo "===== $setup_header ====="
@@ -715,7 +711,7 @@ display_setup_instructions() {
     echo "  $python_cmd -m mcp_atlassian --oauth-setup -v"
     echo ""
     print_info "FastMCP CLI:"
-    echo "  fastmcp run mcp-atlassian"
+    echo "  fastmcp run atlassian"
     echo ""
 }
 
@@ -742,13 +738,13 @@ show_help() {
     echo "  $0 --clear-cache Clear Python cache (fixes import issues)"
     echo ""
     echo "For more information, visit:"
-    echo "  https://github.com/your-username/mcp-atlassian"
+    echo "  https://github.com/douglas-mason/mcp-atlassian"
 }
 
 main() {
     # Parse command line arguments
     local arg="${1:-}"
-    
+
     case "$arg" in
         -h|--help)
             show_help
@@ -761,7 +757,7 @@ main() {
             local python_cmd
             python_cmd=$(find_python) || exit 1
             python_cmd=$(setup_venv "$python_cmd") || exit 1
-            local server_args="-m mcp_atlassian"
+            local server_args="-m,mcp_atlassian"
             display_config_instructions "$python_cmd" "$server_args"
             exit 0
             ;;
@@ -783,38 +779,38 @@ main() {
             exit 1
             ;;
     esac
-    
+
     # Display header
     local main_header="🔧 MCP Atlassian Server Setup"
     echo "$main_header"
     printf '%*s\n' "${#main_header}" | tr ' ' '='
     echo ""
-    
+
     # Check if venv exists
     if [[ ! -d "$VENV_PATH" ]]; then
         echo "Setting up Python environment for first time..."
     fi
-    
+
     # Step 1: Clear Python cache to prevent import issues
     clear_python_cache
-    
+
     # Step 2: Setup environment file
     setup_env_file || exit 1
-    
+
     # Step 3: Setup Python environment
     local python_cmd
     python_cmd=$(find_python) || exit 1
     python_cmd=$(setup_venv "$python_cmd") || exit 1
-    
+
     # Step 4: Install dependencies
     install_dependencies "$python_cmd" || exit 1
-    
+
     # Step 5: Set server args
-    local server_args="-m mcp_atlassian"
-    
+    local server_args="-m,mcp_atlassian"
+
     # Step 6: Display setup instructions
     display_setup_instructions "$python_cmd" "$server_args"
-    
+
     # Step 7: Validate configuration (but don't fail if not configured yet)
     echo ""
     print_info "Checking configuration..."
@@ -823,13 +819,13 @@ main() {
     else
         print_warning "Please configure your Atlassian credentials in .env before using the server"
     fi
-    
+
     # Step 8: Check Claude Desktop integration
     check_claude_desktop_integration "$python_cmd" "$server_args"
-    
+
     # Step 9: Check Cursor IDE integration
     check_cursor_ide_integration "$python_cmd" "$server_args"
-    
+
     echo ""
     echo "To show config: ./install-server.sh -c"
     echo ""

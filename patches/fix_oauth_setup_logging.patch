@@ -1,9 +1,9 @@
 --- a/src/mcp_atlassian/utils/oauth_setup.py
 +++ b/src/mcp_atlassian/utils/oauth_setup.py
 @@ -12,6 +12,7 @@ from pathlib import Path
- 
+
  import click
- 
+
 +from mcp_atlassian.utils.logging import mask_sensitive
  from mcp_atlassian.utils.oauth import (
      ATLASSIAN_API_URL,

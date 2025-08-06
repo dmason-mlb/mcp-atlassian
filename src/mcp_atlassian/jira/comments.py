@@ -3,6 +3,7 @@
 import logging
 from typing import Any
 
+from ..preprocessing.jira import JiraPreprocessor
 from ..utils import parse_date
 from .client import JiraClient
 
@@ -11,6 +12,22 @@ logger = logging.getLogger("mcp-jira")
 
 class CommentsMixin(JiraClient):
     """Mixin for Jira comment operations."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize the CommentsMixin.
+
+        Args:
+            *args: Positional arguments for the JiraClient
+            **kwargs: Keyword arguments for the JiraClient
+        """
+        super().__init__(*args, **kwargs)
+
+        # Initialize preprocessor if not already set
+        if not hasattr(self, 'preprocessor') or not self.preprocessor:
+            base_url = ""
+            if hasattr(self, "config") and hasattr(self.config, "url"):
+                base_url = self.config.url
+            self.preprocessor = JiraPreprocessor(base_url=base_url)
 
     def get_issue_comments(
         self, issue_key: str, limit: int = 50
@@ -32,7 +49,10 @@ class CommentsMixin(JiraClient):
             comments = self.jira.issue_get_comments(issue_key)
 
             if not isinstance(comments, dict):
-                msg = f"Unexpected return value type from `jira.issue_get_comments`: {type(comments)}"
+                msg = (
+                    "Unexpected return value type from "
+                    f"`jira.issue_get_comments`: {type(comments)}"
+                )
                 logger.error(msg)
                 raise TypeError(msg)
 
@@ -49,8 +69,10 @@ class CommentsMixin(JiraClient):
 
             return processed_comments
         except Exception as e:
-            logger.error(f"Error getting comments for issue {issue_key}: {str(e)}")
-            raise Exception(f"Error getting comments: {str(e)}") from e
+            error_msg = f"Error getting comments for issue {issue_key}: {str(e)}"
+            logger.error(error_msg)
+            raise_msg = f"Error getting comments: {str(e)}"
+            raise Exception(raise_msg) from e
 
     def add_comment(self, issue_key: str, comment: str) -> dict[str, Any]:
         """
@@ -72,7 +94,10 @@ class CommentsMixin(JiraClient):
 
             result = self.jira.issue_add_comment(issue_key, jira_formatted_comment)
             if not isinstance(result, dict):
-                msg = f"Unexpected return value type from `jira.issue_add_comment`: {type(result)}"
+                msg = (
+                    "Unexpected return value type from "
+                    f"`jira.issue_add_comment`: {type(result)}"
+                )
                 logger.error(msg)
                 raise TypeError(msg)
 
@@ -83,29 +108,44 @@ class CommentsMixin(JiraClient):
                 "author": result.get("author", {}).get("displayName", "Unknown"),
             }
         except Exception as e:
-            logger.error(f"Error adding comment to issue {issue_key}: {str(e)}")
-            raise Exception(f"Error adding comment: {str(e)}") from e
+            error_msg = f"Error adding comment to issue {issue_key}: {str(e)}"
+            logger.error(error_msg)
+            raise_msg = f"Error adding comment: {str(e)}"
+            raise Exception(raise_msg) from e
 
     def _markdown_to_jira(self, markdown_text: str) -> str:
         """
         Convert Markdown syntax to Jira markup syntax.
 
-        This method uses the TextPreprocessor implementation for consistent
-        conversion between Markdown and Jira markup.
+        This method uses the preprocessor for consistent conversion between
+        Markdown and Jira markup. Always returns string for API compatibility.
 
         Args:
             markdown_text: Text in Markdown format
 
         Returns:
-            Text in Jira markup format
+            Text in Jira markup format (string for API compatibility)
         """
+        # Use the preprocessor directly for conversion
         if not markdown_text:
             return ""
 
-        # Use the existing preprocessor
         try:
-            return self.preprocessor.markdown_to_jira(markdown_text)
-        except Exception as e:
-            logger.warning(f"Error converting markdown to Jira format: {str(e)}")
+            # Use the preprocessor
+            result = self.preprocessor.markdown_to_jira(markdown_text)
+
+            # Handle ADF dict objects for Cloud instances
+            if isinstance(result, dict):
+                import json
+                return json.dumps(result)  # Return JSON string for API compatibility
+
+            # Return string result for Server/DC instances
+            return str(result)
+
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "Error converting markdown to Jira format for text: %s",
+                markdown_text[:50] + "..." if len(markdown_text) > 50 else markdown_text
+            )
             # Return the original text if conversion fails
             return markdown_text

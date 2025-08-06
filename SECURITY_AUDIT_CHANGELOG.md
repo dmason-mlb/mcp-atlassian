@@ -107,7 +107,7 @@ During the audit, many pre-existing test failures were discovered in the test su
 
 This security audit successfully identified and fixed 4 critical to medium severity vulnerabilities:
 - 2 instances of secret exposure in logs
-- 1 PII/sensitive data logging issue  
+- 1 PII/sensitive data logging issue
 - 2 thread safety vulnerabilities
 - 1 exception handling issue
 
