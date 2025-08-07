@@ -244,7 +244,9 @@ def test_init_sets_proxies_and_no_proxy(monkeypatch):
     mock_session = MagicMock()
     mock_session.proxies = {}  # Use a real dict for proxies
     mock_jira._session = mock_session
-    monkeypatch.setattr("mcp_atlassian.jira.client.JiraAdapter", lambda **kwargs: mock_jira)
+    monkeypatch.setattr(
+        "mcp_atlassian.jira.client.JiraAdapter", lambda **kwargs: mock_jira
+    )
     monkeypatch.setattr(
         "mcp_atlassian.jira.client.configure_ssl_verification", lambda **kwargs: None
     )
@@ -276,7 +278,9 @@ def test_init_no_proxies(monkeypatch):
     mock_session = MagicMock()
     mock_session.proxies = {}  # Use a real dict for proxies
     mock_jira._session = mock_session
-    monkeypatch.setattr("mcp_atlassian.jira.client.JiraAdapter", lambda **kwargs: mock_jira)
+    monkeypatch.setattr(
+        "mcp_atlassian.jira.client.JiraAdapter", lambda **kwargs: mock_jira
+    )
     monkeypatch.setattr(
         "mcp_atlassian.jira.client.configure_ssl_verification", lambda **kwargs: None
     )

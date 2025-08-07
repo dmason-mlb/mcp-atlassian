@@ -753,7 +753,9 @@ class ConfluenceAdapter:
             # Server/DC
             return self.client.get_user(username=username)
 
-    def get_user_details_by_accountid(self, account_id: str, expand: str | None = None) -> dict[str, Any]:
+    def get_user_details_by_accountid(
+        self, account_id: str, expand: str | None = None
+    ) -> dict[str, Any]:
         """Get user details by account ID."""
         if self.cloud:
             # Cloud primarily uses account ID

@@ -251,7 +251,7 @@ class TestExceptionHandling:
                     url="https://test.atlassian.net",
                     username="test@example.com",
                     api_token="test-token",
-                    auth_type="basic"
+                    auth_type="basic",
                 )
             )
         }
@@ -261,12 +261,18 @@ class TestExceptionHandling:
         mock_request.state.user_atlassian_token = "expired-oauth-token"
         mock_request.state.user_atlassian_email = "user@example.com"
 
-        with patch("mcp_atlassian.servers.dependencies.get_http_request") as mock_get_http:
+        with patch(
+            "mcp_atlassian.servers.dependencies.get_http_request"
+        ) as mock_get_http:
             mock_get_http.return_value = mock_request
 
-            with patch("mcp_atlassian.servers.dependencies.JiraFetcher") as MockJiraFetcher:
+            with patch(
+                "mcp_atlassian.servers.dependencies.JiraFetcher"
+            ) as MockJiraFetcher:
                 # Simulate authentication failure
-                MockJiraFetcher.side_effect = MCPAtlassianAuthenticationError("OAuth token expired")
+                MockJiraFetcher.side_effect = MCPAtlassianAuthenticationError(
+                    "OAuth token expired"
+                )
 
                 # FIXED: Now properly awaited
                 with pytest.raises(ValueError) as exc_info:
@@ -286,7 +292,7 @@ class TestExceptionHandling:
                     url="https://test.atlassian.net/wiki",
                     username="test@example.com",
                     api_token="test-token",
-                    auth_type="basic"
+                    auth_type="basic",
                 )
             )
         }
@@ -294,11 +300,17 @@ class TestExceptionHandling:
         mock_request.state.user_atlassian_auth_type = "pat"
         mock_request.state.user_atlassian_token = "invalid-pat-token"
 
-        with patch("mcp_atlassian.servers.dependencies.get_http_request") as mock_get_http:
+        with patch(
+            "mcp_atlassian.servers.dependencies.get_http_request"
+        ) as mock_get_http:
             mock_get_http.return_value = mock_request
 
-            with patch("mcp_atlassian.servers.dependencies.ConfluenceFetcher") as MockConfluenceFetcher:
-                MockConfluenceFetcher.side_effect = MCPAtlassianAuthenticationError("PAT authentication failed")
+            with patch(
+                "mcp_atlassian.servers.dependencies.ConfluenceFetcher"
+            ) as MockConfluenceFetcher:
+                MockConfluenceFetcher.side_effect = MCPAtlassianAuthenticationError(
+                    "PAT authentication failed"
+                )
 
                 with pytest.raises(ValueError) as exc_info:
                     await get_confluence_fetcher(confluence_context)
@@ -318,7 +330,9 @@ class TestExceptionHandling:
         empty_context = MagicMock()
         empty_context.request_context.lifespan_context = {}
 
-        with patch("mcp_atlassian.servers.dependencies.get_http_request") as mock_get_http:
+        with patch(
+            "mcp_atlassian.servers.dependencies.get_http_request"
+        ) as mock_get_http:
             # Mock RuntimeError (not in HTTP context)
             mock_get_http.side_effect = RuntimeError("Not in HTTP context")
 

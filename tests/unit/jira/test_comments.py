@@ -245,7 +245,9 @@ class TestCommentsMixin:
     def test_markdown_to_jira(self, comments_mixin):
         """Test markdown to Jira conversion."""
         # Setup - mock the preprocessor
-        comments_mixin.preprocessor.markdown_to_jira = MagicMock(return_value="Jira text")
+        comments_mixin.preprocessor.markdown_to_jira = MagicMock(
+            return_value="Jira text"
+        )
 
         # Call the method
         result = comments_mixin._markdown_to_jira("Markdown text")
@@ -268,7 +270,15 @@ class TestCommentsMixin:
     def test_markdown_to_jira_with_adf_dict_conversion(self, comments_mixin):
         """Test markdown to Jira conversion when result needs dict->string conversion."""
         # Setup - mock the preprocessor to return an ADF dict
-        adf_dict = {"type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Bold text"}]}]}
+        adf_dict = {
+            "type": "doc",
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [{"type": "text", "text": "Bold text"}],
+                }
+            ],
+        }
         comments_mixin.preprocessor.markdown_to_jira = MagicMock(return_value=adf_dict)
 
         # Call the method
@@ -276,6 +286,7 @@ class TestCommentsMixin:
 
         # Verify - should get JSON string for API compatibility
         import json
+
         expected_json = json.dumps(adf_dict)
         assert result == expected_json
         assert isinstance(result, str)

@@ -51,7 +51,7 @@ servers/jira/
 ```python
 # Extract specialized mixins:
 class IssueCreationMixin     # create_issue, batch_create
-class IssueUpdateMixin       # update_issue, transition_issue  
+class IssueUpdateMixin       # update_issue, transition_issue
 class IssueSearchMixin       # search, get_issue, get_transitions
 class IssueLinkingMixin      # link operations, epic linking
 ```
@@ -85,7 +85,7 @@ class IssueLinkingMixin      # link operations, epic linking
 servers/confluence/
 ├── __init__.py
 ├── pages.py            # Page CRUD operations
-├── search.py           # Search and user operations  
+├── search.py           # Search and user operations
 └── management.py       # Spaces, comments, labels
 ```
 

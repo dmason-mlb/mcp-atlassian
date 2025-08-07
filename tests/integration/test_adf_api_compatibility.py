@@ -9,7 +9,7 @@ import os
 
 import pytest
 
-from mcp_atlassian.formatting.adf import ADFGenerator
+from mcp_atlassian.formatting.adf_ast import ASTBasedADFGenerator as ADFGenerator
 from mcp_atlassian.formatting.router import FormatRouter
 
 

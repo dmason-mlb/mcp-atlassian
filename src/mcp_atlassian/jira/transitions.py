@@ -198,7 +198,7 @@ class TransitionsMixin(JiraClient, IssueOperationsProto, UsersOperationsProto):
             if target_status_name:
                 # If we have a status name, use set_issue_status
                 logger.info(f"Using status name '{target_status_name}' for transition")
-                
+
                 self.jira.set_issue_status(
                     issue_key=issue_key,
                     status_name=target_status_name,

@@ -55,6 +55,7 @@ class FormattingMixin(
             JSON string representation of the ADF dict
         """
         import json
+
         return json.dumps(adf_dict)
 
     @overload
@@ -108,7 +109,9 @@ class FormattingMixin(
         except Exception:  # noqa: BLE001
             logger.warning(
                 "Error converting markdown to Jira format for text: %s",
-                markdown_text[:50] + "..." if len(markdown_text) > 50 else markdown_text
+                markdown_text[:50] + "..."
+                if len(markdown_text) > 50
+                else markdown_text,
             )
             # Return the original text if conversion fails
             return markdown_text
@@ -276,7 +279,7 @@ Description:
                         except Exception:  # noqa: BLE001
                             logger.warning(
                                 "Error getting epic details for epic key: %s",
-                                epic_info["epic_key"]
+                                epic_info["epic_key"],
                             )
 
         except Exception:  # noqa: BLE001
@@ -346,9 +349,7 @@ Description:
                         if account_id:
                             sanitized_fields[key] = {"accountId": account_id}
                     except Exception:  # noqa: BLE001
-                        logger.warning(
-                            "Error getting account ID for user: %s", value
-                        )
+                        logger.warning("Error getting account ID for user: %s", value)
             # All other fields pass through as is
             else:
                 sanitized_fields[key] = value

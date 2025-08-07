@@ -1,6 +1,6 @@
 """Test ADF schema validation functionality."""
 
-from src.mcp_atlassian.formatting.adf import ADFGenerator
+from src.mcp_atlassian.formatting.adf_ast import ASTBasedADFGenerator as ADFGenerator
 from src.mcp_atlassian.formatting.adf_validator import (
     ADFValidator,
     get_validation_level,

@@ -158,7 +158,9 @@ def test_get_user_details_by_accountid():
     )
 
     with (
-        patch("mcp_atlassian.confluence.client.ConfluenceAdapter") as mock_confluence_class,
+        patch(
+            "mcp_atlassian.confluence.client.ConfluenceAdapter"
+        ) as mock_confluence_class,
         patch("mcp_atlassian.preprocessing.confluence.ConfluencePreprocessor"),
         patch("mcp_atlassian.confluence.client.configure_ssl_verification"),
     ):
@@ -208,7 +210,8 @@ def test_init_sets_proxies_and_no_proxy(monkeypatch):
     mock_session.proxies = {}  # Use a real dict for proxies
     mock_confluence._session = mock_session
     monkeypatch.setattr(
-        "mcp_atlassian.confluence.client.ConfluenceAdapter", lambda **kwargs: mock_confluence
+        "mcp_atlassian.confluence.client.ConfluenceAdapter",
+        lambda **kwargs: mock_confluence,
     )
     monkeypatch.setattr(
         "mcp_atlassian.confluence.client.configure_ssl_verification",
@@ -247,7 +250,8 @@ def test_init_no_proxies(monkeypatch):
     mock_session.proxies = {}  # Use a real dict for proxies
     mock_confluence._session = mock_session
     monkeypatch.setattr(
-        "mcp_atlassian.confluence.client.ConfluenceAdapter", lambda **kwargs: mock_confluence
+        "mcp_atlassian.confluence.client.ConfluenceAdapter",
+        lambda **kwargs: mock_confluence,
     )
     monkeypatch.setattr(
         "mcp_atlassian.confluence.client.configure_ssl_verification",

@@ -43,7 +43,7 @@ The Atlassian MCP `jira_add_comment` tool exhibits inconsistent behavior with ma
 **What Failed**: Complex formatting, some emojis
 
 ### Attempt 3: Plain Text with Structured Content
-**Status**: Failed  
+**Status**: Failed
 **API Response**: `Error adding comment: expected string or bytes-like object, got 'dict'`
 **Actual Result**: Comment was created with minimal formatting
 

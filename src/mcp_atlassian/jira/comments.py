@@ -23,7 +23,7 @@ class CommentsMixin(JiraClient):
         super().__init__(*args, **kwargs)
 
         # Initialize preprocessor if not already set
-        if not hasattr(self, 'preprocessor') or not self.preprocessor:
+        if not hasattr(self, "preprocessor") or not self.preprocessor:
             base_url = ""
             if hasattr(self, "config") and hasattr(self.config, "url"):
                 base_url = self.config.url
@@ -141,7 +141,9 @@ class CommentsMixin(JiraClient):
         except Exception:  # noqa: BLE001
             logger.warning(
                 "Error converting markdown to Jira format for text: %s",
-                markdown_text[:50] + "..." if len(markdown_text) > 50 else markdown_text
+                markdown_text[:50] + "..."
+                if len(markdown_text) > 50
+                else markdown_text,
             )
             # Return the original text if conversion fails
             return markdown_text

@@ -236,7 +236,9 @@ class TestJiraClientOAuth:
 
         # Mock dependencies with OAuth configuration failure
         with (
-            patch("mcp_atlassian.jira.client.JiraAdapter"),  # No need to assert mock_jira
+            patch(
+                "mcp_atlassian.jira.client.JiraAdapter"
+            ),  # No need to assert mock_jira
             patch(
                 "mcp_atlassian.jira.client.configure_oauth_session"
             ) as mock_configure_oauth,

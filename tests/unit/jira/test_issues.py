@@ -842,7 +842,10 @@ class TestIssuesMixin:
         assert fields["summary"] == "Test Issue"
         assert fields["issuetype"]["name"] == "Bug"
         # For Cloud instances, the description is converted to ADF format
-        assert fields["description"] == '{"version": 1, "type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "This is a test issue"}]}]}'
+        assert (
+            fields["description"]
+            == '{"version": 1, "type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "This is a test issue"}]}]}'
+        )
         assert "fixVersions" in fields
         assert fields["fixVersions"] == [{"name": "1.0.0"}]
 

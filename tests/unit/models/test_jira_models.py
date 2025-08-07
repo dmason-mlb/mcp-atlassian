@@ -38,13 +38,12 @@ from src.mcp_atlassian.models.jira import (
 
 # Optional: Import real API client for optional real-data testing
 try:
-    from mcp_atlassian.rest.adapters import JiraAdapter
-
     from mcp_atlassian.jira import JiraConfig, JiraFetcher
     from mcp_atlassian.jira.issues import IssuesMixin
     from mcp_atlassian.jira.projects import ProjectsMixin
     from mcp_atlassian.jira.transitions import TransitionsMixin
     from mcp_atlassian.jira.worklog import WorklogMixin
+    from mcp_atlassian.rest.adapters import JiraAdapter
 
     real_api_available = True
 except ImportError:

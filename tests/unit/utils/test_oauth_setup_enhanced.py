@@ -71,6 +71,7 @@ class TestCallbackHandler:
 
         # Verify global state was updated
         import mcp_atlassian.utils.oauth_setup as oauth_module
+
         assert oauth_module.authorization_code == "test-auth-code"
         assert oauth_module.authorization_state == "test-state-123"
         assert oauth_module.callback_received is True
@@ -89,6 +90,7 @@ class TestCallbackHandler:
         handler.do_GET()
 
         import mcp_atlassian.utils.oauth_setup as oauth_module
+
         assert oauth_module.authorization_code == "test-auth-code-no-state"
         assert oauth_module.authorization_state is None
         assert oauth_module.callback_received is True
@@ -96,11 +98,14 @@ class TestCallbackHandler:
     def test_do_GET_error_callback(self, handler_setup):
         """Test OAuth callback with error parameter."""
         handler = handler_setup
-        handler.path = "/callback?error=access_denied&error_description=User+denied+access"
+        handler.path = (
+            "/callback?error=access_denied&error_description=User+denied+access"
+        )
 
         handler.do_GET()
 
         import mcp_atlassian.utils.oauth_setup as oauth_module
+
         assert oauth_module.callback_error == "access_denied"
         assert oauth_module.callback_received is True
         assert oauth_module.authorization_code is None
@@ -113,6 +118,7 @@ class TestCallbackHandler:
         handler.do_GET()
 
         import mcp_atlassian.utils.oauth_setup as oauth_module
+
         assert oauth_module.callback_received is False
 
         # Should send 400 error
@@ -122,7 +128,9 @@ class TestCallbackHandler:
         """Test HTML response generation for success scenario."""
         handler = handler_setup
 
-        handler._send_response("Authorization successful! You can close this window now.")
+        handler._send_response(
+            "Authorization successful! You can close this window now."
+        )
 
         # Verify response headers
         handler.send_response.assert_called_once_with(200)
@@ -239,27 +247,29 @@ class TestInteractiveInput:
 
     def test_prompt_for_input_with_existing_env_var(self):
         """Test input prompt when environment variable exists."""
-        with patch.dict('os.environ', {'TEST_VAR': 'existing-value'}):
-            with patch('builtins.input', return_value='') as mock_input:
-                with patch('builtins.print') as mock_print:
+        with patch.dict("os.environ", {"TEST_VAR": "existing-value"}):
+            with patch("builtins.input", return_value="") as mock_input:
+                with patch("builtins.print") as mock_print:
                     result = _prompt_for_input("Enter value", "TEST_VAR")
 
                     mock_input.assert_called_once_with()  # input() called with no args
-                    mock_print.assert_called_once_with("Enter value [existing-value]: ", end="")
+                    mock_print.assert_called_once_with(
+                        "Enter value [existing-value]: ", end=""
+                    )
                     assert result == "existing-value"
 
     def test_prompt_for_input_with_user_override(self):
         """Test input prompt when user provides new value."""
-        with patch.dict('os.environ', {'TEST_VAR': 'existing-value'}):
-            with patch('builtins.input', return_value='new-user-value') as mock_input:
+        with patch.dict("os.environ", {"TEST_VAR": "existing-value"}):
+            with patch("builtins.input", return_value="new-user-value") as mock_input:
                 result = _prompt_for_input("Enter value", "TEST_VAR")
 
                 assert result == "new-user-value"
 
     def test_prompt_for_input_no_env_var(self):
         """Test input prompt without existing environment variable."""
-        with patch('builtins.input', return_value='user-input-value') as mock_input:
-            with patch('builtins.print') as mock_print:
+        with patch("builtins.input", return_value="user-input-value") as mock_input:
+            with patch("builtins.print") as mock_print:
                 result = _prompt_for_input("Enter value")
 
                 mock_input.assert_called_once_with()  # input() called with no args
@@ -272,24 +282,33 @@ class TestInteractiveInput:
         short_secret = "short"
 
         # Test long secret masking
-        with patch.dict('os.environ', {'SECRET_VAR': long_secret}):
-            with patch('builtins.input', return_value='') as mock_input:
-                with patch('builtins.print') as mock_print:
-                    result = _prompt_for_input("Enter secret", "SECRET_VAR", is_secret=True)
+        with patch.dict("os.environ", {"SECRET_VAR": long_secret}):
+            with patch("builtins.input", return_value="") as mock_input:
+                with patch("builtins.print") as mock_print:
+                    result = _prompt_for_input(
+                        "Enter secret", "SECRET_VAR", is_secret=True
+                    )
 
                     mock_input.assert_called_once_with()  # input() called with no args
                     # Check that the secret was properly masked (first 3 + asterisks + last 3)
-                    mock_print.assert_called_once_with("Enter secret [thi********************************345]: ", end="")
+                    mock_print.assert_called_once_with(
+                        "Enter secret [thi********************************345]: ",
+                        end="",
+                    )
                     assert result == long_secret
 
         # Test short secret masking
-        with patch.dict('os.environ', {'SECRET_VAR': short_secret}):
-            with patch('builtins.input', return_value='') as mock_input:
-                with patch('builtins.print') as mock_print:
-                    result = _prompt_for_input("Enter secret", "SECRET_VAR", is_secret=True)
+        with patch.dict("os.environ", {"SECRET_VAR": short_secret}):
+            with patch("builtins.input", return_value="") as mock_input:
+                with patch("builtins.print") as mock_print:
+                    result = _prompt_for_input(
+                        "Enter secret", "SECRET_VAR", is_secret=True
+                    )
 
                     mock_input.assert_called_once_with()  # input() called with no args
-                    mock_print.assert_called_once_with("Enter secret [****]: ", end="")  # Short secrets show ****
+                    mock_print.assert_called_once_with(
+                        "Enter secret [****]: ", end=""
+                    )  # Short secrets show ****
                     assert result == short_secret
 
 
@@ -310,7 +329,7 @@ class TestGlobalStateManagement:
             client_id="test-id",
             client_secret="test-secret",
             redirect_uri="https://external.com/callback",
-            scope="read:jira-work"
+            scope="read:jira-work",
         )
 
         with patch("mcp_atlassian.utils.oauth_setup.OAuthConfig") as mock_config_class:
@@ -318,7 +337,9 @@ class TestGlobalStateManagement:
             mock_config.get_authorization_url.return_value = "https://auth.url"
             mock_config_class.return_value = mock_config
 
-            with patch("mcp_atlassian.utils.oauth_setup.wait_for_callback", return_value=False):
+            with patch(
+                "mcp_atlassian.utils.oauth_setup.wait_for_callback", return_value=False
+            ):
                 with patch("webbrowser.open"):
                     # This should reset global state even though it fails
                     run_oauth_flow(args)
@@ -358,11 +379,13 @@ class TestBrowserIntegration:
             client_id="test-id",
             client_secret="test-secret",
             redirect_uri="https://external.com/callback",
-            scope="read:jira-work"
+            scope="read:jira-work",
         )
 
         with patch("mcp_atlassian.utils.oauth_setup.OAuthConfig") as mock_config_class:
-            with patch("mcp_atlassian.utils.oauth_setup.wait_for_callback", return_value=False):
+            with patch(
+                "mcp_atlassian.utils.oauth_setup.wait_for_callback", return_value=False
+            ):
                 with patch("webbrowser.open") as mock_browser:
                     mock_config = MagicMock()
                     mock_config.get_authorization_url.return_value = "https://auth.url"
@@ -378,25 +401,32 @@ class TestBrowserIntegration:
             client_id="test-id",
             client_secret="test-secret",
             redirect_uri="https://external.com/callback",
-            scope="read:jira-work"
+            scope="read:jira-work",
         )
 
         with patch("mcp_atlassian.utils.oauth_setup.OAuthConfig") as mock_config_class:
-            with patch("mcp_atlassian.utils.oauth_setup.wait_for_callback", return_value=False):
+            with patch(
+                "mcp_atlassian.utils.oauth_setup.wait_for_callback", return_value=False
+            ):
                 mock_config = MagicMock()
                 mock_config.get_authorization_url.return_value = "https://auth.url"
                 mock_config_class.return_value = mock_config
 
                 # Patch webbrowser.open to raise exception but handle it gracefully
-                original_open = __import__('webbrowser').open
+                original_open = __import__("webbrowser").open
+
                 def mock_open_with_exception(url):
                     raise Exception("Browser not available")
 
-                with patch("webbrowser.open", side_effect=mock_open_with_exception) as mock_browser:
+                with patch(
+                    "webbrowser.open", side_effect=mock_open_with_exception
+                ) as mock_browser:
                     # Should not raise exception despite browser failure - the function should catch and continue
                     try:
                         result = run_oauth_flow(args)
-                        assert result is False  # Fails due to timeout, not browser error
+                        assert (
+                            result is False
+                        )  # Fails due to timeout, not browser error
                         mock_browser.assert_called_once_with("https://auth.url")
                     except Exception as e:
                         # The current implementation doesn't catch browser exceptions, so this test shows
@@ -416,7 +446,7 @@ class TestSecurityValidation:
             client_id="test-id",
             client_secret="test-secret",
             redirect_uri="https://external.com/callback",
-            scope="read:jira-work"
+            scope="read:jira-work",
         )
 
         with patch("mcp_atlassian.utils.oauth_setup.OAuthConfig") as mock_config_class:
@@ -436,15 +466,22 @@ class TestSecurityValidation:
 
                 def setup_matching_state():
                     oauth_module.authorization_code = "auth-code"
-                    oauth_module.authorization_state = "secure-state-token"  # Matches generated state
+                    oauth_module.authorization_state = (
+                        "secure-state-token"  # Matches generated state
+                    )
                     return True
 
-                with patch("mcp_atlassian.utils.oauth_setup.wait_for_callback", side_effect=setup_matching_state):
+                with patch(
+                    "mcp_atlassian.utils.oauth_setup.wait_for_callback",
+                    side_effect=setup_matching_state,
+                ):
                     with patch("webbrowser.open"):
                         result = run_oauth_flow(args)
 
                         assert result is True
-                        mock_config.exchange_code_for_tokens.assert_called_once_with("auth-code")
+                        mock_config.exchange_code_for_tokens.assert_called_once_with(
+                            "auth-code"
+                        )
 
     def test_csrf_state_validation_failure(self):
         """Test CSRF state validation failure (potential attack)."""
@@ -454,7 +491,7 @@ class TestSecurityValidation:
             client_id="test-id",
             client_secret="test-secret",
             redirect_uri="https://external.com/callback",
-            scope="read:jira-work"
+            scope="read:jira-work",
         )
 
         with patch("mcp_atlassian.utils.oauth_setup.OAuthConfig") as mock_config_class:
@@ -465,10 +502,15 @@ class TestSecurityValidation:
 
                 def setup_mismatched_state():
                     oauth_module.authorization_code = "auth-code"
-                    oauth_module.authorization_state = "malicious-state-token"  # Different from generated state
+                    oauth_module.authorization_state = (
+                        "malicious-state-token"  # Different from generated state
+                    )
                     return True
 
-                with patch("mcp_atlassian.utils.oauth_setup.wait_for_callback", side_effect=setup_mismatched_state):
+                with patch(
+                    "mcp_atlassian.utils.oauth_setup.wait_for_callback",
+                    side_effect=setup_mismatched_state,
+                ):
                     with patch("webbrowser.open"):
                         result = run_oauth_flow(args)
 

@@ -744,8 +744,8 @@ class JiraV3Client(BaseRESTClient):
         Returns:
             List of created attachments
         """
-        import os
         import mimetypes
+        import os
 
         if not os.path.exists(filename):
             msg = f"File not found: {filename}"

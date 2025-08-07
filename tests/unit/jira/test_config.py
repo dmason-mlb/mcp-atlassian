@@ -54,7 +54,8 @@ def test_from_env_missing_url():
     try:
         os.environ.clear()
         with pytest.raises(
-            ValueError, match="Missing required JIRA_URL or ATLASSIAN_URL environment variable"
+            ValueError,
+            match="Missing required JIRA_URL or ATLASSIAN_URL environment variable",
         ):
             JiraConfig.from_env()
     finally:
