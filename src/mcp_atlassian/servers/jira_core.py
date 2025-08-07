@@ -318,7 +318,8 @@ async def add_comment(
     """
     jira = await get_jira_fetcher(ctx)
     result = jira.add_comment(issue_key=issue_key, comment=comment)
-    return json.dumps(result.to_simplified_dict(), indent=2, ensure_ascii=False)
+    # add_comment returns a dict, not a model
+    return json.dumps(result, indent=2, ensure_ascii=False)
 
 
 @jira_mcp.tool(tags={"jira", "write"})
@@ -387,4 +388,5 @@ async def add_worklog(
         original_estimate=original_estimate,
         remaining_estimate=remaining_estimate,
     )
-    return json.dumps(result.to_simplified_dict(), indent=2, ensure_ascii=False)
+    # add_worklog returns a dict, not a model
+    return json.dumps(result, indent=2, ensure_ascii=False)

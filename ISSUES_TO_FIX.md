@@ -1,229 +1,103 @@
-# MCP Atlassian Issues Re-Testing Results
+# MCP Atlassian Server - Issues to Fix
 
-**Testing Date:** 2025-08-06
-**Testing Environment:** FTEST project on baseball.atlassian.net
-**Test Executor:** Claude Code via MCP Atlassian tools
+**Generated:** 2025-08-07  
+**Testing Environment:** MLB Atlassian Cloud  
+**Priority Levels:** 🔴 Critical | 🟡 High | 🟢 Medium | ⚪ Low
 
-## Executive Summary
+## 🔴 Critical Issues (Must Fix)
 
-Re-tested the critical and high-severity issues identified in the original ISSUES_TO_FIX.md and ISSUES_TO_FIX_new.md files. **Results show that the core critical issues remain UNFIXED.** Review code changes from previous commits to observer prior attempts at issue mitigation. Use Zen MCP Chat with Grok-4 to discuss fixes for issues that still remain. Search online for to verify functionality of API usage.
+### 1. ADF Format Support Missing
+**Location:** All text input operations  
+**Impact:** Cannot create issues with descriptions, add comments, or use any rich text features  
+**Error:** "Operation value must be an Atlassian Document (see the Atlassian Document Format)"  
+**Fix Required:** Implement proper ADF document structure for all text fields  
 
----
+### 2. Worklog Implementation Broken
+**Location:** `jira_add_worklog` tool  
+**Impact:** Cannot log time on issues  
+**Error:** "'dict' object has no attribute 'to_simplified_dict'"  
+**Fix Required:** Fix the worklog object serialization and ensure proper API payload structure  
 
-## 🚨 CRITICAL ISSUES - STILL BROKEN
+### 3. Comment System Non-Functional
+**Location:** `jira_add_comment` tool  
+**Impact:** Cannot add comments to issues  
+**Error:** "Comment body is not valid!"  
+**Fix Required:** Implement ADF format for comment bodies  
 
-### 1. **CRITICAL: JIRA Comment Serialization Bug - STILL BROKEN**
-**Status:** ❌ **STILL FAILING**
-**Severity:** CRITICAL
+## 🟡 High Priority Issues
 
-**Test Results:**
-- ❌ **Plain Text Comments**: Failed with "Comment body is not valid!"
-- ❌ **Complex Markdown**: Failed with "Comment body is not valid!"
-- ❌ **Simple Text**: Failed with "Comment body is not valid!"
+### 4. User Resolution Failure
+**Location:** `jira_get_user_profile`  
+**Impact:** Cannot resolve email addresses to account IDs  
+**Error:** "Could not resolve email 'douglas.mason@mlb.com' to a valid account ID"  
+**Fix Required:** Implement proper user lookup mechanism for Cloud instances  
 
-**Error Message:**
-```
-Error adding comment: Validation error: comment: Comment body is not valid!
-```
+### 5. Confluence Page Creation Error
+**Location:** `confluence_pages_create_page`  
+**Impact:** Cannot create Confluence pages  
+**Error:** Generic "Error calling tool 'create_page'"  
+**Fix Required:** Debug and fix the Confluence page creation endpoint  
 
-**Test Cases Attempted:**
-1. Simple plain text: `"Simple plain text comment without any formatting."`
-2. Complex markdown with headers, lists, code blocks, emojis
-3. Formatted text with bold, italic, and structure
+### 6. Story Issue Type Creation Fails
+**Location:** `jira_create_issue` with Story type  
+**Impact:** Cannot create Story issues with additional fields  
+**Error:** Generic error when additional_fields provided  
+**Fix Required:** Fix field handling for different issue types  
 
-**Impact:** 100% failure rate - No comments can be added via MCP interface
+## 🟢 Medium Priority Issues
 
-### 2. **CRITICAL: Description Field Validation - STILL BROKEN**
-**Status:** ❌ **STILL FAILING**
-**Severity:** CRITICAL
+### 7. Transition Comments Not Supported
+**Location:** `jira_transition_issue`  
+**Impact:** Cannot add comments during status transitions  
+**Error:** ADF validation error on comment field  
+**Fix Required:** Support ADF format in transition comments  
 
-**Test Results:**
-- ❌ **Plain Text Description**: Failed with ADF format error
+### 8. Missing Markdown to ADF Converter
+**Location:** Throughout the codebase  
+**Impact:** Users must manually format ADF documents  
+**Fix Required:** Add automatic markdown to ADF conversion  
 
-**Error Message:**
-```
-Validation error: description: Operation value must be an Atlassian Document (see the Atlassian Document Format)
-```
+### 9. Poor Error Messages
+**Location:** Various tools  
+**Impact:** Difficult to debug issues  
+**Fix Required:** Improve error handling and provide clearer messages  
 
-**Test Case:**
-- Attempted to update FTEST-10 with simple description: `"This is a test description to see if the ADF format issue has been fixed."`
+## ⚪ Low Priority Enhancements
 
-**Impact:** Cannot add or update issue descriptions via MCP interface
+### 10. No Batch Operations Support
+**Location:** Issue operations  
+**Impact:** Inefficient for bulk operations  
+**Fix Required:** Add batch create/update/delete endpoints  
 
----
+### 11. Missing Retry Logic
+**Location:** All API calls  
+**Impact:** Transient failures cause operation failures  
+**Fix Required:** Implement exponential backoff retry  
 
-## 🟡 MIXED RESULTS
+### 12. No Caching Layer
+**Location:** Frequently accessed data  
+**Impact:** Unnecessary API calls  
+**Fix Required:** Add caching for project info, user data, etc.  
 
-### 3. **File Attachment Support - PARTIALLY WORKING**
-**Status:** ⚠️ **PARTIALLY WORKING**
-**Severity:** HIGH
+## Root Cause Analysis
 
-**Test Results:**
-- ✅ **Attachment Processing**: MCP processes attachment requests without crashing
-- ❌ **File Upload Success**: All file uploads fail with 415 error
-- ✅ **Error Handling**: Proper error reporting in response
+The primary issue is that the MCP server was likely developed against an older version of the Atlassian API or Jira Server/Data Center, which used plain text for many fields. Atlassian Cloud now requires ADF (Atlassian Document Format) for all rich text fields.
 
-**Error Messages:**
-```
-415 Client Error: Unsupported Media Type for url: https://baseball.atlassian.net/rest/api/3/issue/FTEST-9/attachments
-```
+## Recommended Fix Order
 
-**Test Cases:**
-1. **Text File** (/tmp/test_attachment.txt): 415 Unsupported Media Type
-2. **PNG Image** (/tmp/test_image.png): 415 Unsupported Media Type
+1. **Implement ADF Support** - This will fix multiple issues at once
+2. **Fix Worklog Implementation** - Core functionality
+3. **Fix User Resolution** - Needed for many operations
+4. **Add Markdown Converter** - Improve usability
+5. **Improve Error Handling** - Better debugging
 
-**Analysis:**
-- The `add_attachment` method exists and no longer throws "object has no attribute" error
-- HTTP 415 suggests MIME type or content-type header issues
-- Attachment handling infrastructure is in place but has content-type problems
+## Testing Requirements
 
----
-
-## ✅ POSITIVE FINDINGS
-
-### 4. **Authentication & Project Access - WORKING**
-**Status:** ✅ **WORKING**
-**Severity:** N/A
-
-**Test Results:**
-- ✅ **Project Access**: Successfully accessed FTEST project
-- ✅ **Issue Retrieval**: Can search and retrieve issues
-- ✅ **Basic Operations**: Issue updates work (without description/comments)
-
-### 5. **Error Handling Improvements - WORKING**
-**Status:** ✅ **IMPROVED**
-**Severity:** LOW
-
-**Test Results:**
-- ✅ **Structured Errors**: Errors now include proper error types and tool names
-- ✅ **No Crashes**: No application crashes during testing
-- ✅ **Graceful Failures**: All failures provide meaningful error messages
-
----
-
-## 📊 DETAILED TEST MATRIX
-
-| Component | Original Status | Current Status | Test Result | Notes |
-|-----------|-----------------|----------------|-------------|--------|
-| **JIRA Comments** | ❌ Broken | ❌ Still Broken | FAILED | 0% success rate on all comment types |
-| **Issue Descriptions** | ❌ ADF Error | ❌ Still ADF Error | FAILED | Same validation error persists |
-| **File Attachments** | ❌ Missing Method | ⚠️ HTTP 415 Error | PARTIAL | Method exists, MIME type issues |
-| **Authentication** | ✅ Working | ✅ Working | PASSED | Access to FTEST project confirmed |
-| **Error Handling** | ⚠️ Poor | ✅ Improved | PASSED | Better error messages and structure |
-| **Issue Updates** | ✅ Basic Only | ✅ Basic Only | PASSED | Works for non-description fields |
+After fixes are implemented:
+- Re-test all failed operations
+- Add unit tests for ADF conversion
+- Add integration tests for Cloud API
+- Document ADF requirements in README
 
 ---
-
-## 🔍 ROOT CAUSE ANALYSIS
-
-### Comments & Descriptions Issue
-Both comments and descriptions fail because the MCP is **not converting plain text/markdown to Atlassian Document Format (ADF)**. The JIRA Cloud API requires content in ADF structure, but the MCP is sending raw strings.
-
-**Required Fix:**
-```json
-{
-  "body": {
-    "type": "doc",
-    "version": 1,
-    "content": [
-      {
-        "type": "paragraph",
-        "content": [
-          {
-            "type": "text",
-            "text": "Your comment text here"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### File Attachments Issue
-HTTP 415 "Unsupported Media Type" indicates that the request is missing proper `Content-Type` headers or multipart form encoding required by JIRA's attachment API.
-
----
-
-## 🎯 PRIORITY FIXES NEEDED
-
-### Immediate (Critical)
-1. **Implement ADF Conversion**: Convert all text input to proper Atlassian Document Format
-2. **Fix Attachment Content-Type**: Add proper MIME type headers for file uploads
-3. **Add Plain Text to ADF Converter**: Handle markdown → ADF conversion
-
-### Medium Priority
-1. **Improve File Type Support**: Test and support common file types (PDF, DOCX, etc.)
-2. **Batch Attachment Support**: Handle multiple file uploads
-3. **Better ADF Formatting**: Support complex markdown structures
-
----
-
-## 📋 COMMIT READINESS STATUS
-
-**Current Status:** ❌ **NOT READY FOR PRODUCTION**
-
-**Blocking Issues:**
-1. ❌ CRITICAL: Comments completely non-functional (0% success rate)
-2. ❌ CRITICAL: Descriptions non-functional (ADF format error)
-3. ⚠️ HIGH: File attachments fail with HTTP 415 errors
-
-**Regression Status:** No regressions detected - issues were pre-existing
-
-**Recommendation:** **DO NOT DEPLOY** - Core JIRA functionality remains broken
-
----
-
-## 🔄 COMPARISON WITH PREVIOUS REPORTS
-
-### Issues Fixed Since Original Report
-- ✅ Authentication stability improved
-- ✅ Error handling is more informative
-- ✅ No more "missing method" crashes for attachments
-
-### Issues Unchanged
-- ❌ Comment serialization bug persists (same error)
-- ❌ Description ADF format error persists
-- ❌ File attachment issues (changed from missing method to HTTP 415)
-
-### New Issues Discovered
-- File attachment gets HTTP 415 instead of missing method error (suggests partial progress)
-
----
-
-## 🧪 SPECIFIC TEST COMMANDS USED
-
-```bash
-# Comment Tests (All Failed)
-mcp__atlassian__jira_add_comment(issue_key="FTEST-9", comment="Simple plain text comment without any formatting.")
-mcp__atlassian__jira_add_comment(issue_key="FTEST-9", comment="**Bold** and *italic* with markdown")
-mcp__atlassian__jira_add_comment(issue_key="FTEST-9", comment="Complex markdown with lists, headers, code blocks")
-
-# Description Test (Failed)
-mcp__atlassian__jira_update_issue(issue_key="FTEST-10", fields={"description": "Test description"})
-
-# Attachment Tests (415 Errors)
-mcp__atlassian__jira_update_issue(issue_key="FTEST-9", fields={}, attachments="/tmp/test_attachment.txt")
-mcp__atlassian__jira_update_issue(issue_key="FTEST-9", fields={}, attachments="/tmp/test_image.png")
-
-# Successful Tests
-mcp__atlassian__jira_search(jql="project = FTEST", limit=5)
-mcp__atlassian__jira_update_issue(issue_key="FTEST-9", fields={})  # Empty fields update
-```
-
----
-
-## ⏱️ ESTIMATED FIX TIME
-
-**Critical Issues:** 8-12 hours
-- ADF conversion implementation: 4-6 hours
-- File attachment content-type fixing: 2-3 hours
-- Testing and validation: 2-3 hours
-
-**Total Development Time:** 8-12 hours for production-ready functionality
-
----
-
-**Next Action:** Focus on implementing ADF format conversion for comments and descriptions as the highest priority fix.
-
-*Testing completed: 2025-08-06 at 21:45 UTC*
+*This document should be updated as issues are resolved*

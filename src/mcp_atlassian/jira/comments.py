@@ -132,9 +132,9 @@ class CommentsMixin(JiraClient):
             return ""
 
         try:
-            # Use the preprocessor with return_raw_adf=True to get proper ADF dicts
+            # Use the preprocessor with enable_adf=True to get proper ADF dicts
             result = self.preprocessor.markdown_to_jira(
-                markdown_text, return_raw_adf=True
+                markdown_text, enable_adf=True
             )
             return result
 
