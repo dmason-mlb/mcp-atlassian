@@ -1,173 +1,176 @@
-# MCP Atlassian Refactoring Analysis
+# MCP Atlassian Codebase Refactoring Analysis
 
-## Overview
+*Analysis Date: August 7, 2025*  
+*Total Python Files: 222*  
+*Total Lines of Code: 67,269*
 
-This analysis identifies the top files causing Claude Code context limit issues and provides prioritized refactoring recommendations to optimize the codebase for AI-assisted development.
+## Executive Summary
 
-## File Size Analysis
+The MCP Atlassian codebase contains several large files that are contributing to context limit issues in Claude Code. The analysis identifies 15 key files that should be prioritized for refactoring, with the top 5 files alone containing over 8,000 lines of code.
 
-### Largest Files by Lines
-| File | Lines | Characters | Priority |
-|------|-------|------------|----------|
-| `src/mcp_atlassian/servers/jira.py` | 1,657 | 56,239 | 🔥 Critical |
-| `src/mcp_atlassian/jira/issues.py` | 1,596 | 63,364 | 🔥 Critical |
-| `src/mcp_atlassian/rest/adapters.py` | 1,076 | 31,972 | 🔵 Medium |
-| `src/mcp_atlassian/formatting/adf_plugins.py` | 1,018 | 32,633 | 🔶 High |
-| `src/mcp_atlassian/jira/epics.py` | 946 | 40,839 | 🔵 Medium |
-| `src/mcp_atlassian/formatting/adf_ast.py` | 879 | 32,123 | 🔶 High |
-| `src/mcp_atlassian/rest/jira_v3.py` | 801 | 22,171 | 🔵 Medium |
-| `src/mcp_atlassian/models/jira/issue.py` | 799 | 30,309 | 🔵 Medium |
-| `src/mcp_atlassian/formatting/adf_enhanced.py` | 791 | 28,212 | 🔶 High |
-| `src/mcp_atlassian/formatting/adf.py` | 776 | 29,568 | 🔶 High |
+## Critical Files Requiring Immediate Refactoring
 
-### Complexity Analysis
-- **`servers/jira.py`**: 32 FastMCP tool definitions in a single file
-- **Formatting module**: 4 overlapping ADF implementations (~120KB total)
-- **Issues module**: Single massive mixin with all issue operations
+### 1. `src/mcp_atlassian/servers/jira.py` (1,657 lines, 56KB)
+**Issue**: Monolithic server file containing 31 MCP tool definitions
+**Impact**: High - Core server functionality causes frequent context inclusion
+**Recommendations**:
+- **Split by functional domain**: Create separate files for each major operation type:
+  - `jira/issues_tools.py` - Issue CRUD operations
+  - `jira/search_tools.py` - Search and query tools  
+  - `jira/agile_tools.py` - Sprint, board, epic management
+  - `jira/management_tools.py` - User, project, metadata operations
+- **Keep server registration**: Main server file should only contain FastMCP instance and tool registration
+- **Estimated reduction**: From 1,657 lines to ~200 lines (87% reduction)
 
-## 🔥 Critical Priority Refactoring
+### 2. `src/mcp_atlassian/jira/issues.py` (1,596 lines, 63KB)
+**Issue**: Single class with 26 methods handling all issue operations
+**Impact**: High - Core business logic frequently referenced
+**Recommendations**:
+- **Split by operation type**:
+  - `jira/issues/crud.py` - Create, read, update, delete operations
+  - `jira/issues/comments.py` - Comment management
+  - `jira/issues/transitions.py` - Status and workflow operations
+  - `jira/issues/attachments.py` - File operations
+  - `jira/issues/links.py` - Issue linking and epic management
+- **Create base class**: Abstract common functionality into `BaseIssueOperations`
+- **Estimated reduction**: From 1,596 lines to 4-5 files of ~300-400 lines each
 
-### 1. Split `servers/jira.py` (1,657 lines → ~400 lines each)
+### 3. `src/mcp_atlassian/formatting/adf_plugins.py` (1,018 lines, 33KB)
+**Issue**: 10 plugin classes in single file with complex regex patterns
+**Impact**: Medium - ADF processing frequently used
+**Recommendations**:
+- **Split by plugin type**:
+  - `formatting/plugins/block_plugins.py` - Panel, Expand, Layout plugins
+  - `formatting/plugins/inline_plugins.py` - Status, Date, Mention, Emoji plugins
+  - `formatting/plugins/media_plugins.py` - Media and attachment plugins
+- **Keep plugin registry**: Main file should only contain base classes and registration
+- **Estimated reduction**: From 1,018 lines to 3-4 files of ~200-300 lines each
 
-**Current Problem**: Monolithic file with 32 FastMCP tool definitions
+### 4. `src/mcp_atlassian/rest/adapters.py` (1,078 lines, 32KB)
+**Issue**: Adapter classes with 61 methods providing backward compatibility
+**Impact**: Medium - REST layer abstraction
+**Recommendations**:
+- **Split by service**:
+  - `rest/adapters/jira_adapter.py` - Jira-specific adapter methods
+  - `rest/adapters/confluence_adapter.py` - Confluence-specific adapter methods
+  - `rest/adapters/base.py` - Common adapter functionality
+- **Group by operation**: Within each adapter, group related operations
+- **Estimated reduction**: From 1,078 lines to 3 files of ~300-400 lines each
 
-**Proposed Structure**:
-```
-servers/jira/
-├── __init__.py          # Re-export all tools
-├── issues.py           # Issue CRUD operations (8 tools)
-├── search.py           # Search and field operations (6 tools)
-├── agile.py            # Boards, sprints, epics (10 tools)
-└── management.py       # Projects, users, transitions (8 tools)
-```
+### 5. `src/mcp_atlassian/jira/epics.py` (946 lines, 41KB)
+**Issue**: Epic operations mixing different concerns
+**Impact**: Medium - Agile functionality
+**Recommendations**:
+- **Split by concern**:
+  - `jira/epics/operations.py` - Core epic CRUD operations
+  - `jira/epics/hierarchy.py` - Parent-child relationship management
+  - `jira/epics/linking.py` - Epic linking to stories/tasks
+- **Estimated reduction**: From 946 lines to 3 files of ~300 lines each
 
-**Expected Impact**: 75% reduction in file size, allows loading only relevant tool groups
+## Test File Optimization
 
-### 2. Refactor `jira/issues.py` (1,596 lines → ~400 lines each)
+### Large Test Files to Refactor
 
-**Current Problem**: Massive `IssuesMixin` with all issue operations
+1. **`tests/unit/models/test_jira_models.py`** (1,946 lines, 76KB, 68 test functions)
+   - Split by model type: `test_issue_models.py`, `test_project_models.py`, `test_search_models.py`
 
-**Proposed Structure**:
-```python
-# Extract specialized mixins:
-class IssueCreationMixin     # create_issue, batch_create
-class IssueUpdateMixin       # update_issue, transition_issue
-class IssueSearchMixin       # search, get_issue, get_transitions
-class IssueLinkingMixin      # link operations, epic linking
-```
+2. **`tests/unit/jira/test_issues.py`** (1,698 lines, 65KB)
+   - Split by operation: `test_issue_crud.py`, `test_issue_comments.py`, `test_issue_transitions.py`
 
-**Expected Impact**: 70% reduction in individual file sizes
+3. **`tests/unit/servers/test_jira_server.py`** (1,150 lines, 39KB)
+   - Split by tool category following the same pattern as the server refactoring
 
-## 🔶 High Priority Refactoring
+## Secondary Priority Files
 
-### 3. Consolidate Formatting Module
-
-**Current Problem**: 4 overlapping ADF implementations causing confusion
-- `adf_plugins.py` (1,018 lines)
-- `adf_ast.py` (879 lines) - Most modern implementation
-- `adf_enhanced.py` (791 lines) - Deprecated
-- `adf.py` (776 lines) - Deprecated
-
-**Recommended Action**:
-1. **Keep**: `adf_ast.py` as primary implementation
-2. **Migrate**: Required features from deprecated files
-3. **Remove**: `adf.py` and `adf_enhanced.py`
-4. **Consolidate**: Plugin system into main AST implementation
-
-**Expected Impact**: 50% reduction in formatting module size, eliminates confusion
-
-### 4. Split `servers/confluence.py` (746 lines)
-
-**Current Problem**: Same monolithic pattern as jira.py
-
-**Proposed Structure**:
-```
-servers/confluence/
-├── __init__.py
-├── pages.py            # Page CRUD operations
-├── search.py           # Search and user operations
-└── management.py       # Spaces, comments, labels
-```
-
-## 🔵 Medium Priority Refactoring
-
-### 5. REST Adapters Refactoring
-- **File**: `rest/adapters.py` (1,076 lines)
-- **Action**: Split by service type and operation category
-- **Expected Impact**: Better separation of concerns
-
-### 6. Model Consolidation
-- **Files**: `models/jira/issue.py` (799 lines), `models/jira/common.py` (583 lines)
-- **Action**: Extract specialized model files by domain area
-- **Expected Impact**: More focused model definitions
+### Medium Impact Files (500-900 lines)
+- `src/mcp_atlassian/formatting/adf_ast.py` (879 lines) - Split AST processing by node types
+- `src/mcp_atlassian/rest/jira_v3.py` (804 lines) - Split REST client by API groupings
+- `src/mcp_atlassian/models/jira/issue.py` (799 lines) - Split complex models by concerns
 
 ## Implementation Strategy
 
-### Phase 1: Server Module Splitting (Week 1-2)
-1. Create new directory structures
-2. Extract tool functions to appropriate modules
-3. Update imports in `__init__.py` files
-4. Verify all tools are still accessible
+### Phase 1: Core Server Refactoring (Priority 1)
+1. **Week 1**: Split `servers/jira.py` into functional domains
+2. **Week 2**: Refactor `jira/issues.py` into operation-specific modules
+3. **Week 3**: Split ADF plugins and adapters
 
-### Phase 2: Formatting Consolidation (Week 3)
-1. Audit feature differences between implementations
-2. Migrate essential features to `adf_ast.py`
-3. Update all imports to use consolidated module
-4. Remove deprecated files
+### Phase 2: Test Organization (Priority 2)
+1. **Week 4**: Refactor large test files following new source structure
+2. **Week 5**: Update test utilities and fixtures
 
-### Phase 3: Business Logic Refactoring (Week 4-5)
-1. Split `jira/issues.py` into specialized mixins
-2. Update inheritance chains
-3. Verify functionality preservation
-
-### Phase 4: Model and Infrastructure (Week 6)
-1. Split large model files
-2. Refactor REST adapters
-3. Final optimization pass
+### Phase 3: Secondary Optimizations (Priority 3)
+1. **Week 6**: Address medium-impact files
+2. **Week 7**: Consolidate and validate refactoring
 
 ## Expected Benefits
 
 ### Context Usage Reduction
-- **75% reduction** in auto-compact frequency
-- **60% smaller** individual file loading
-- **Better modularity** for focused development
+- **Estimated 60-70% reduction** in context usage for common operations
+- **Improved incremental loading** - only load relevant modules
+- **Better caching efficiency** - smaller, focused files
 
 ### Development Experience
-- Faster Claude Code responses
-- More targeted code analysis
-- Reduced cognitive load when working on specific features
-- Better parallel development capabilities
+- **Easier navigation** - logical file organization
+- **Reduced merge conflicts** - isolated changes
+- **Faster IDE operations** - smaller file parsing
 
-### Code Quality
-- Improved separation of concerns
-- Better testability through smaller modules
-- Reduced merge conflicts
-- Clearer architectural boundaries
+### Maintainability
+- **Single responsibility** - each file has clear purpose
+- **Better testability** - focused test files
+- **Improved code review** - smaller, targeted changes
 
 ## Risk Mitigation
 
-### Testing Strategy
-- Run full test suite after each phase
-- Maintain integration test coverage
-- Verify MCP protocol compliance
-- Test all FastMCP tool registrations
+### Potential Risks
+1. **Import complexity** - More files mean more imports
+2. **Circular dependencies** - Risk when splitting tightly coupled code
+3. **Breaking changes** - Public API modifications
 
-### Backward Compatibility
-- Preserve all public APIs through re-exports
-- Maintain existing import paths during transition
-- Document any breaking changes
-- Provide migration guide if needed
+### Mitigation Strategies
+1. **Preserve public APIs** - Keep existing imports working via `__init__.py` files
+2. **Dependency injection** - Use protocols and dependency injection to avoid circular imports
+3. **Gradual migration** - Implement changes incrementally with backward compatibility
+4. **Comprehensive testing** - Ensure all existing tests pass after refactoring
 
-## Success Metrics
+## File Size Targets
 
-- [ ] Largest file under 800 lines
-- [ ] No single file consuming >30KB context
-- [ ] 75% reduction in Claude Code auto-compact events
-- [ ] All existing tests passing
-- [ ] No breaking changes to public API
+### Target Sizes After Refactoring
+- **Server files**: 200-400 lines (tool registration only)
+- **Service modules**: 300-500 lines (focused operations)
+- **Model files**: 200-400 lines (related models grouped)
+- **Test files**: 300-600 lines (focused test suites)
+- **Plugin files**: 200-300 lines (single responsibility)
 
----
+### Success Metrics
+- No single file exceeds 800 lines
+- Average file size under 400 lines
+- Context window usage reduced by 60%+
+- All existing functionality preserved
+- No performance degradation
 
-*Analysis completed: August 6, 2025*
-*Files analyzed: 100+ Python files*
-*Total codebase size: ~15,000 lines*
+## Detailed File Analysis
+
+### Top 15 Files by Size (Excluding Tests)
+| Rank | File | Lines | Size | Impact | Recommendation |
+|------|------|-------|------|---------|----------------|
+| 1 | `servers/jira.py` | 1,657 | 56KB | Critical | Split into 4 domain files |
+| 2 | `jira/issues.py` | 1,596 | 63KB | Critical | Split into 5 operation files |
+| 3 | `rest/adapters.py` | 1,078 | 32KB | Medium | Split by service type |
+| 4 | `formatting/adf_plugins.py` | 1,018 | 33KB | High | Split by plugin type |
+| 5 | `jira/epics.py` | 946 | 41KB | Medium | Split by concern |
+| 6 | `formatting/adf_ast.py` | 879 | 32KB | Medium | Keep as primary ADF impl |
+| 7 | `rest/jira_v3.py` | 804 | 22KB | Low | Split by API grouping |
+| 8 | `models/jira/issue.py` | 799 | 30KB | Low | Split by model complexity |
+| 9 | `servers/confluence.py` | 746 | 25KB | Medium | Split by operation type |
+| 10 | `jira/search.py` | 698 | 24KB | Low | Acceptable size |
+| 11 | `confluence/pages.py` | 654 | 23KB | Low | Acceptable size |
+| 12 | `models/confluence/page.py` | 612 | 21KB | Low | Acceptable size |
+| 13 | `jira/boards.py` | 588 | 20KB | Low | Acceptable size |
+| 14 | `models/jira/common.py` | 583 | 19KB | Low | Acceptable size |
+| 15 | `confluence/search.py` | 563 | 19KB | Low | Acceptable size |
+
+## Conclusion
+
+This refactoring plan addresses the root cause of context limit issues by systematically breaking down large files into focused, maintainable modules. The proposed changes will significantly improve Claude Code's ability to work with the codebase while enhancing overall code quality and maintainability.
+
+**Next Steps**: Begin with Phase 1 implementation, starting with `servers/jira.py` as it has the highest impact on context usage.

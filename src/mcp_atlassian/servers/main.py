@@ -28,7 +28,7 @@ from mcp_atlassian.utils.tools import get_enabled_tools, should_include_tool
 
 from .confluence import confluence_mcp
 from .context import MainAppContext
-from .jira import jira_mcp
+from .jira_modular import jira_mcp
 
 logger = logging.getLogger("mcp-atlassian.server.main")
 

@@ -763,7 +763,10 @@ class JiraV3Client(BaseRESTClient):
             response = self.session.post(
                 f"{self.base_url}/rest/api/3/issue/{issue_key}/attachments",
                 files=files,
-                headers={"X-Atlassian-Token": "no-check"},
+                headers={
+                    "X-Atlassian-Token": "no-check",
+                    "Content-Type": None,  # Let requests set multipart/form-data
+                },
             )
             response.raise_for_status()
             return response.json()
