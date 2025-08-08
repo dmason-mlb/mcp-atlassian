@@ -250,6 +250,17 @@ Add a worklog entry to a Jira issue.
 
 ---
 
+#### jira_upload_attachment
+Upload a single attachment to a Jira issue.
+
+**Arguments:**
+- `issue_key` (string, required): Jira issue key (e.g., 'PROJ-123')
+- `file_path` (string, required): Absolute or relative path to the file to upload
+
+**Returns:** JSON string indicating the result of the upload operation
+
+---
+
 #### jira_link_to_epic
 Link an existing issue to an epic.
 
