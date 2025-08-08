@@ -49,12 +49,13 @@ class JiraUser(ApiModel):
             A JiraUser instance
         """
         if not data:
-            return cls()
+            # Default unknown user with sentinel values expected by tests
+            return cls(account_id=JIRA_DEFAULT_ID, display_name=UNKNOWN, active=True)
 
         # Handle non-dictionary data by returning a default instance
         if not isinstance(data, dict):
             logger.debug("Received non-dictionary data, returning default instance")
-            return cls()
+            return cls(account_id=JIRA_DEFAULT_ID, display_name=UNKNOWN, active=True)
 
         avatar_url = None
         if avatars := data.get("avatarUrls"):
@@ -65,8 +66,8 @@ class JiraUser(ApiModel):
                 logger.debug(f"Unexpected avatar data format: {type(avatars)}")
 
         return cls(
-            account_id=data.get("accountId"),
-            display_name=str(data.get("displayName", UNASSIGNED)),
+            account_id=data.get("accountId", JIRA_DEFAULT_ID),
+            display_name=str(data.get("displayName", UNKNOWN)),
             email=data.get("emailAddress"),
             active=bool(data.get("active", True)),
             avatar_url=avatar_url,

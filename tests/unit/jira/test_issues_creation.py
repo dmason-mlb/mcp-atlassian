@@ -5,7 +5,7 @@ from unittest.mock import ANY, MagicMock, patch
 import pytest
 
 from mcp_atlassian.jira import JiraFetcher
-from mcp_atlassian.jira.issues import IssuesMixin, logger
+from mcp_atlassian.jira.issues import IssuesMixin
 from mcp_atlassian.models.jira import JiraIssue
 
 

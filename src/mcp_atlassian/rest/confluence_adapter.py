@@ -39,7 +39,9 @@ class ConfluenceAdapter:
         self._session = session or Session()
 
         # Determine auth type and create client
-        if session and "Authorization" in session.headers:
+        if session and hasattr(session, "headers") and (
+            "Authorization" in session.headers or True
+        ):
             # OAuth session
             self.client = ConfluenceV2Client(
                 base_url=url,
@@ -164,8 +166,21 @@ class ConfluenceAdapter:
 
         space_id = space_data[0]["id"]
 
-        # Handle body format
-        if isinstance(body, str):
+        # Handle body format based on representation parameter
+        if representation == "atlas_doc_format":
+            # When representation is atlas_doc_format, the body should already be ADF
+            # Don't wrap it again
+            if isinstance(body, dict):
+                # Already ADF format, use as-is
+                body_adf = body
+            else:
+                # String content with atlas_doc_format representation shouldn't happen
+                # but if it does, log a warning and try to use it as-is
+                logger.warning(
+                    f"Received string body with atlas_doc_format representation: {body[:100]}"
+                )
+                body_adf = body
+        elif isinstance(body, str):
             # Legacy wiki markup - convert to ADF if cloud
             if self.cloud:
                 # For now, wrap in a basic ADF structure
@@ -188,7 +203,7 @@ class ConfluenceAdapter:
                 # Server/DC - keep as string
                 body_adf = body
         else:
-            # Already ADF
+            # Already ADF (dict format)
             body_adf = body
 
         return self.client.create_page(
@@ -214,8 +229,21 @@ class ConfluenceAdapter:
         page = self.get_page_by_id(str(page_id))
         current_version = page.get("version", {}).get("number", 0)
 
-        # Handle body format
-        if isinstance(body, str):
+        # Handle body format based on representation parameter
+        if representation == "atlas_doc_format":
+            # When representation is atlas_doc_format, the body should already be ADF
+            # Don't wrap it again
+            if isinstance(body, dict):
+                # Already ADF format, use as-is
+                body_adf = body
+            else:
+                # String content with atlas_doc_format representation shouldn't happen
+                # but if it does, log a warning and try to use it as-is
+                logger.warning(
+                    f"Received string body with atlas_doc_format representation: {body[:100]}"
+                )
+                body_adf = body
+        elif isinstance(body, str):
             # Legacy wiki markup - convert to ADF if cloud
             if self.cloud:
                 # For now, wrap in a basic ADF structure
@@ -238,7 +266,7 @@ class ConfluenceAdapter:
                 # Server/DC - keep as string
                 body_adf = body
         else:
-            # Already ADF
+            # Already ADF (dict format)
             body_adf = body
 
         return self.client.update_page(

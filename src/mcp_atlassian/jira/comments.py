@@ -89,7 +89,7 @@ class CommentsMixin(JiraClient):
             Exception: If there is an error adding the comment
         """
         try:
-            # Convert Markdown to Jira's markup format
+            # Convert markdown using helper which returns string (JSON for ADF or wiki markup)
             jira_formatted_comment = self._markdown_to_jira(comment)
 
             result = self.jira.issue_add_comment(issue_key, jira_formatted_comment)
@@ -101,9 +101,17 @@ class CommentsMixin(JiraClient):
                 logger.error(msg)
                 raise TypeError(msg)
 
+            # Handle ADF response where body is a dict
+            body = result.get("body", "")
+            if isinstance(body, dict):
+                # For ADF format, return the dict as-is or convert to string
+                body_text = str(body)  # Simple string representation
+            else:
+                body_text = self._clean_text(body)
+                
             return {
                 "id": result.get("id"),
-                "body": self._clean_text(result.get("body", "")),
+                "body": body_text,
                 "created": str(parse_date(result.get("created"))),
                 "author": result.get("author", {}).get("displayName", "Unknown"),
             }
@@ -132,10 +140,11 @@ class CommentsMixin(JiraClient):
             return ""
 
         try:
-            # Use the preprocessor with enable_adf=True to get proper ADF dicts
-            result = self.preprocessor.markdown_to_jira(
-                markdown_text, enable_adf=True
-            )
+            # Use the preprocessor and convert dicts to JSON string for API compatibility
+            result = self.preprocessor.markdown_to_jira(markdown_text)
+            if isinstance(result, dict):
+                import json
+                return json.dumps(result)
             return result
 
         except Exception:  # noqa: BLE001

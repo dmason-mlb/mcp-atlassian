@@ -104,8 +104,11 @@ class ConfluenceV2Adapter:
 
             # Handle body format based on representation
             if representation == "atlas_doc_format" and isinstance(body, dict):
-                # For ADF, the body is the ADF JSON directly
-                data["body"] = body
+                # For ADF, the body should be wrapped with representation+value for v2 API
+                data["body"] = {
+                    "representation": "atlas_doc_format",
+                    "value": body,
+                }
             else:
                 # For storage/wiki, wrap in representation structure
                 data["body"] = {
@@ -213,8 +216,11 @@ class ConfluenceV2Adapter:
 
             # Handle body format based on representation
             if representation == "atlas_doc_format" and isinstance(body, dict):
-                # For ADF, the body is the ADF JSON directly
-                data["body"] = body
+                # For ADF, the body should be wrapped with representation+value for v2 API
+                data["body"] = {
+                    "representation": "atlas_doc_format",
+                    "value": body,
+                }
             else:
                 # For storage/wiki, wrap in representation structure
                 data["body"] = {

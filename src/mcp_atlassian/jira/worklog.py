@@ -91,11 +91,9 @@ class WorklogMixin(JiraClient):
             # Convert time_spent string to seconds
             time_spent_seconds = self._parse_time_spent(time_spent)
 
-            # Convert Markdown comment to Jira format if provided
-            if comment:
-                # Check if _markdown_to_jira is available (from CommentsMixin)
-                if hasattr(self, "_markdown_to_jira"):
-                    comment = self._markdown_to_jira(comment)
+            # For worklogs, keep comment as plain text
+            # The worklog API doesn't support ADF format for comments
+            # so we skip the markdown conversion that would return a dict for Cloud
 
             # Step 1: Update original estimate if provided (separate API call)
             original_estimate_updated = False
@@ -113,11 +111,26 @@ class WorklogMixin(JiraClient):
                     # Continue with worklog creation even if estimate update fails
 
             # Step 2: Prepare worklog data
-            worklog_data: dict[str, Any] = {"timeSpentSeconds": time_spent_seconds}
+            # For Jira Cloud REST API v3, use timeSpent not timeSpentSeconds
+            worklog_data: dict[str, Any] = {"timeSpent": time_spent}
+            
+            # Handle comment - Cloud needs ADF format for JSON requests
             if comment:
-                worklog_data["comment"] = comment
+                if self.config.is_cloud:
+                    # Convert markdown to ADF for Cloud
+                    comment_adf = self.markdown_to_jira(comment, return_raw_adf=True)
+                    worklog_data["comment"] = comment_adf
+                else:
+                    # Server/DC can use plain text
+                    worklog_data["comment"] = comment
+            
+            # Set started time - required for Cloud API
             if started:
                 worklog_data["started"] = started
+            else:
+                # Default to current time in ISO format if not provided
+                from datetime import datetime, timezone
+                worklog_data["started"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000+0000")
 
             # Step 3: Prepare query parameters for remaining estimate
             params = {}
@@ -138,9 +151,17 @@ class WorklogMixin(JiraClient):
                 raise TypeError(msg)
 
             # Format and return the result
+            # Handle ADF response where comment is a dict
+            comment = result.get("comment", "")
+            if isinstance(comment, dict):
+                # For ADF format, return the dict as-is or convert to string
+                comment_text = str(comment)  # Simple string representation
+            else:
+                comment_text = self._clean_text(comment)
+                
             return {
                 "id": result.get("id"),
-                "comment": self._clean_text(result.get("comment", "")),
+                "comment": comment_text,
                 "created": str(parse_date(result.get("created", ""))),
                 "updated": str(parse_date(result.get("updated", ""))),
                 "started": str(parse_date(result.get("started", ""))),

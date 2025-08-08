@@ -294,11 +294,30 @@ class IssueCreationMixin(
             )
             return
 
+        # Handle special 'additional_fields' parameter
+        if "additional_fields" in kwargs:
+            import json
+            additional = kwargs.pop("additional_fields")
+            
+            # Parse JSON string if needed
+            if isinstance(additional, str):
+                try:
+                    additional = json.loads(additional)
+                except json.JSONDecodeError as e:
+                    logger.error(f"Failed to parse additional_fields JSON: {e}")
+                    additional = {}
+            
+            # Merge additional fields into kwargs
+            if isinstance(additional, dict):
+                kwargs.update(additional)
+            else:
+                logger.warning(f"additional_fields must be a dict or JSON string, got {type(additional)}")
+
         # Process each kwarg
         # Iterate over a copy to allow modification of the original kwargs if needed elsewhere
         for key, value in kwargs.copy().items():
             # Skip keys used internally for epic/parent handling or explicitly handled args like assignee/components
-            if key.startswith("__epic_") or key in ("parent", "assignee", "components"):
+            if key.startswith("__epic_") or key in ("parent", "assignee", "components", "additional_fields"):
                 continue
 
             normalized_key = key.lower()

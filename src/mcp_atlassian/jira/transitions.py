@@ -1,6 +1,7 @@
 """Module for Jira transition operations."""
 
 import logging
+import re
 from typing import Any
 
 from requests.exceptions import HTTPError
@@ -406,12 +407,26 @@ class TransitionsMixin(JiraClient, IssueOperationsProto, UsersOperationsProto):
         else:
             comment_str = comment
 
-        # Convert markdown to Jira format if _markdown_to_jira is available
-        jira_formatted_comment = comment_str
-        if hasattr(self, "_markdown_to_jira"):
-            jira_formatted_comment = self._markdown_to_jira(comment_str)
+        # Cloud instances need ADF format for comments
+        if self.config.is_cloud:
+            # Convert markdown to ADF for Cloud
+            comment_body = self.markdown_to_jira(comment_str, return_raw_adf=True)
+        else:
+            # For Server/DC, use wiki markup
+            jira_formatted_comment = comment_str
+            
+            # Basic markdown to Jira wiki markup conversion for common patterns
+            # Bold: **text** -> *text*
+            jira_formatted_comment = re.sub(r'\*\*(.*?)\*\*', r'*\1*', jira_formatted_comment)
+            # Italic: *text* or _text_ -> _text_
+            jira_formatted_comment = re.sub(r'(?<!\*)\*([^*]+)\*(?!\*)', r'_\1_', jira_formatted_comment)
+            jira_formatted_comment = re.sub(r'_(.*?)_', r'_\1_', jira_formatted_comment)
+            # Code: `text` -> {{text}}
+            jira_formatted_comment = re.sub(r'`([^`]+)`', r'{{\1}}', jira_formatted_comment)
+            
+            comment_body = jira_formatted_comment
 
         # Add to transition data
         transition_data["update"] = {
-            "comment": [{"add": {"body": jira_formatted_comment}}]
+            "comment": [{"add": {"body": comment_body}}]
         }

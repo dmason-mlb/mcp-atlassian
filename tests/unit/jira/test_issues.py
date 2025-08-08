@@ -18,12 +18,12 @@ Total: 46 comprehensive test methods covering all IssuesMixin functionality
 
 # Import all test classes from their specialized modules
 # This preserves backward compatibility for test discovery and execution
-from .test_issues_batch import TestIssuesBatchMixin
-from .test_issues_creation import TestIssuesCreationMixin
-from .test_issues_deletion import TestIssuesDeletionMixin
-from .test_issues_fields import TestIssuesFieldsMixin
-from .test_issues_retrieval import TestIssuesRetrievalMixin
-from .test_issues_updates import TestIssuesUpdatesMixin
+from tests.unit.jira.test_issues_batch import TestIssuesBatchMixin
+from tests.unit.jira.test_issues_creation import TestIssuesCreationMixin
+from tests.unit.jira.test_issues_deletion import TestIssuesDeletionMixin
+from tests.unit.jira.test_issues_fields import TestIssuesFieldsMixin
+from tests.unit.jira.test_issues_retrieval import TestIssuesRetrievalMixin
+from tests.unit.jira.test_issues_updates import TestIssuesUpdatesMixin
 
 # Re-export all test classes to maintain pytest discovery
 __all__ = [

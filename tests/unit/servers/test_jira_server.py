@@ -600,7 +600,7 @@ async def test_no_fetcher_get_issue(no_fetcher_client_fixture, mock_request):
 
     with (
         patch(
-            "src.mcp_atlassian.servers.jira.get_jira_fetcher",
+            "src.mcp_atlassian.servers.dependencies.get_jira_fetcher",
             AsyncMock(side_effect=mock_get_fetcher_error),
         ),
         patch(
@@ -646,7 +646,7 @@ async def test_get_issue_with_user_specific_fetcher_in_state(
             return_value=_mock_request_with_fetcher_in_state,
         ) as mock_get_http,
         patch(
-            "src.mcp_atlassian.servers.jira.get_jira_fetcher",
+            "src.mcp_atlassian.servers.dependencies.get_jira_fetcher",
             side_effect=AsyncMock(wraps=get_jira_fetcher_real),
         ),
     ):

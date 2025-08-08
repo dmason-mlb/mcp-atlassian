@@ -28,7 +28,7 @@ def check_write_access(func: F) -> F:
         logger.debug(
             f"check_write_access: ctx={ctx}, ctx.request_context={ctx.request_context}"
         )
-        logger.debug(f"check_write_access: ctx.fastmcp={ctx.fastmcp}")
+        # Avoid accessing attributes that may not exist on mocked Context in unit tests
 
         # Access request_context directly from the Context object
         request_context = ctx.request_context

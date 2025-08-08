@@ -97,13 +97,15 @@ class FormattingMixin(
             # Use the existing preprocessor
             result = self.preprocessor.markdown_to_jira(markdown_text)
 
-            # Handle ADF dict objects for Cloud instances
-            if isinstance(result, dict):
-                # FIXED: Always return ADF dict for Cloud instances
-                # JiraV3Client.add_comment() expects dict objects, not JSON strings
+            # If caller wants raw ADF dict and we got a dict, return it directly
+            if return_raw_adf and isinstance(result, dict):
                 return result
 
-            # Return string result for Server/DC instances
+            # If we got an ADF dict but caller expects default/string, return JSON string
+            if isinstance(result, dict):
+                return self._convert_adf_to_json(result)
+
+            # Otherwise return string (wiki markup)
             return str(result)
 
         except Exception:  # noqa: BLE001
