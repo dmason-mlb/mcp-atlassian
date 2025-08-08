@@ -130,12 +130,12 @@ class UsersMixin(JiraClient):
             # For Cloud, use query parameter; for Server/DC use username
             if self.config.is_cloud:
                 response = self.jira.user_find_by_user_string(
-                    query=username, start_at=0, max_results=50
+                    query=username, start_at=0, max_results=1
                 )
             else:
                 # For Server/DC, the API might be different
                 response = self.jira.user_find_by_user_string(
-                    query=username, start_at=0, max_results=50
+                    query=username, start_at=0, max_results=1
                 )
             if not isinstance(response, list):
                 msg = f"Unexpected return value type from `jira.user_find_by_user_string`: {type(response)}"
