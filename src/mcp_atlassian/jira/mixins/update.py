@@ -319,10 +319,11 @@ class IssueUpdateMixin(
             markdown_text: Text in Markdown format
 
         Returns:
-            For Cloud instances: Dictionary containing ADF JSON structure
+            For Cloud instances: JSON string containing ADF structure (API-compatible)
             For Server/DC instances: String in Jira wiki markup format
         """
-        return self.markdown_to_jira(markdown_text, return_raw_adf=True)
+        # Use string form for compatibility in update flows
+        return self.markdown_to_jira(markdown_text, return_raw_adf=False)
 
     def _add_assignee_to_fields(self, fields: dict[str, Any], assignee: str) -> None:
         """

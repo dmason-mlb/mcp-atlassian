@@ -95,6 +95,7 @@ async def get_page(
     Returns:
         JSON string representing the page content and/or metadata, or an error if not found or parameters are invalid.
     """
+    from . import get_confluence_fetcher  # lazy import to allow test patching
     confluence_fetcher = await get_confluence_fetcher(ctx)
     page_object = None
 
@@ -204,6 +205,7 @@ async def get_page_children(
     Returns:
         JSON string representing a list of child page objects.
     """
+    from . import get_confluence_fetcher  # lazy import to allow test patching
     confluence_fetcher = await get_confluence_fetcher(ctx)
     if include_content and "body" not in expand:
         expand = f"{expand},body.storage" if expand else "body.storage"

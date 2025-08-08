@@ -82,7 +82,11 @@ class IssueCreationMixin(
 
             # Add description if provided
             if description:
-                description_content = self._markdown_to_jira(description)
+                # Bypass conflicting _markdown_to_jira resolution by calling the
+                # formatting router directly and requesting string output for ADF
+                description_content = self.markdown_to_jira(
+                    description, return_raw_adf=False
+                )
                 fields["description"] = description_content
 
             # Handle components
@@ -114,6 +118,15 @@ class IssueCreationMixin(
                 logger.error(msg)
                 raise TypeError(msg)
 
+            # Fetch the created issue to return a fully populated JiraIssue model
+            created_key = result.get("key") or result.get("id")
+            if created_key:
+                try:
+                    issue_data = self.jira.get_issue(created_key)
+                    if isinstance(issue_data, dict):
+                        return JiraIssue.from_api_response(issue_data)
+                except Exception:  # noqa: BLE001
+                    logger.debug("Failed to retrieve created issue %s for enrichment", created_key)
             return JiraIssue.from_api_response(result)
 
         except HTTPError as http_err:
@@ -493,7 +506,9 @@ class IssueCreationMixin(
             markdown_text: Text in Markdown format
 
         Returns:
-            For Cloud instances: Dictionary containing ADF JSON structure
+            For Cloud instances: JSON string containing ADF structure (API-compatible)
             For Server/DC instances: String in Jira wiki markup format
         """
-        return self.markdown_to_jira(markdown_text, return_raw_adf=True)
+        # For issue creation, pass string payloads to adapter for compatibility
+        # FormattingMixin.markdown_to_jira will return JSON string when ADF dict is produced
+        return self.markdown_to_jira(markdown_text, return_raw_adf=False)

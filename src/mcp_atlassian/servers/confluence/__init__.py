@@ -2,9 +2,23 @@
 
 from fastmcp import FastMCP
 
-from .search import SearchServer
-from .pages import PagesServer
-from .content import ContentServer
+from .search import SearchServer, search, search_user
+from .pages import (
+    PagesServer,
+    get_page,
+    get_page_children,
+    create_page,
+    update_page,
+    delete_page,
+)
+from .content import (
+    ContentServer,
+    get_comments,
+    add_comment,
+    get_labels,
+    add_label,
+)
+from ..dependencies import get_confluence_fetcher
 
 # Create main confluence_mcp aggregating all modules
 confluence_mcp = FastMCP(
@@ -27,4 +41,18 @@ __all__ = [
     "search_server",      # Individual modules for direct access
     "pages_server", 
     "content_server",
+    # Re-exported tool functions for backward compatibility
+    "search",
+    "search_user",
+    "get_page",
+    "get_page_children",
+    "create_page",
+    "update_page",
+    "delete_page",
+    "get_comments",
+    "add_comment",
+    "get_labels",
+    "add_label",
+    # Expose dependency helper for tests that patch it
+    "get_confluence_fetcher",
 ]

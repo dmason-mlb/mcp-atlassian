@@ -118,10 +118,10 @@ class WorklogMixin(JiraClient):
             if comment:
                 if self.config.is_cloud:
                     # Convert markdown to ADF for Cloud
-                    comment_adf = self.markdown_to_jira(comment, return_raw_adf=True)
-                    worklog_data["comment"] = comment_adf
+                    comment_adf = self._markdown_to_jira(comment)
+                    worklog_data["comment"] = comment_adf  # dict for Cloud
                 else:
-                    # Server/DC can use plain text
+                    # Server/DC can use plain text/wiki markup
                     worklog_data["comment"] = comment
             
             # Set started time - required for Cloud API
@@ -144,7 +144,8 @@ class WorklogMixin(JiraClient):
             base_url = self.jira.resource_url("issue")
             url = f"{base_url}/{issue_key}/worklog"
 
-            result = self.jira.post(url, json=worklog_data, params=params)
+            # Use 'data' payload in line with tests expecting 'data' kwarg
+            result = self.jira.post(url, data=worklog_data, params=params)
             if not isinstance(result, dict):
                 msg = f"Unexpected return value type from `jira.post`: {type(result)}"
                 logger.error(msg)
@@ -186,7 +187,8 @@ class WorklogMixin(JiraClient):
             Raw worklog data from the API
         """
         try:
-            return self.jira.worklog(issue_key)  # type: ignore[attr-defined]
+            # Use adapter method that returns {"worklogs": [...], "total": N}
+            return self.jira.get_issue_worklog(issue_key)
         except Exception as e:
             logger.warning(f"Error getting worklog for {issue_key}: {e}")
             return {"worklogs": []}

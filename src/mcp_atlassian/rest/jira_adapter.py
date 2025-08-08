@@ -147,6 +147,16 @@ class JiraAdapter:
         visibility: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         """Add comment to issue."""
+        # If running against Cloud, ensure ADF is passed as a dict even if provided as JSON string
+        if isinstance(comment, str) and self.cloud:
+            try:
+                import json
+                loaded = json.loads(comment)
+                if isinstance(loaded, dict) and loaded.get("type") == "doc":
+                    comment = loaded
+            except Exception:
+                # Not JSON or not ADF structure; leave as string (wiki markup)
+                pass
         return self.client.add_comment(issue_key, comment, visibility)
 
     # === Transitions ===
@@ -304,6 +314,11 @@ class JiraAdapter:
             "worklogs": result.get("worklogs", []),
             "total": result.get("total", 0),
         }
+
+    # Backward-compatibility alias expected by some callers/tests
+    def issue_get_worklog(self, issue_key: str) -> dict[str, Any]:
+        """Alias for get_issue_worklog to maintain compatibility."""
+        return self.get_issue_worklog(issue_key)
 
     def issue_add_worklog(
         self,
