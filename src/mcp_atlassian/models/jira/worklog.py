@@ -11,7 +11,6 @@ from ..base import ApiModel, TimestampMixin
 from ..constants import (
     EMPTY_STRING,
     JIRA_DEFAULT_ID,
-    UNKNOWN,
 )
 from .common import JiraUser
 

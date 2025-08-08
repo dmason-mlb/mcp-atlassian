@@ -268,7 +268,7 @@ class TestCommentsMixin:
         comments_mixin.preprocessor.markdown_to_jira.assert_not_called()
 
     def test_markdown_to_jira_with_adf_dict_conversion(self, comments_mixin):
-        """Test markdown to Jira conversion when result needs dict->string conversion."""
+        """Test markdown to Jira conversion when preprocessor returns an ADF dict."""
         # Setup - mock the preprocessor to return an ADF dict
         adf_dict = {
             "type": "doc",
@@ -284,12 +284,9 @@ class TestCommentsMixin:
         # Call the method
         result = comments_mixin._markdown_to_jira("**Bold text**")
 
-        # Verify - should get JSON string for API compatibility
-        import json
-
-        expected_json = json.dumps(adf_dict)
-        assert result == expected_json
-        assert isinstance(result, str)
+        # Verify - should return raw dict directly for consistency
+        assert result == adf_dict
+        assert isinstance(result, dict)
         comments_mixin.preprocessor.markdown_to_jira.assert_called_once_with(
             "**Bold text**"
         )

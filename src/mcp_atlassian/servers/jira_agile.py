@@ -3,20 +3,18 @@
 import logging
 
 from .jira_shared import (
+    DEFAULT_READ_JIRA_FIELDS,
     Annotated,
-    Any,
     Context,
     Field,
     HTTPError,
-    MCPAtlassianAuthenticationError,
-    DEFAULT_READ_JIRA_FIELDS,
     JiraUser,
+    MCPAtlassianAuthenticationError,
     check_write_access,
     get_jira_fetcher,
     jira_mcp,
     json,
     logger,
-    safe_tool_result,
 )
 
 

@@ -1,6 +1,6 @@
 """Tests for Jira Issues mixin - Issue Retrieval functionality."""
 
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY, MagicMock
 
 import pytest
 

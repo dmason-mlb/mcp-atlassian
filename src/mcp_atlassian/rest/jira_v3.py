@@ -756,10 +756,10 @@ class JiraV3Client(BaseRESTClient):
         if not mime_type:
             mime_type = "application/octet-stream"  # Default fallback
 
-        # Prepare file for upload with explicit MIME type
-        files = {"file": (os.path.basename(filename), open(filename, "rb"), mime_type)}
+        # Prepare file for upload with explicit MIME type - use context manager for resource safety
+        with open(filename, "rb") as file_handle:
+            files = {"file": (os.path.basename(filename), file_handle, mime_type)}
 
-        try:
             response = self.session.post(
                 f"{self.base_url}/rest/api/3/issue/{issue_key}/attachments",
                 files=files,
@@ -770,10 +770,6 @@ class JiraV3Client(BaseRESTClient):
             )
             response.raise_for_status()
             return response.json()
-        finally:
-            # Make sure to close the file
-            if "file" in files:
-                files["file"][1].close()
 
     # === Bulk Operations ===
 

@@ -22,7 +22,9 @@ def wrap_all_tools_with_error_handling(mcp_server: FastMCP[Any]) -> None:
     """
     # Get all tools from the server - try to access the internal tool manager
     # Since get_tools() is async, we need to access the tool manager directly
-    if hasattr(mcp_server, '_tool_manager') and hasattr(mcp_server._tool_manager, '_tools'):
+    if hasattr(mcp_server, "_tool_manager") and hasattr(
+        mcp_server._tool_manager, "_tools"
+    ):
         tools = mcp_server._tool_manager._tools
     else:
         # Fallback: try to find tools some other way

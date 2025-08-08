@@ -1,19 +1,15 @@
 """Core CRUD tool functions for Jira operations."""
 
 from .jira_shared import (
+    DEFAULT_READ_JIRA_FIELDS,
     Annotated,
     Any,
     Context,
     Field,
-    HTTPError,
-    MCPAtlassianAuthenticationError,
-    DEFAULT_READ_JIRA_FIELDS,
-    JiraUser,
     check_write_access,
     get_jira_fetcher,
     jira_mcp,
     json,
-    logger,
     safe_tool_result,
 )
 
@@ -257,13 +253,14 @@ async def update_issue(
         ValueError: If in read-only mode or Jira client is unavailable.
     """
     jira = await get_jira_fetcher(ctx)
-    
+
     # Parse attachments if provided
     attachment_files = []
     if attachments:
         try:
             # Try to parse as JSON array first
             import json as json_module
+
             attachment_files = json_module.loads(attachments)
             if not isinstance(attachment_files, list):
                 raise ValueError("Attachments JSON must be an array")
@@ -305,7 +302,9 @@ async def delete_issue(
     """
     jira = await get_jira_fetcher(ctx)
     jira.delete_issue(issue_key)
-    return json.dumps({"status": "success", "message": f"Issue {issue_key} deleted successfully"})
+    return json.dumps(
+        {"status": "success", "message": f"Issue {issue_key} deleted successfully"}
+    )
 
 
 @jira_mcp.tool(tags={"jira", "write"})

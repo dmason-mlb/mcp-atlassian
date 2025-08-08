@@ -1,6 +1,5 @@
 """Jira issue management tools with mixin-based architecture."""
 
-import json
 import logging
 from typing import Annotated, Any
 
@@ -8,15 +7,14 @@ from fastmcp import Context, FastMCP
 from pydantic import Field
 
 from mcp_atlassian.jira.constants import DEFAULT_READ_JIRA_FIELDS
-from mcp_atlassian.servers.dependencies import get_jira_fetcher
 from mcp_atlassian.utils.decorators import check_write_access
 from mcp_atlassian.utils.tool_helpers import safe_tool_result
 
 from .mixins import (
     IssueCreationMixin,
-    IssueUpdateMixin, 
+    IssueLinkingMixin,
     IssueSearchMixin,
-    IssueLinkingMixin
+    IssueUpdateMixin,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,12 +26,14 @@ issues_mcp = FastMCP(
 )
 
 
-class IssuesServer(IssueCreationMixin, IssueUpdateMixin, IssueSearchMixin, IssueLinkingMixin):
+class IssuesServer(
+    IssueCreationMixin, IssueUpdateMixin, IssueSearchMixin, IssueLinkingMixin
+):
     """Container for Jira issue management tools using mixins."""
-    
+
     def __init__(self):
         self.mcp = issues_mcp
-        
+
     def get_tools(self):
         """Get all issue management tools."""
         return self.mcp.tools
@@ -41,6 +41,7 @@ class IssuesServer(IssueCreationMixin, IssueUpdateMixin, IssueSearchMixin, Issue
 
 # Register all mixin methods as FastMCP tools
 server_instance = IssuesServer()
+
 
 # Creation tools
 @issues_mcp.tool(tags={"jira", "write"})
@@ -105,7 +106,9 @@ async def create_issue(
     # Parse components from comma-separated string to list
     components_list = None
     if components and isinstance(components, str):
-        components_list = [comp.strip() for comp in components.split(",") if comp.strip()]
+        components_list = [
+            comp.strip() for comp in components.split(",") if comp.strip()
+        ]
     elif components:
         components_list = components
 
@@ -116,6 +119,7 @@ async def create_issue(
             normalized_additional_fields = additional_fields
         elif isinstance(additional_fields, str):
             import json as _json
+
             try:
                 parsed = _json.loads(additional_fields)
                 if isinstance(parsed, dict):
@@ -209,7 +213,9 @@ async def update_issue(
     ] = None,
 ) -> str:
     """Update an existing Jira issue including changing status, adding Epic links, updating fields, etc."""
-    return await server_instance.update_issue(ctx, issue_key, fields, additional_fields, attachments)
+    return await server_instance.update_issue(
+        ctx, issue_key, fields, additional_fields, attachments
+    )
 
 
 @issues_mcp.tool(tags={"jira", "write"})
@@ -274,7 +280,9 @@ async def transition_issue(
     ] = None,
 ) -> str:
     """Transition a Jira issue to a new status."""
-    return await server_instance.transition_issue(ctx, issue_key, transition_id, fields, comment)
+    return await server_instance.transition_issue(
+        ctx, issue_key, transition_id, fields, comment
+    )
 
 
 # Search tools
@@ -363,4 +371,6 @@ async def batch_get_changelogs(
     ] = -1,
 ) -> str:
     """Get changelogs for multiple Jira issues (Cloud only)."""
-    return await server_instance.batch_get_changelogs(ctx, issue_ids_or_keys, fields, limit)
+    return await server_instance.batch_get_changelogs(
+        ctx, issue_ids_or_keys, fields, limit
+    )

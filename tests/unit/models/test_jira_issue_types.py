@@ -1,8 +1,7 @@
 """Tests for the JiraIssueType and JiraPriority models."""
 
-import pytest
 
-from src.mcp_atlassian.models.constants import EMPTY_STRING, JIRA_DEFAULT_ID, UNKNOWN
+from src.mcp_atlassian.models.constants import EMPTY_STRING
 from src.mcp_atlassian.models.jira import JiraIssueType, JiraPriority
 
 
@@ -23,7 +22,10 @@ class TestJiraIssueType:
 
         assert issue_type.id == "10001"
         assert issue_type.name == "Bug"
-        assert issue_type.description == "A problem which impairs or prevents the functions of the product."
+        assert (
+            issue_type.description
+            == "A problem which impairs or prevents the functions of the product."
+        )
         assert issue_type.icon_url == "https://example.com/icons/issuetypes/bug.png"
         assert issue_type.subtask is False
 

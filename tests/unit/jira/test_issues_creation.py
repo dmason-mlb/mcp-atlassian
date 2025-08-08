@@ -1,6 +1,6 @@
 """Tests for Jira Issues mixin - Issue Creation functionality."""
 
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -265,7 +265,7 @@ class TestIssuesCreationMixin:
 
         # Mock the issue data for get_issue
         issue_data = {
-            "id": "12345", 
+            "id": "12345",
             "key": "TEST-123",
             "fields": {
                 "summary": "Test Issue with Fix Version",
@@ -281,7 +281,7 @@ class TestIssuesCreationMixin:
         # Call create_issue with fix versions
         issue = issues_mixin.create_issue(
             project_key="TEST",
-            summary="Test Issue with Fix Version", 
+            summary="Test Issue with Fix Version",
             issue_type="Bug",
             description="Issue with fix version",
             additional_fields={"fixVersions": [{"name": "v1.0.0"}]},
@@ -302,7 +302,9 @@ class TestIssuesCreationMixin:
         assert len(issue.fix_versions) == 1
         assert issue.fix_versions[0]["name"] == "v1.0.0"
 
-    def test_process_additional_fields_with_fixversions(self, issues_mixin: IssuesMixin):
+    def test_process_additional_fields_with_fixversions(
+        self, issues_mixin: IssuesMixin
+    ):
         """Test processing additional fields with fix versions."""
         # Mock create_issue response
         create_response = {"id": "12345", "key": "TEST-123"}

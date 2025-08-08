@@ -1,15 +1,12 @@
 """Tests for the core JiraIssue model functionality."""
 
-import pytest
 
 from src.mcp_atlassian.models.constants import EMPTY_STRING, JIRA_DEFAULT_ID, UNKNOWN
 from src.mcp_atlassian.models.jira import (
-    JiraComment,
     JiraIssue,
     JiraIssueType,
     JiraPriority,
     JiraStatus,
-    JiraStatusCategory,
     JiraTimetracking,
     JiraUser,
 )
@@ -69,9 +66,7 @@ class TestJiraIssue:
                     {"id": "10000", "name": "Backend"},
                     {"id": "10001", "name": "API"},
                 ],
-                "fixVersions": [
-                    {"id": "10020", "name": "v2.0.0", "released": False}
-                ],
+                "fixVersions": [{"id": "10020", "name": "v2.0.0", "released": False}],
                 "timetracking": {
                     "originalEstimate": "1w",
                     "remainingEstimate": "3d",

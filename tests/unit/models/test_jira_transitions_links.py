@@ -1,6 +1,5 @@
 """Tests for Jira transition and link models."""
 
-import pytest
 
 from src.mcp_atlassian.models.constants import EMPTY_STRING, JIRA_DEFAULT_ID, UNKNOWN
 from src.mcp_atlassian.models.jira import (
@@ -103,7 +102,10 @@ class TestJiraIssueLinkType:
         assert link_type.name == "Blocks"
         assert link_type.inward == "is blocked by"
         assert link_type.outward == "blocks"
-        assert link_type.self_url == "https://example.atlassian.net/rest/api/3/issueLinkType/10000"
+        assert (
+            link_type.self_url
+            == "https://example.atlassian.net/rest/api/3/issueLinkType/10000"
+        )
 
     def test_from_api_response_minimal_data(self):
         """Test creating a JiraIssueLinkType with minimal data."""
@@ -194,7 +196,10 @@ class TestJiraLinkedIssue:
 
         assert linked_issue.id == "10002"
         assert linked_issue.key == "LINKED-456"
-        assert linked_issue.self_url == "https://example.atlassian.net/rest/api/3/issue/10002"
+        assert (
+            linked_issue.self_url
+            == "https://example.atlassian.net/rest/api/3/issue/10002"
+        )
         assert linked_issue.fields.summary == "Linked Issue Summary"
         assert linked_issue.fields.status.name == "Done"
 
@@ -238,7 +243,9 @@ class TestJiraIssueLink:
         link = JiraIssueLink.from_api_response(link_data)
 
         assert link.id == "10001"
-        assert link.self_url == "https://example.atlassian.net/rest/api/3/issueLink/10001"
+        assert (
+            link.self_url == "https://example.atlassian.net/rest/api/3/issueLink/10001"
+        )
         assert link.type.name == "Blocks"
         assert link.type.inward == "is blocked by"
         assert link.type.outward == "blocks"

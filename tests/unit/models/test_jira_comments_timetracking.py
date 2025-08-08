@@ -1,9 +1,8 @@
 """Tests for the JiraComment and JiraTimetracking models."""
 
-import pytest
 
 from src.mcp_atlassian.models.constants import EMPTY_STRING, JIRA_DEFAULT_ID, UNKNOWN
-from src.mcp_atlassian.models.jira import JiraComment, JiraTimetracking, JiraUser
+from src.mcp_atlassian.models.jira import JiraComment, JiraTimetracking
 
 
 class TestJiraComment:

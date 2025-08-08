@@ -2,7 +2,7 @@
 
 import json
 import logging
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastmcp import Context, FastMCP
 from pydantic import Field
@@ -24,10 +24,10 @@ management_mcp = FastMCP(
 
 class ManagementServer:
     """Container for Jira management tools."""
-    
+
     def __init__(self):
         self.mcp = management_mcp
-        
+
     def get_tools(self):
         """Get all management tools."""
         return self.mcp.tools
@@ -98,7 +98,9 @@ Note: Worklog tools have been removed from MCP server; this module no longer pro
 async def download_attachments(
     ctx: Context,
     issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
-    target_dir: Annotated[str, Field(description="Directory where attachments should be saved")],
+    target_dir: Annotated[
+        str, Field(description="Directory where attachments should be saved")
+    ],
 ) -> str:
     """Download attachments from a Jira issue.
 
@@ -124,7 +126,12 @@ async def download_attachments(
 async def upload_attachment(
     ctx: Context,
     issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
-    file_path: Annotated[str, Field(description="Absolute or relative path to a file to upload as an attachment")],
+    file_path: Annotated[
+        str,
+        Field(
+            description="Absolute or relative path to a file to upload as an attachment"
+        ),
+    ],
 ) -> str:
     """Upload a single attachment to a Jira issue.
 
@@ -166,8 +173,12 @@ async def get_link_types(ctx: Context) -> str:
 @check_write_access
 async def link_to_epic(
     ctx: Context,
-    issue_key: Annotated[str, Field(description="The key of the issue to link (e.g., 'PROJ-123')")],
-    epic_key: Annotated[str, Field(description="The key of the epic to link to (e.g., 'PROJ-456')")],
+    issue_key: Annotated[
+        str, Field(description="The key of the issue to link (e.g., 'PROJ-123')")
+    ],
+    epic_key: Annotated[
+        str, Field(description="The key of the epic to link to (e.g., 'PROJ-456')")
+    ],
 ) -> str:
     """Link an existing issue to an epic.
 
@@ -196,13 +207,26 @@ async def link_to_epic(
 @check_write_access
 async def create_issue_link(
     ctx: Context,
-    link_type: Annotated[str, Field(description="The type of link to create (e.g., 'Duplicate', 'Blocks', 'Relates to')")],
-    inward_issue_key: Annotated[str, Field(description="The key of the inward issue (e.g., 'PROJ-123')")],
-    outward_issue_key: Annotated[str, Field(description="The key of the outward issue (e.g., 'PROJ-456')")],
-    comment: Annotated[str | None, Field(description="(Optional) Comment to add to the link")] = None,
+    link_type: Annotated[
+        str,
+        Field(
+            description="The type of link to create (e.g., 'Duplicate', 'Blocks', 'Relates to')"
+        ),
+    ],
+    inward_issue_key: Annotated[
+        str, Field(description="The key of the inward issue (e.g., 'PROJ-123')")
+    ],
+    outward_issue_key: Annotated[
+        str, Field(description="The key of the outward issue (e.g., 'PROJ-456')")
+    ],
+    comment: Annotated[
+        str | None, Field(description="(Optional) Comment to add to the link")
+    ] = None,
     comment_visibility: Annotated[
         dict[str, str] | None,
-        Field(description="(Optional) Visibility settings for the comment (e.g., {'type': 'group', 'value': 'jira-users'})"),
+        Field(
+            description="(Optional) Visibility settings for the comment (e.g., {'type': 'group', 'value': 'jira-users'})"
+        ),
     ] = None,
 ) -> str:
     """Create a link between two Jira issues.
@@ -223,7 +247,9 @@ async def create_issue_link(
     """
     jira = await get_jira_fetcher(ctx)
     if not link_type or not inward_issue_key or not outward_issue_key:
-        raise ValueError("link_type, inward_issue_key, and outward_issue_key are required.")
+        raise ValueError(
+            "link_type, inward_issue_key, and outward_issue_key are required."
+        )
 
     # Use comment_visibility directly as dict
     visibility = comment_visibility or {}
@@ -253,15 +279,34 @@ async def create_issue_link(
 @check_write_access
 async def create_remote_issue_link(
     ctx: Context,
-    issue_key: Annotated[str, Field(description="The key of the issue to add the link to (e.g., 'PROJ-123')")],
-    url: Annotated[str, Field(description="The URL to link to (e.g., 'https://example.com/page' or Confluence page URL)")],
-    title: Annotated[str, Field(description="The title/name of the link (e.g., 'Documentation Page', 'Confluence Page')")],
-    summary: Annotated[str | None, Field(description="(Optional) Description of the link")] = None,
+    issue_key: Annotated[
+        str,
+        Field(description="The key of the issue to add the link to (e.g., 'PROJ-123')"),
+    ],
+    url: Annotated[
+        str,
+        Field(
+            description="The URL to link to (e.g., 'https://example.com/page' or Confluence page URL)"
+        ),
+    ],
+    title: Annotated[
+        str,
+        Field(
+            description="The title/name of the link (e.g., 'Documentation Page', 'Confluence Page')"
+        ),
+    ],
+    summary: Annotated[
+        str | None, Field(description="(Optional) Description of the link")
+    ] = None,
     relationship: Annotated[
         str | None,
-        Field(description="(Optional) Relationship description (e.g., 'causes', 'relates to', 'documentation')"),
+        Field(
+            description="(Optional) Relationship description (e.g., 'causes', 'relates to', 'documentation')"
+        ),
     ] = None,
-    icon_url: Annotated[str | None, Field(description="(Optional) URL to a 16x16 icon for the link")] = None,
+    icon_url: Annotated[
+        str | None, Field(description="(Optional) URL to a 16x16 icon for the link")
+    ] = None,
 ) -> str:
     """Create a remote issue link (web link or Confluence link) for a Jira issue.
 
@@ -355,7 +400,10 @@ async def get_all_projects(
     ctx: Context,
     include_archived: Annotated[
         bool,
-        Field(description="Whether to include archived projects in the results", default=False),
+        Field(
+            description="Whether to include archived projects in the results",
+            default=False,
+        ),
     ] = False,
 ) -> str:
     """Get all Jira projects accessible to the current user.
@@ -384,9 +432,15 @@ async def create_version(
     ctx: Context,
     project_key: Annotated[str, Field(description="Jira project key (e.g., 'PROJ')")],
     name: Annotated[str, Field(description="Name of the version")],
-    start_date: Annotated[str | None, Field(description="Start date (YYYY-MM-DD)")] = None,
-    release_date: Annotated[str | None, Field(description="Release date (YYYY-MM-DD)")] = None,
-    description: Annotated[str | None, Field(description="Description of the version")] = None,
+    start_date: Annotated[
+        str | None, Field(description="Start date (YYYY-MM-DD)")
+    ] = None,
+    release_date: Annotated[
+        str | None, Field(description="Release date (YYYY-MM-DD)")
+    ] = None,
+    description: Annotated[
+        str | None, Field(description="Description of the version")
+    ] = None,
 ) -> str:
     """Create a new fix version in a Jira project.
 
@@ -411,7 +465,10 @@ async def create_version(
     )
     result = version.to_simplified_dict()
     return json.dumps(
-        {"message": f"Version '{name}' created in project {project_key}", "version": result},
+        {
+            "message": f"Version '{name}' created in project {project_key}",
+            "version": result,
+        },
         indent=2,
         ensure_ascii=False,
     )
@@ -480,14 +537,18 @@ async def batch_create_versions(
                 release_date=version_data.get("releaseDate"),
                 description=version_data.get("description"),
             )
-            results.append({
-                "success": True,
-                "version": version.to_simplified_dict(),
-            })
+            results.append(
+                {
+                    "success": True,
+                    "version": version.to_simplified_dict(),
+                }
+            )
         except Exception as e:
-            results.append({
-                "success": False,
-                "error": f"Failed to create version '{name}': {str(e)}",
-            })
+            results.append(
+                {
+                    "success": False,
+                    "error": f"Failed to create version '{name}': {str(e)}",
+                }
+            )
 
     return json.dumps(results, indent=2, ensure_ascii=False)

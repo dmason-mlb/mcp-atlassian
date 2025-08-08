@@ -5,16 +5,10 @@ from .jira_shared import (
     Any,
     Context,
     Field,
-    HTTPError,
-    MCPAtlassianAuthenticationError,
-    DEFAULT_READ_JIRA_FIELDS,
-    JiraUser,
     check_write_access,
     get_jira_fetcher,
     jira_mcp,
     json,
-    logger,
-    safe_tool_result,
 )
 
 
@@ -72,7 +66,10 @@ async def upload_attachment(
     ctx: Context,
     issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
     file_path: Annotated[
-        str, Field(description="Absolute or relative path to a file to upload as an attachment")
+        str,
+        Field(
+            description="Absolute or relative path to a file to upload as an attachment"
+        ),
     ],
 ) -> str:
     """Upload a single attachment to a Jira issue.

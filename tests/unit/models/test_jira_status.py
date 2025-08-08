@@ -1,8 +1,7 @@
 """Tests for the JiraStatus and JiraStatusCategory models."""
 
-import pytest
 
-from src.mcp_atlassian.models.constants import EMPTY_STRING, JIRA_DEFAULT_ID, UNKNOWN
+from src.mcp_atlassian.models.constants import JIRA_DEFAULT_ID, UNKNOWN
 from src.mcp_atlassian.models.jira import JiraStatus, JiraStatusCategory
 
 
@@ -48,7 +47,10 @@ class TestJiraStatus:
 
         assert status.id == "10001"
         assert status.name == "In Progress"
-        assert status.description == "This issue is being actively worked on at the moment by the assignee."
+        assert (
+            status.description
+            == "This issue is being actively worked on at the moment by the assignee."
+        )
         assert status.icon_url == "https://example.com/icons/statuses/inprogress.png"
         assert status.status_category.name == "In Progress"
         assert status.status_category.key == "indeterminate"

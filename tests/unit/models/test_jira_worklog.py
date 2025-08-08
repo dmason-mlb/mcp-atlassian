@@ -6,7 +6,7 @@ import re
 import pytest
 
 from src.mcp_atlassian.models.constants import EMPTY_STRING, JIRA_DEFAULT_ID, UNKNOWN
-from src.mcp_atlassian.models.jira import JiraUser, JiraWorklog
+from src.mcp_atlassian.models.jira import JiraWorklog
 
 # Optional: Import real API client for optional real-data testing
 try:
@@ -223,9 +223,7 @@ class TestRealJiraData:
                 if issue_model.url:
                     assert issue_model.url.startswith(jira_client.url)
 
-                print(
-                    f"✓ Successfully validated model for issue {issue_model.key}"
-                )
+                print(f"✓ Successfully validated model for issue {issue_model.key}")
 
         except Exception as e:
             pytest.fail(f"Model compatibility test failed: {e}")
@@ -234,9 +232,7 @@ class TestRealJiraData:
         """Test that real search API responses work with models."""
         try:
             # Perform a simple search
-            search_data = jira_client.jql(
-                "order by created DESC", start_at=0, limit=5
-            )
+            search_data = jira_client.jql("order by created DESC", start_at=0, limit=5)
 
             # Test that the model can be created
             search_result = JiraSearchResult.from_api_response(search_data)
@@ -274,9 +270,7 @@ class TestRealJiraData:
                 assert project_model.name
                 assert re.match(r"^[A-Z][A-Z0-9]*$", project_model.key)
 
-                print(
-                    f"✓ Successfully validated model for project {project_model.key}"
-                )
+                print(f"✓ Successfully validated model for project {project_model.key}")
 
         except Exception as e:
             pytest.fail(f"Project model compatibility test failed: {e}")

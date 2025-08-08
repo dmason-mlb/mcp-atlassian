@@ -91,6 +91,7 @@ class IssueCreationMixin(
                     if isinstance(description_content, str):
                         try:
                             import json as _json
+
                             description_content = _json.loads(description_content)
                         except Exception:  # noqa: BLE001
                             # If it isn't JSON, leave as-is and let API validate
@@ -138,7 +139,10 @@ class IssueCreationMixin(
                     if isinstance(issue_data, dict):
                         return JiraIssue.from_api_response(issue_data)
                 except Exception:  # noqa: BLE001
-                    logger.debug("Failed to retrieve created issue %s for enrichment", created_key)
+                    logger.debug(
+                        "Failed to retrieve created issue %s for enrichment",
+                        created_key,
+                    )
             return JiraIssue.from_api_response(result)
 
         except HTTPError as http_err:
@@ -356,8 +360,9 @@ class IssueCreationMixin(
         # Handle special 'additional_fields' parameter
         if "additional_fields" in kwargs:
             import json
+
             additional = kwargs.pop("additional_fields")
-            
+
             # Parse JSON string if needed
             if isinstance(additional, str):
                 try:
@@ -365,18 +370,25 @@ class IssueCreationMixin(
                 except json.JSONDecodeError as e:
                     logger.error(f"Failed to parse additional_fields JSON: {e}")
                     additional = {}
-            
-            # Merge additional fields into kwargs
+
+            # Merge additional fields into kwargs - avoid mutating original kwargs dict
             if isinstance(additional, dict):
-                kwargs.update(additional)
+                kwargs = {**kwargs, **additional}  # Create new dict to avoid mutation
             else:
-                logger.warning(f"additional_fields must be a dict or JSON string, got {type(additional)}")
+                logger.warning(
+                    f"additional_fields must be a dict or JSON string, got {type(additional)}"
+                )
 
         # Process each kwarg
-        # Iterate over a copy to allow modification of the original kwargs if needed elsewhere
+        # Iterate over a copy to allow modification during iteration if needed
         for key, value in kwargs.copy().items():
             # Skip keys used internally for epic/parent handling or explicitly handled args like assignee/components
-            if key.startswith("__epic_") or key in ("parent", "assignee", "components", "additional_fields"):
+            if key.startswith("__epic_") or key in (
+                "parent",
+                "assignee",
+                "components",
+                "additional_fields",
+            ):
                 continue
 
             normalized_key = key.lower()

@@ -1,8 +1,7 @@
 """Tests for the JiraUser model."""
 
-import pytest
 
-from src.mcp_atlassian.models.constants import EMPTY_STRING, JIRA_DEFAULT_ID, UNKNOWN
+from src.mcp_atlassian.models.constants import EMPTY_STRING
 from src.mcp_atlassian.models.jira import JiraUser
 
 

@@ -108,7 +108,7 @@ class CommentsMixin(JiraClient):
                 body_text = str(body)  # Simple string representation
             else:
                 body_text = self._clean_text(body)
-                
+
             return {
                 "id": result.get("id"),
                 "body": body_text,
@@ -126,7 +126,8 @@ class CommentsMixin(JiraClient):
         Convert Markdown syntax to Jira markup syntax.
 
         This method uses the preprocessor for consistent conversion between
-        Markdown and Jira markup.
+        Markdown and Jira markup. Returns raw ADF dict for Cloud instances
+        rather than JSON string to maintain API compatibility.
 
         Args:
             markdown_text: Text in Markdown format
@@ -140,11 +141,8 @@ class CommentsMixin(JiraClient):
             return ""
 
         try:
-            # Use the preprocessor and convert dicts to JSON string for API compatibility
+            # Use the preprocessor - return raw dict/string without JSON conversion
             result = self.preprocessor.markdown_to_jira(markdown_text)
-            if isinstance(result, dict):
-                import json
-                return json.dumps(result)
             return result
 
         except Exception:  # noqa: BLE001

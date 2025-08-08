@@ -7,22 +7,22 @@ downstream integrations.
 
 # Aggregated service
 from .confluence import confluence_mcp  # noqa: F401
+from .confluence.content import (  # noqa: F401
+    add_comment,
+    add_label,
+    get_comments,
+    get_labels,
+)
+from .confluence.pages import (  # noqa: F401
+    create_page,
+    delete_page,
+    get_page,
+    get_page_children,
+    update_page,
+)
 
 # Re-export individual tool functions
 from .confluence.search import search, search_user  # noqa: F401
-from .confluence.pages import (  # noqa: F401
-    get_page,
-    get_page_children,
-    create_page,
-    update_page,
-    delete_page,
-)
-from .confluence.content import (  # noqa: F401
-    get_comments,
-    add_comment,
-    get_labels,
-    add_label,
-)
 
 __all__ = [
     "confluence_mcp",

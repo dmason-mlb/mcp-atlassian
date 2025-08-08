@@ -3,9 +3,6 @@
 import logging
 from typing import Any
 
-from requests.exceptions import HTTPError
-
-from ...exceptions import MCPAtlassianAuthenticationError
 from ...models.jira import JiraIssue
 from ..client import JiraClient
 from ..protocols import (
@@ -55,8 +52,12 @@ class IssueUpdateMixin(
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("[DEBUG] JiraIssueService.update_issue called with:")
             logger.debug(f"[DEBUG]   issue_key: '{issue_key}'")
-            logger.debug(f"[DEBUG]   fields: {list(fields.keys()) if fields else 'None'}")
-            logger.debug(f"[DEBUG]   kwargs: {list(kwargs.keys()) if kwargs else 'None'}")
+            logger.debug(
+                f"[DEBUG]   fields: {list(fields.keys()) if fields else 'None'}"
+            )
+            logger.debug(
+                f"[DEBUG]   kwargs: {list(kwargs.keys()) if kwargs else 'None'}"
+            )
 
         try:
             # Validate required fields
@@ -104,10 +105,12 @@ class IssueUpdateMixin(
                     logger.debug(
                         f"[DEBUG]   Is dict: {isinstance(description_content, dict)}"
                     )
-                    logger.debug(f"[DEBUG]   Is str: {isinstance(description_content, str)}")
+                    logger.debug(
+                        f"[DEBUG]   Is str: {isinstance(description_content, str)}"
+                    )
                     logger.debug(
                         f"[DEBUG]   Content preview: {str(description_content)[:300]}..."
-                )
+                    )
 
                 # Handle both ADF (dict) and wiki markup (str) formats
                 # With the new REST client, ADF is passed as-is (dict)
@@ -496,6 +499,7 @@ class IssueUpdateMixin(
             # Example: Ensure datetime fields are in ISO format if needed by API
             try:
                 from ...utils import parse_date
+
                 dt = parse_date(value)  # Assuming parse_date handles various inputs
                 return (
                     dt.isoformat() if dt else value
