@@ -239,6 +239,7 @@ class BaseRESTClient:
                 """Recursively sanitize sensitive data in JSON payloads."""
                 if isinstance(data, dict):
                     sanitized = {}
+                    # Avoid overly generic substrings like 'pat' or 'key' that cause false positives
                     sensitive_keys = {
                         "password",
                         "api_key",
@@ -249,13 +250,11 @@ class BaseRESTClient:
                         "refresh_token",
                         "access_token",
                         "authorization",
-                        "auth",
-                        "key",
+                        "auth_token",
+                        "bearer_token",
                         "private_key",
                         "webhook_secret",
-                        "oauth",
-                        "bearer",
-                        "pat",
+                        "oauth_token",
                         "ssn",
                         "creditcard",
                         "credit_card",

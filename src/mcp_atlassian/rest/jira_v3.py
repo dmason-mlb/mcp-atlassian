@@ -765,7 +765,6 @@ class JiraV3Client(BaseRESTClient):
                 files=files,
                 headers={
                     "X-Atlassian-Token": "no-check",
-                    "Content-Type": None,  # Let requests set multipart/form-data
                 },
             )
             response.raise_for_status()
