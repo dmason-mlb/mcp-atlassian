@@ -391,7 +391,9 @@ def test_add_comment_to_transition_data_with_comment(formatting_mixin):
 
     assert result["transition"] == {"id": "10"}
     assert result["update"]["comment"][0]["add"]["body"] == "Converted comment"
-    formatting_mixin.markdown_to_jira.assert_called_once_with("This is a comment")
+    formatting_mixin.markdown_to_jira.assert_called_once_with(
+        "This is a comment", return_raw_adf=True
+    )
 
 
 def test_add_comment_to_transition_data_without_comment(formatting_mixin):
@@ -401,3 +403,58 @@ def test_add_comment_to_transition_data_without_comment(formatting_mixin):
     result = formatting_mixin.add_comment_to_transition_data(transition_data, None)
 
     assert result == transition_data  # Should return unmodified data
+
+
+def test_markdown_to_jira_with_adf_dict(formatting_mixin):
+    """Test markdown_to_jira method with ADF dict return from preprocessor."""
+    # Mock preprocessor to return ADF dict (Cloud instance)
+    adf_dict = {
+        "type": "doc",
+        "content": [
+            {"type": "paragraph", "content": [{"type": "text", "text": "Bold text"}]}
+        ],
+    }
+    formatting_mixin.preprocessor.markdown_to_jira.return_value = adf_dict
+
+    # Test with return_raw_adf=False (default) - should return JSON string
+    result = formatting_mixin.markdown_to_jira("**Bold text**", return_raw_adf=False)
+
+    import json
+
+    assert result == json.dumps(adf_dict)
+    assert isinstance(result, str)
+
+
+def test_markdown_to_jira_with_adf_dict_raw(formatting_mixin):
+    """Test markdown_to_jira method with ADF dict return and return_raw_adf=True."""
+    # Mock preprocessor to return ADF dict (Cloud instance)
+    adf_dict = {
+        "type": "doc",
+        "content": [
+            {"type": "paragraph", "content": [{"type": "text", "text": "Bold text"}]}
+        ],
+    }
+    formatting_mixin.preprocessor.markdown_to_jira.return_value = adf_dict
+
+    # Test with return_raw_adf=True - should return dict
+    result = formatting_mixin.markdown_to_jira("**Bold text**", return_raw_adf=True)
+
+    assert result == adf_dict
+    assert isinstance(result, dict)
+
+
+def test_convert_adf_to_json_helper(formatting_mixin):
+    """Test the _convert_adf_to_json helper method."""
+    adf_dict = {
+        "type": "doc",
+        "content": [
+            {"type": "paragraph", "content": [{"type": "text", "text": "Test"}]}
+        ],
+    }
+
+    result = formatting_mixin._convert_adf_to_json(adf_dict)
+
+    import json
+
+    assert result == json.dumps(adf_dict)
+    assert isinstance(result, str)

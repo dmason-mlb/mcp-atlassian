@@ -1,8 +1,8 @@
 # MCP Atlassian ADF Implementation Plan
 
-**Created:** July 29, 2025  
-**Purpose:** Convert Claude Code-generated markdown to proper ADF format for Jira/Confluence Cloud  
-**Problem:** Asterisks and underscores appearing literally instead of formatted text  
+**Created:** July 29, 2025
+**Purpose:** Convert Claude Code-generated markdown to proper ADF format for Jira/Confluence Cloud
+**Problem:** Asterisks and underscores appearing literally instead of formatted text
 
 ## Executive Summary
 

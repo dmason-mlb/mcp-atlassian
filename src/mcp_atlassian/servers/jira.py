@@ -13,6 +13,7 @@ from mcp_atlassian.jira.constants import DEFAULT_READ_JIRA_FIELDS
 from mcp_atlassian.models.jira.common import JiraUser
 from mcp_atlassian.servers.dependencies import get_jira_fetcher
 from mcp_atlassian.utils.decorators import check_write_access
+from mcp_atlassian.utils.tool_helpers import safe_tool_result
 
 logger = logging.getLogger(__name__)
 
@@ -336,24 +337,9 @@ async def get_transitions(
     return json.dumps(transitions, indent=2, ensure_ascii=False)
 
 
-@jira_mcp.tool(tags={"jira", "read"})
-async def get_worklog(
-    ctx: Context,
-    issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
-) -> str:
-    """Get worklog entries for a Jira issue.
-
-    Args:
-        ctx: The FastMCP context.
-        issue_key: Jira issue key.
-
-    Returns:
-        JSON string representing the worklog entries.
-    """
-    jira = await get_jira_fetcher(ctx)
-    worklogs = jira.get_worklogs(issue_key)
-    result = {"worklogs": worklogs}
-    return json.dumps(result, indent=2, ensure_ascii=False)
+"""
+Note: Worklog tools have been removed from MCP server; get_worklog is no longer available.
+"""
 
 
 @jira_mcp.tool(tags={"jira", "read"})
@@ -609,6 +595,7 @@ async def get_link_types(ctx: Context) -> str:
 
 @jira_mcp.tool(tags={"jira", "write"})
 @check_write_access
+@safe_tool_result
 async def create_issue(
     ctx: Context,
     project_key: Annotated[
@@ -650,7 +637,7 @@ async def create_issue(
         ),
     ] = None,
     additional_fields: Annotated[
-        dict[str, Any] | None,
+        dict[str, Any] | str | None,
         Field(
             description=(
                 "(Optional) Dictionary of additional fields to set. Examples:\n"
@@ -690,10 +677,22 @@ async def create_issue(
             comp.strip() for comp in components.split(",") if comp.strip()
         ]
 
-    # Use additional_fields directly as dict
-    extra_fields = additional_fields or {}
-    if not isinstance(extra_fields, dict):
-        raise ValueError("additional_fields must be a dictionary.")
+    # Normalize additional_fields: accept dict or JSON string
+    extra_fields: dict[str, Any] = {}
+    if additional_fields is not None:
+        if isinstance(additional_fields, dict):
+            extra_fields = additional_fields
+        elif isinstance(additional_fields, str):
+            try:
+                parsed = json.loads(additional_fields)
+                if isinstance(parsed, dict):
+                    extra_fields = parsed
+                else:
+                    raise ValueError("additional_fields JSON must decode to an object")
+            except Exception as e:
+                raise ValueError(f"Invalid JSON for additional_fields: {e}") from e
+        else:
+            raise ValueError("additional_fields must be a dictionary or JSON string.")
 
     issue = jira.create_issue(
         project_key=project_key,
@@ -1005,71 +1004,9 @@ async def add_comment(
     return json.dumps(result, indent=2, ensure_ascii=False)
 
 
-@jira_mcp.tool(tags={"jira", "write"})
-@check_write_access
-async def add_worklog(
-    ctx: Context,
-    issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
-    time_spent: Annotated[
-        str,
-        Field(
-            description=(
-                "Time spent in Jira format. Examples: "
-                "'1h 30m' (1 hour and 30 minutes), '1d' (1 day), '30m' (30 minutes), '4h' (4 hours)"
-            )
-        ),
-    ],
-    comment: Annotated[
-        str | None,
-        Field(description="(Optional) Comment for the worklog in Markdown format"),
-    ] = None,
-    started: Annotated[
-        str | None,
-        Field(
-            description=(
-                "(Optional) Start time in ISO format. If not provided, the current time will be used. "
-                "Example: '2023-08-01T12:00:00.000+0000'"
-            )
-        ),
-    ] = None,
-    # Add original_estimate and remaining_estimate as per original tool
-    original_estimate: Annotated[
-        str | None, Field(description="(Optional) New value for the original estimate")
-    ] = None,
-    remaining_estimate: Annotated[
-        str | None, Field(description="(Optional) New value for the remaining estimate")
-    ] = None,
-) -> str:
-    """Add a worklog entry to a Jira issue.
-
-    Args:
-        ctx: The FastMCP context.
-        issue_key: Jira issue key.
-        time_spent: Time spent in Jira format.
-        comment: Optional comment in Markdown.
-        started: Optional start time in ISO format.
-        original_estimate: Optional new original estimate.
-        remaining_estimate: Optional new remaining estimate.
-
-
-    Returns:
-        JSON string representing the added worklog object.
-
-    Raises:
-        ValueError: If in read-only mode or Jira client unavailable.
-    """
-    jira = await get_jira_fetcher(ctx)
-    # add_worklog returns dict
-    worklog_result = jira.add_worklog(
-        issue_key=issue_key,
-        time_spent=time_spent,
-        comment=comment,
-        started=started,
-        original_estimate=original_estimate,
-        remaining_estimate=remaining_estimate,
-    )
-    result = {"message": "Worklog added successfully", "worklog": worklog_result}
-    return json.dumps(result, indent=2, ensure_ascii=False)
+"""
+Note: Worklog tools have been removed from MCP server; add_worklog is no longer available.
+"""
 
 
 @jira_mcp.tool(tags={"jira", "write"})

@@ -95,14 +95,14 @@ def get_custom_headers(env_var_name: str) -> dict[str, str]:
 
 def get_adf_rollout_percentage() -> int:
     """Get the ADF rollout percentage from environment variables.
-    
-    This enables gradual rollout of ADF format conversion by specifying 
+
+    This enables gradual rollout of ADF format conversion by specifying
     what percentage of requests should use ADF format.
-    
+
     Returns:
         Percentage (0-100) of requests that should use ADF format.
         Default is 100 (full rollout) if not specified.
-        
+
     Environment Variables:
         ATLASSIAN_ADF_ROLLOUT_PERCENTAGE: Percentage (0-100) for gradual rollout
     """
@@ -118,18 +118,18 @@ def get_adf_rollout_percentage() -> int:
 
 def is_adf_rollout_enabled_for_user(user_id: str | None = None) -> bool:
     """Check if ADF format should be enabled for a specific user.
-    
+
     Supports multiple rollout strategies:
     1. Percentage-based rollout using hash of user ID
     2. User allowlist/blocklist
     3. Global enable/disable flags
-    
+
     Args:
         user_id: User identifier for hash-based percentage rollout
-        
+
     Returns:
         True if ADF should be enabled for this user, False otherwise
-        
+
     Environment Variables:
         ATLASSIAN_ADF_ROLLOUT_PERCENTAGE: Percentage (0-100) for gradual rollout
         ATLASSIAN_ADF_ROLLOUT_USERS: Comma-separated list of user IDs to enable
@@ -140,44 +140,46 @@ def is_adf_rollout_enabled_for_user(user_id: str | None = None) -> bool:
     # Check global disable flag first
     if is_env_truthy("ATLASSIAN_DISABLE_ADF"):
         return False
-        
-    # Check global enable flag 
+
+    # Check global enable flag
     if is_env_truthy("ATLASSIAN_ENABLE_ADF"):
         return True
-        
+
     # Check user-specific exclude list
     exclude_users = os.getenv("ATLASSIAN_ADF_ROLLOUT_EXCLUDE_USERS", "")
     if exclude_users and user_id:
         exclude_list = [u.strip() for u in exclude_users.split(",") if u.strip()]
         if user_id in exclude_list:
             return False
-            
+
     # Check user-specific include list (overrides percentage)
     include_users = os.getenv("ATLASSIAN_ADF_ROLLOUT_USERS", "")
     if include_users and user_id:
         include_list = [u.strip() for u in include_users.split(",") if u.strip()]
         if user_id in include_list:
             return True
-            
+
     # Percentage-based rollout
     rollout_percentage = get_adf_rollout_percentage()
-    
+
     # If 0%, disable for everyone not in include list
     if rollout_percentage == 0:
         return False
-        
-    # If 100%, enable for everyone not in exclude list  
+
+    # If 100%, enable for everyone not in exclude list
     if rollout_percentage >= 100:
         return True
-        
+
     # Hash-based percentage rollout
     if user_id:
         # Use hash of user_id to determine inclusion
         import hashlib
+
         user_hash = int(hashlib.md5(user_id.encode()).hexdigest()[:8], 16)
         user_percentage = user_hash % 100
         return user_percentage < rollout_percentage
     else:
         # No user ID provided, use global percentage as probability
         import random
+
         return random.randint(0, 99) < rollout_percentage

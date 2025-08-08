@@ -1,8 +1,8 @@
 # MCP Client Configuration Guide
 
-**Created:** July 30, 2025  
-**Version:** 1.0.0  
-**Purpose:** Detailed configuration instructions for MCP Atlassian server across different MCP clients  
+**Created:** July 30, 2025
+**Version:** 1.0.0
+**Purpose:** Detailed configuration instructions for MCP Atlassian server across different MCP clients
 
 ## Overview
 
@@ -439,7 +439,7 @@ curl -N -H "Accept: text/event-stream" http://localhost:9000/sse
       "args": ["run", "mcp-atlassian"],
       "cwd": "/path/to/mcp-atlassian",
       "env": {
-        "ATLASSIAN_EMAIL": "prod@company.com", 
+        "ATLASSIAN_EMAIL": "prod@company.com",
         "ATLASSIAN_API_TOKEN": "prod-token",
         "JIRA_URL": "https://company.atlassian.net",
         "LOG_LEVEL": "INFO",
@@ -466,7 +466,7 @@ curl -N -H "Accept: text/event-stream" http://localhost:9000/sse
       }
     },
     "atlassian-customer": {
-      "command": "uv", 
+      "command": "uv",
       "args": ["run", "mcp-atlassian"],
       "cwd": "/path/to/mcp-atlassian",
       "env": {
@@ -490,7 +490,7 @@ curl -N -H "Accept: text/event-stream" http://localhost:9000/sse
       "cwd": "/path/to/mcp-atlassian",
       "env": {
         "ATLASSIAN_OAUTH_CLIENT_ID": "your-client-id",
-        "ATLASSIAN_OAUTH_CLIENT_SECRET": "your-client-secret", 
+        "ATLASSIAN_OAUTH_CLIENT_SECRET": "your-client-secret",
         "ATLASSIAN_OAUTH_REDIRECT_URI": "http://localhost:8000/callback",
         "JIRA_URL": "https://company.atlassian.net",
         "CONFLUENCE_URL": "https://company.atlassian.net/wiki"
@@ -543,7 +543,7 @@ Once connected, test these commands in your MCP client:
 - "Show me recent issues updated in the last week"
 - "Create a new issue in project XYZ"
 
-# Confluence Testing  
+# Confluence Testing
 - "Search Confluence for documentation"
 - "Show me recent Confluence pages"
 - "List spaces I have access to"
@@ -656,7 +656,7 @@ type %USERPROFILE%\.claude\logs\mcp.log
 # macOS
 tail -f ~/Library/Logs/Cursor/main.log
 
-# Windows  
+# Windows
 type %APPDATA%\Cursor\logs\main.log
 
 # Linux

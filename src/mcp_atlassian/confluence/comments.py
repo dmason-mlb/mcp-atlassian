@@ -110,6 +110,7 @@ class CommentsMixin(ConfluenceClient):
                 if isinstance(result, dict):
                     # For ADF format, we need to serialize it to JSON string
                     import json
+
                     content = json.dumps(result)
                 else:
                     # Storage format

@@ -101,11 +101,11 @@ class ConfluencePreprocessor(BasePreprocessor):
         markdown_content: str,
         *,
         enable_heading_anchors: bool = False,
-        enable_adf: bool = True
+        enable_adf: bool = True,
     ) -> str | dict[str, Any]:
         """
         Convert Markdown content to appropriate Confluence format (ADF or storage format).
-        
+
         Uses FormatRouter to automatically detect deployment type and choose format:
         - Cloud instances: Returns ADF JSON dictionary
         - Server/DC instances: Returns Confluence storage format (XHTML) string
@@ -132,13 +132,14 @@ class ConfluencePreprocessor(BasePreprocessor):
         if not enable_adf:
             # Fall back to legacy storage format conversion
             return self.markdown_to_confluence_storage(
-                markdown_content,
-                enable_heading_anchors=enable_heading_anchors
+                markdown_content, enable_heading_anchors=enable_heading_anchors
             )
 
         try:
             # Use format router to convert based on deployment type
-            result = self.format_router.convert_markdown(markdown_content, self.base_url)
+            result = self.format_router.convert_markdown(
+                markdown_content, self.base_url
+            )
 
             if result["format"] == "adf":
                 # Return ADF JSON for Cloud instances
@@ -147,16 +148,16 @@ class ConfluencePreprocessor(BasePreprocessor):
                 # For Server/DC instances, fall back to storage format conversion
                 # since Confluence Server/DC doesn't use wiki markup like Jira
                 return self.markdown_to_confluence_storage(
-                    markdown_content,
-                    enable_heading_anchors=enable_heading_anchors
+                    markdown_content, enable_heading_anchors=enable_heading_anchors
                 )
 
         except Exception as e:
-            logger.error(f"Format conversion failed, falling back to storage format: {e}")
+            logger.error(
+                f"Format conversion failed, falling back to storage format: {e}"
+            )
             # Fallback to legacy storage format conversion
             return self.markdown_to_confluence_storage(
-                markdown_content,
-                enable_heading_anchors=enable_heading_anchors
+                markdown_content, enable_heading_anchors=enable_heading_anchors
             )
 
     # Confluence-specific methods can be added here

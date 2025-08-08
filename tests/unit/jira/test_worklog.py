@@ -286,8 +286,8 @@ class TestWorklogMixin:
         assert call_args is not None
         args, kwargs = call_args
 
-        assert "data" in kwargs
-        assert kwargs["data"]["started"] == started_time
+        assert "json" in kwargs
+        assert kwargs["json"]["started"] == started_time
 
     def test_add_worklog_with_markdown_to_jira_available(self, worklog_mixin):
         """Test add_worklog with _markdown_to_jira conversion."""

@@ -1,6 +1,5 @@
 """Integration tests for preprocessing pipeline with ADF support."""
 
-
 from mcp_atlassian.preprocessing.confluence import ConfluencePreprocessor
 from mcp_atlassian.preprocessing.jira import JiraPreprocessor
 

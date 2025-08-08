@@ -4,11 +4,11 @@ import logging
 import os
 from typing import Any, Literal
 
-from atlassian import Jira
 from requests import Session
 
 from mcp_atlassian.exceptions import MCPAtlassianAuthenticationError
 from mcp_atlassian.preprocessing import JiraPreprocessor
+from mcp_atlassian.rest.adapters import JiraAdapter
 from mcp_atlassian.utils.logging import (
     get_masked_session_headers,
     log_config_param,
@@ -65,7 +65,7 @@ class JiraClient:
             )
 
             # Initialize Jira with the session
-            self.jira = Jira(
+            self.jira = JiraAdapter(
                 url=api_url,
                 session=session,
                 cloud=True,  # OAuth is only for Cloud
@@ -77,7 +77,7 @@ class JiraClient:
                 f"URL: {self.config.url}, "
                 f"Token (masked): {mask_sensitive(str(self.config.personal_token))}"
             )
-            self.jira = Jira(
+            self.jira = JiraAdapter(
                 url=self.config.url,
                 token=self.config.personal_token,
                 cloud=self.config.is_cloud,
@@ -90,7 +90,7 @@ class JiraClient:
                 f"API Token present: {bool(self.config.api_token)}, "
                 f"Is Cloud: {self.config.is_cloud}"
             )
-            self.jira = Jira(
+            self.jira = JiraAdapter(
                 url=self.config.url,
                 username=self.config.username,
                 password=self.config.api_token,
@@ -204,7 +204,7 @@ class JiraClient:
         _ = self.config.url if hasattr(self, "config") else ""
         return self.preprocessor.clean_jira_text(text)
 
-    def _markdown_to_jira(self, markdown_text: str) -> str:
+    def _markdown_to_jira(self, markdown_text: str) -> str | dict[str, Any]:
         """
         Convert Markdown syntax to Jira markup syntax.
 
@@ -212,7 +212,8 @@ class JiraClient:
             markdown_text: Text in Markdown format
 
         Returns:
-            Text in Jira markup format
+            For Cloud instances: Dictionary containing ADF JSON structure
+            For Server/DC instances: String in Jira wiki markup format
         """
         if not markdown_text:
             return ""

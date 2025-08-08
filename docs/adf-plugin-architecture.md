@@ -13,19 +13,19 @@ The foundation of the plugin system is the `BaseADFPlugin` abstract base class t
 ```python
 class BaseADFPlugin(ABC):
     """Base class for ADF node plugins."""
-    
+
     @property
     @abstractmethod
     def name(self) -> str:
         """The name of the plugin."""
         pass
-    
+
     @property
     @abstractmethod
     def block_pattern(self) -> Optional[Pattern[str]]:
         """Regex pattern for block-level node detection."""
         pass
-    
+
     @property
     @abstractmethod
     def inline_pattern(self) -> Optional[Pattern[str]]:
@@ -180,16 +180,16 @@ import re
 
 class CustomPlugin(BaseADFPlugin):
     """Plugin for custom ADF nodes."""
-    
+
     @property
     def name(self) -> str:
         return "custom"
-    
+
     @property
     def block_pattern(self) -> Optional[Pattern[str]]:
         # Return regex pattern for block-level matching
         return re.compile(r'^:::custom\s*\n(.*?)\n:::$', re.MULTILINE | re.DOTALL)
-    
+
     @property
     def inline_pattern(self) -> Optional[Pattern[str]]:
         # Return None for block-only plugins
@@ -218,7 +218,7 @@ def render_block(self, data: Dict[str, Any], render_content) -> Dict[str, Any]:
     """Render plugin data to ADF node."""
     # render_content is a function to process nested markdown
     inline_content = render_content(data['content'])
-    
+
     return {
         "type": "customBlock",
         "content": [{
@@ -271,7 +271,7 @@ def _process_inline_plugins(self, nodes: List[Dict[str, Any]]) -> List[Dict[str,
     """Process inline nodes for plugin patterns."""
     # Merge adjacent text nodes first
     merged_nodes = self._merge_text_nodes(nodes)
-    
+
     # Process each text node for plugin matches
     for node in merged_nodes:
         if node.get('type') == 'text' and not node.get('marks'):
@@ -289,12 +289,12 @@ Plugins can implement validation to ensure generated ADF nodes are valid:
 def validate(self, node: Dict[str, Any]) -> Tuple[bool, List[str]]:
     """Validate the rendered ADF node."""
     errors = []
-    
+
     if node.get('type') != 'expectedType':
         errors.append("Invalid node type")
-    
+
     # Additional validation logic
-    
+
     return len(errors) == 0, errors
 ```
 
@@ -313,11 +313,11 @@ def validate(self, node: Dict[str, Any]) -> Tuple[bool, List[str]]:
 ```python
 class AlertPlugin(BaseADFPlugin):
     """Plugin for custom alert boxes."""
-    
+
     @property
     def name(self) -> str:
         return "alert"
-    
+
     @property
     def block_pattern(self) -> Optional[Pattern[str]]:
         return re.compile(
@@ -326,16 +326,16 @@ class AlertPlugin(BaseADFPlugin):
             r'^:::$',
             re.MULTILINE | re.DOTALL
         )
-    
+
     def render_block(self, data: Dict[str, Any], render_content) -> Dict[str, Any]:
         level = data.get('level', 'medium')
         color_map = {
             'low': 'green',
-            'medium': 'yellow', 
+            'medium': 'yellow',
             'high': 'orange',
             'critical': 'red'
         }
-        
+
         return {
             "type": "panel",
             "attrs": {"panelType": color_map.get(level, 'note')},
@@ -351,15 +351,15 @@ class AlertPlugin(BaseADFPlugin):
 ```python
 class VariablePlugin(BaseADFPlugin):
     """Plugin for inline variables."""
-    
+
     @property
     def name(self) -> str:
         return "variable"
-    
+
     @property
     def inline_pattern(self) -> Optional[Pattern[str]]:
         return re.compile(r'\{\{(\w+)\}\}')
-    
+
     def render_inline(self, data: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "type": "text",
