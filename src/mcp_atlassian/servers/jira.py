@@ -637,7 +637,7 @@ async def create_issue(
         ),
     ] = None,
     additional_fields: Annotated[
-        dict[str, Any] | None,
+        dict[str, Any] | str | None,
         Field(
             description=(
                 "(Optional) Dictionary of additional fields to set. Examples:\n"
@@ -677,10 +677,22 @@ async def create_issue(
             comp.strip() for comp in components.split(",") if comp.strip()
         ]
 
-    # Use additional_fields directly as dict
-    extra_fields = additional_fields or {}
-    if not isinstance(extra_fields, dict):
-        raise ValueError("additional_fields must be a dictionary.")
+    # Normalize additional_fields: accept dict or JSON string
+    extra_fields: dict[str, Any] = {}
+    if additional_fields is not None:
+        if isinstance(additional_fields, dict):
+            extra_fields = additional_fields
+        elif isinstance(additional_fields, str):
+            try:
+                parsed = json.loads(additional_fields)
+                if isinstance(parsed, dict):
+                    extra_fields = parsed
+                else:
+                    raise ValueError("additional_fields JSON must decode to an object")
+            except Exception as e:
+                raise ValueError(f"Invalid JSON for additional_fields: {e}") from e
+        else:
+            raise ValueError("additional_fields must be a dictionary or JSON string.")
 
     issue = jira.create_issue(
         project_key=project_key,

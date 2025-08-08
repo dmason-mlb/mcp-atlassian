@@ -130,20 +130,54 @@ class IssueCreationMixin(
             return JiraIssue.from_api_response(result)
 
         except HTTPError as http_err:
-            if http_err.response is not None and http_err.response.status_code in [
-                401,
-                403,
-            ]:
+            response = getattr(http_err, "response", None)
+            status_code = getattr(response, "status_code", None)
+            # Authentication-specific handling
+            if status_code in [401, 403]:
                 error_msg = (
-                    f"Authentication failed for Jira API ({http_err.response.status_code}). "
+                    f"Authentication failed for Jira API ({status_code}). "
                     "Token may be expired or invalid. Please verify credentials."
                 )
                 logger.error(error_msg)
                 raise MCPAtlassianAuthenticationError(error_msg) from http_err
-            else:
-                logger.error(f"HTTP error during API call: {http_err}", exc_info=False)
-                self._handle_create_issue_error(http_err, issue_type)
-                raise
+            # Extract detailed API error information for better surfacing
+            detail_text = None
+            detail_json: dict | None = None
+            if response is not None:
+                try:
+                    detail_json = response.json()
+                except Exception:  # noqa: BLE001
+                    try:
+                        detail_text = response.text
+                    except Exception:  # noqa: BLE001
+                        detail_text = None
+            # Build a user-facing message including Jira's validation details
+            detail_snippet = None
+            if isinstance(detail_json, dict):
+                errors_part = detail_json.get("errors")
+                error_messages = detail_json.get("errorMessages")
+                detail_snippet = {
+                    k: v
+                    for k, v in {
+                        "status": status_code,
+                        "errorMessages": error_messages,
+                        "errors": errors_part,
+                    }.items()
+                    if v
+                }
+            elif detail_text:
+                detail_snippet = {"status": status_code, "details": detail_text[:2000]}
+
+            logger.error(
+                "HTTP error during Jira create_issue: %s; details: %s",
+                http_err,
+                detail_snippet,
+            )
+            self._handle_create_issue_error(http_err, issue_type)
+            # Convert to ValueError so the tool wrapper classifies as validation_error
+            raise ValueError(
+                f"Jira API error creating issue: status={status_code}; details={detail_snippet}"
+            ) from http_err
         except Exception as e:
             self._handle_create_issue_error(e, issue_type)
             raise
