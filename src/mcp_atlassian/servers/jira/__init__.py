@@ -62,6 +62,7 @@ from .management import (
     get_transitions,
     get_worklog,
     download_attachments,
+    upload_attachment,
     get_link_types,
     link_to_epic,
     create_issue_link,

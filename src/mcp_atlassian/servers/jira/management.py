@@ -133,6 +133,34 @@ async def download_attachments(
         return json.dumps(error_result, indent=2, ensure_ascii=False)
 
 
+@management_mcp.tool(tags={"jira", "write"})
+@check_write_access
+async def upload_attachment(
+    ctx: Context,
+    issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
+    file_path: Annotated[str, Field(description="Absolute or relative path to a file to upload as an attachment")],
+) -> str:
+    """Upload a single attachment to a Jira issue.
+
+    Uses Jira REST API v3 attachments endpoint (multipart/form-data with X-Atlassian-Token: no-check).
+
+    Args:
+        ctx: The FastMCP context.
+        issue_key: Jira issue key.
+        file_path: Path to the local file to upload.
+
+    Returns:
+        JSON string indicating the result of the upload operation.
+    """
+    jira = await get_jira_fetcher(ctx)
+    try:
+        result = jira.upload_attachment(issue_key, file_path)
+        return json.dumps(result, indent=2, ensure_ascii=False)
+    except Exception as e:
+        error_result = {"error": f"Failed to upload attachment: {str(e)}"}
+        return json.dumps(error_result, indent=2, ensure_ascii=False)
+
+
 @management_mcp.tool(tags={"jira", "read"})
 async def get_link_types(ctx: Context) -> str:
     """Get all available issue link types.
