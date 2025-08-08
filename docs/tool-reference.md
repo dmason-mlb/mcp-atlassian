@@ -99,15 +99,6 @@ Get available status transitions for a Jira issue.
 
 ---
 
-#### jira_get_worklog
-Get worklog entries for a Jira issue.
-
-**Arguments:**
-- `issue_key` (string, required): Jira issue key (e.g., 'PROJ-123')
-
-**Returns:** JSON string representing worklog entries
-
----
 
 #### jira_download_attachments
 Download attachments from a Jira issue.
@@ -235,20 +226,6 @@ Add a comment to a Jira issue.
 
 ---
 
-#### jira_add_worklog
-Add a worklog entry to a Jira issue.
-
-**Arguments:**
-- `issue_key` (string, required): Jira issue key (e.g., 'PROJ-123')
-- `time_spent` (string, required): Time in Jira format (e.g., '1h 30m', '1d', '4h')
-- `comment` (string, optional): Comment for the worklog in Markdown
-- `started` (string, optional): Start time in ISO format
-- `original_estimate` (string, optional): New original estimate
-- `remaining_estimate` (string, optional): New remaining estimate
-
-**Returns:** JSON string representing the added worklog
-
----
 
 #### jira_upload_attachment
 Upload a single attachment to a Jira issue.

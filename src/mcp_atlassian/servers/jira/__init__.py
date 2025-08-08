@@ -33,7 +33,6 @@ from .issues import (
     update_issue, 
     delete_issue, 
     add_comment, 
-    add_worklog, 
     transition_issue, 
     batch_create_issues, 
     batch_get_changelogs
@@ -60,7 +59,6 @@ from .agile import (
 from .management import (
     get_user_profile,
     get_transitions,
-    get_worklog,
     download_attachments,
     upload_attachment,
     get_link_types,

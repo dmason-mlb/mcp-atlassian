@@ -200,44 +200,9 @@ async def add_comment(
     return await server_instance.add_comment(ctx, issue_key, comment)
 
 
-@issues_mcp.tool(tags={"jira", "write"})
-@check_write_access
-async def add_worklog(
-    ctx: Context,
-    issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
-    time_spent: Annotated[
-        str,
-        Field(
-            description=(
-                "Time spent in Jira format. Examples: "
-                "'1h 30m' (1 hour and 30 minutes), '1d' (1 day), '30m' (30 minutes), '4h' (4 hours)"
-            )
-        ),
-    ],
-    comment: Annotated[
-        str | None,
-        Field(description="(Optional) Comment for the worklog in Markdown format"),
-    ] = None,
-    started: Annotated[
-        str | None,
-        Field(
-            description=(
-                "(Optional) Start time in ISO format. If not provided, the current time will be used. "
-                "Example: '2023-08-01T12:00:00.000+0000'"
-            )
-        ),
-    ] = None,
-    original_estimate: Annotated[
-        str | None, Field(description="(Optional) New value for the original estimate")
-    ] = None,
-    remaining_estimate: Annotated[
-        str | None, Field(description="(Optional) New value for the remaining estimate")
-    ] = None,
-) -> str:
-    """Add a worklog entry to a Jira issue."""
-    return await server_instance.add_worklog(
-        ctx, issue_key, time_spent, comment, started, original_estimate, remaining_estimate
-    )
+"""
+Note: Worklog tools have been removed from MCP server; add_worklog is no longer available.
+"""
 
 
 @issues_mcp.tool(tags={"jira", "write"})

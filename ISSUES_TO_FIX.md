@@ -5,23 +5,18 @@
 
 ## HIGH PRIORITY ISSUES
 
-### 1. Missing API Implementation - jira_get_worklog
-**Error:** `'JiraAdapter' object has no attribute 'issue_get_worklog'`  
-**Impact:** Worklog functionality completely broken  
-**Fix Required:** Implement `issue_get_worklog` method in JiraAdapter class
-
-### 2. Content Format Compatibility - ADF vs Markdown  
+### 1. Content Format Compatibility - ADF vs Markdown  
 **Error:** "Operation value must be an Atlassian Document (see the Atlassian Document Format)"  
 **Affected Tools:** `jira_create_issue` (description field), `jira_add_comment`  
 **Impact:** Cannot create issues with descriptions or add comments  
 **Fix Required:** Implement automatic markdown-to-ADF conversion or update documentation
 
-### 3. Comment Validation Failure
+### 2. Comment Validation Failure
 **Error:** "Comment body is not valid!" when adding comments  
 **Impact:** Comment functionality unusable  
 **Fix Required:** Fix ADF format validation for comments
 
-### 4. Confluence Operations Complete Failure
+### 3. Confluence Operations Complete Failure
 **Issue:** All Confluence search and creation operations return empty results or fail  
 **Affected Tools:** `confluence_search_search`, `confluence_pages_create_page`, `confluence_search_search_user`  
 **Impact:** Confluence functionality completely unusable  
@@ -29,65 +24,65 @@
 
 ## MEDIUM PRIORITY ISSUES
 
-### 5. Tool Naming Inconsistency
+### 4. Tool Naming Inconsistency
 **Issue:** Documentation shows `confluence_search_user` but actual tool is `confluence_search_search_user`  
 **Impact:** User confusion and failed tool calls  
 **Fix Required:** Standardize naming or update documentation
 
-### 6. Batch Operations Failure  
+### 5. Batch Operations Failure  
 **Error:** `jira_batch_get_changelogs` fails with generic error  
 **Impact:** Batch operations not working  
 **Fix Required:** Debug and fix batch changelog implementation
 
-### 7. Authentication Parameter Issues
+### 6. Authentication Parameter Issues
 **Issue:** `currentUser()` parameter not supported in `jira_get_user_profile`  
 **Workaround:** Use email address directly  
 **Fix Required:** Support `currentUser()` parameter or update documentation
 
-### 8. Issue Creation Field Population
+### 7. Issue Creation Field Population
 **Issue:** Summary field not populated during `jira_create_issue`, requires separate update  
 **Impact:** Extra API call required for basic issue creation  
 **Fix Required:** Ensure all fields are properly set during creation
 
 ## LOW PRIORITY ISSUES
 
-### 9. Empty Results for Valid Queries
+### 8. Empty Results for Valid Queries
 **Issue:** Various tools return empty arrays when data should exist  
 **Affected:** `jira_get_all_projects`, `jira_get_project_versions`, `jira_get_agile_boards`  
 **Impact:** Limited functionality due to filtering or permission issues  
 **Fix Required:** Investigate filtering configurations and permissions
 
-### 10. Generic Error Messages
+### 9. Generic Error Messages
 **Issue:** Many tools fail with "Error calling tool" without specific details  
 **Impact:** Difficult to debug and troubleshoot  
 **Fix Required:** Improve error reporting and logging
 
-### 11. Missing Issue Type Support
+### 10. Missing Issue Type Support
 **Issue:** Bug issue type creation failed, only Task and Story work  
 **Impact:** Limited issue type flexibility  
 **Fix Required:** Verify all issue types are supported in FTEST project
 
 ## DOCUMENTATION ISSUES
 
-### 12. Format Requirements Not Clear
+### 11. Format Requirements Not Clear
 **Issue:** Documentation suggests markdown support but tools require ADF  
 **Fix Required:** Update documentation to clearly specify format requirements
 
-### 13. Tool Name Mismatches  
+### 12. Tool Name Mismatches  
 **Issue:** Some tool names in documentation don't match actual implementation  
 **Fix Required:** Audit and update all tool names in documentation
 
-### 14. Missing Error Handling Documentation
+### 13. Missing Error Handling Documentation
 **Issue:** No guidance on error scenarios and troubleshooting  
 **Fix Required:** Add troubleshooting section to documentation
 
 ## TESTING GAPS
 
-### 15. Agile Operations Untested
+### 14. Agile Operations Untested
 **Issue:** No agile boards available in test environment  
 **Fix Required:** Set up proper test environment with agile boards for comprehensive testing
 
-### 16. Advanced Jira Operations Untested
+### 15. Advanced Jira Operations Untested
 **Issue:** Many write operations couldn't be tested due to prerequisite failures  
 **Fix Required:** Fix basic operations first, then test advanced features
 
@@ -95,13 +90,12 @@
 
 ## Fix Priority Order
 
-1. **Content format compatibility** (fixes issues #2, #3)
-2. **Missing API implementations** (fixes issue #1) 
-3. **Confluence operations** (fixes issue #4)
-4. **Tool naming consistency** (fixes issue #5)
-5. **Batch operations** (fixes issue #6)
-6. **Error handling improvements** (fixes issues #7, #8, #10)
-7. **Documentation updates** (fixes issues #12, #13, #14)
+1. **Content format compatibility** (fixes issues #1, #2)
+2. **Confluence operations** (fixes issue #3)
+3. **Tool naming consistency** (fixes issue #4)
+4. **Batch operations** (fixes issue #5)
+5. **Error handling improvements** (fixes issues #6, #8, #9)
+6. **Documentation updates**
 
 ## Test Environment Requirements
 
@@ -114,3 +108,7 @@ To properly test fixes:
 ---
 
 *Generated by MCP Atlassian Server Testing Framework*
+
+---
+
+Note: Worklog tools (`jira_get_worklog`, `jira_add_worklog`) have been removed from the MCP server and docs; any prior worklog-related issues are obsolete.

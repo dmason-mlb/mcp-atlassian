@@ -6,7 +6,6 @@ from .jira_shared import jira_mcp
 # Import core CRUD functions from focused modules
 from .jira_core import (
     add_comment,
-    add_worklog,
     create_issue,
     delete_issue,
     get_issue,
@@ -24,7 +23,6 @@ from .jira_search import (
 from .jira_workflow import (
     download_attachments,
     get_transitions,
-    get_worklog,
     transition_issue,
 )
 

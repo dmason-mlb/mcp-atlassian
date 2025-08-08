@@ -38,24 +38,9 @@ async def get_transitions(
     return json.dumps(transitions, indent=2, ensure_ascii=False)
 
 
-@jira_mcp.tool(tags={"jira", "read"})
-async def get_worklog(
-    ctx: Context,
-    issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
-) -> str:
-    """Get worklog entries for a Jira issue.
-
-    Args:
-        ctx: The FastMCP context.
-        issue_key: Jira issue key.
-
-    Returns:
-        JSON string representing the worklog entries.
-    """
-    jira = await get_jira_fetcher(ctx)
-    worklogs = jira.get_worklogs(issue_key)
-    result = {"worklogs": worklogs}
-    return json.dumps(result, indent=2, ensure_ascii=False)
+"""
+Note: Worklog tools have been removed from MCP server; get_worklog is no longer available.
+"""
 
 
 @jira_mcp.tool(tags={"jira", "read"})

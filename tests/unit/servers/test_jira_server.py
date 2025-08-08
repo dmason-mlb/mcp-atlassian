@@ -275,7 +275,6 @@ def test_jira_mcp(mock_jira_fetcher, mock_base_jira_config):
     )
     from src.mcp_atlassian.servers.jira import (
         add_comment,
-        add_worklog,
         batch_create_issues,
         batch_create_versions,
         batch_get_changelogs,
@@ -294,7 +293,6 @@ def test_jira_mcp(mock_jira_fetcher, mock_base_jira_config):
         get_sprints_from_board,
         get_transitions,
         get_user_profile,
-        get_worklog,
         link_to_epic,
         remove_issue_link,
         search,
@@ -312,7 +310,6 @@ def test_jira_mcp(mock_jira_fetcher, mock_base_jira_config):
     jira_sub_mcp.tool()(get_project_versions)
     jira_sub_mcp.tool()(get_all_projects)
     jira_sub_mcp.tool()(get_transitions)
-    jira_sub_mcp.tool()(get_worklog)
     jira_sub_mcp.tool()(download_attachments)
     jira_sub_mcp.tool()(get_agile_boards)
     jira_sub_mcp.tool()(get_board_issues)
@@ -326,7 +323,6 @@ def test_jira_mcp(mock_jira_fetcher, mock_base_jira_config):
     jira_sub_mcp.tool()(update_issue)
     jira_sub_mcp.tool()(delete_issue)
     jira_sub_mcp.tool()(add_comment)
-    jira_sub_mcp.tool()(add_worklog)
     jira_sub_mcp.tool()(link_to_epic)
     jira_sub_mcp.tool()(create_issue_link)
     jira_sub_mcp.tool()(remove_issue_link)

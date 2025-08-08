@@ -163,69 +163,7 @@ class IssueUpdateMixin:
         result = jira.add_comment(issue_key, comment)
         return json.dumps(result, indent=2, ensure_ascii=False)
 
-    @check_write_access
-    async def add_worklog(
-        self,
-        ctx: Context,
-        issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
-        time_spent: Annotated[
-            str,
-            Field(
-                description=(
-                    "Time spent in Jira format. Examples: "
-                    "'1h 30m' (1 hour and 30 minutes), '1d' (1 day), '30m' (30 minutes), '4h' (4 hours)"
-                )
-            ),
-        ],
-        comment: Annotated[
-            str | None,
-            Field(description="(Optional) Comment for the worklog in Markdown format"),
-        ] = None,
-        started: Annotated[
-            str | None,
-            Field(
-                description=(
-                    "(Optional) Start time in ISO format. If not provided, the current time will be used. "
-                    "Example: '2023-08-01T12:00:00.000+0000'"
-                )
-            ),
-        ] = None,
-        original_estimate: Annotated[
-            str | None, Field(description="(Optional) New value for the original estimate")
-        ] = None,
-        remaining_estimate: Annotated[
-            str | None, Field(description="(Optional) New value for the remaining estimate")
-        ] = None,
-    ) -> str:
-        """Add a worklog entry to a Jira issue.
-
-        Args:
-            ctx: The FastMCP context.
-            issue_key: Jira issue key.
-            time_spent: Time spent in Jira format.
-            comment: Optional comment in Markdown.
-            started: Optional start time in ISO format.
-            original_estimate: Optional new original estimate.
-            remaining_estimate: Optional new remaining estimate.
-
-        Returns:
-            JSON string representing the added worklog object.
-
-        Raises:
-            ValueError: If in read-only mode or Jira client unavailable.
-        """
-        jira = await get_jira_fetcher(ctx)
-        # add_worklog returns dict
-        worklog_result = jira.add_worklog(
-            issue_key=issue_key,
-            time_spent=time_spent,
-            comment=comment,
-            started=started,
-            original_estimate=original_estimate,
-            remaining_estimate=remaining_estimate,
-        )
-        result = {"message": "Worklog added successfully", "worklog": worklog_result}
-        return json.dumps(result, indent=2, ensure_ascii=False)
+    # Note: Worklog tool removed. This mixin no longer exposes add_worklog.
 
     @check_write_access
     async def transition_issue(
