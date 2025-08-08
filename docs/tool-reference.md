@@ -16,6 +16,10 @@ This document provides a comprehensive reference for all tools available in the 
 
 ### Jira Read Operations
 
+Note on default Jira fields:
+- Unless otherwise specified, read operations that accept a `fields` parameter default to the following set:
+  `summary,description,status,assignee,reporter,labels,priority,created,updated,issuetype`
+
 #### jira_get_user_profile
 Retrieve profile information for a specific Jira user.
 
@@ -31,7 +35,7 @@ Get details of a specific Jira issue including its Epic links and relationship i
 
 **Arguments:**
 - `issue_key` (string, required): Jira issue key (e.g., 'PROJ-123')
-- `fields` (string, optional): Comma-separated list of fields to return (e.g., 'summary,status,customfield_10010'), '*all' for all fields, or omit for essentials
+- `fields` (string, optional): Comma-separated list of fields to return (e.g., 'summary,status,customfield_10010'), '*all' for all fields, or omit for essentials. Defaults to `summary,description,status,assignee,reporter,labels,priority,created,updated,issuetype`.
 - `expand` (string, optional): Fields to expand (e.g., 'renderedFields', 'transitions', 'changelog')
 - `comment_limit` (integer, optional, default: 10): Maximum number of comments (0-100)
 - `properties` (string, optional): Issue properties to return
@@ -51,7 +55,7 @@ Search Jira issues using JQL (Jira Query Language).
   - Find by status: `"status = 'In Progress' AND project = PROJ"`
   - Find by assignee: `"assignee = currentUser()"`
   - Find recently updated: `"updated >= -7d AND project = PROJ"`
-- `fields` (string, optional): Comma-separated fields to return
+- `fields` (string, optional): Comma-separated fields to return. Defaults to `summary,description,status,assignee,reporter,labels,priority,created,updated,issuetype`.
 - `limit` (integer, optional, default: 10): Maximum results (1-50)
 - `start_at` (integer, optional, default: 0): Starting index for pagination
 - `projects_filter` (string, optional): Comma-separated project keys to filter by
@@ -141,7 +145,7 @@ Get all Jira projects accessible to the current user.
 **Arguments:**
 - `include_archived` (boolean, optional, default: false): Include archived projects
 
-**Returns:** JSON string representing accessible projects (filtered by JIRA_PROJECTS_FILTER if configured)
+**Returns:** JSON string representing accessible projects (filtered by JIRA_PROJECTS_FILTER if configured). Project keys are returned in uppercase.
 
 ---
 
@@ -360,7 +364,7 @@ Get all issues linked to a specific board filtered by JQL.
 **Arguments:**
 - `board_id` (string, required): The ID of the board (e.g., '1001')
 - `jql` (string, required): JQL query string to filter issues
-- `fields` (string, optional): Comma-separated fields to return
+- `fields` (string, optional): Comma-separated fields to return. Defaults to `summary,description,status,assignee,reporter,labels,priority,created,updated,issuetype`.
 - `start_at` (integer, optional, default: 0): Starting index
 - `limit` (integer, optional, default: 10): Maximum results (1-50)
 - `expand` (string, optional, default: 'version'): Fields to expand
@@ -387,7 +391,7 @@ Get jira issues from sprint.
 
 **Arguments:**
 - `sprint_id` (string, required): The ID of the sprint (e.g., '10001')
-- `fields` (string, optional): Comma-separated fields to return
+- `fields` (string, optional): Comma-separated fields to return. Defaults to `summary,description,status,assignee,reporter,labels,priority,created,updated,issuetype`.
 - `start_at` (integer, optional, default: 0): Starting index
 - `limit` (integer, optional, default: 10): Maximum results (1-50)
 
