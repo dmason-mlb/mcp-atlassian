@@ -22,6 +22,7 @@ from .jira_search import (
 # Import workflow functions from focused modules
 from .jira_workflow import (
     download_attachments,
+    upload_attachment,
     get_transitions,
     transition_issue,
 )
