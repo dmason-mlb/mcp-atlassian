@@ -13,17 +13,17 @@ from mcp_atlassian.servers.dependencies import get_jira_fetcher
 logger = logging.getLogger(__name__)
 
 search_mcp = FastMCP(
-    name="Jira Search Service", 
+    name="Jira Search Service",
     description="Provides tools for searching and querying Jira.",
 )
 
 
 class SearchServer:
     """Container for Jira search tools."""
-    
+
     def __init__(self):
         self.mcp = search_mcp
-        
+
     def get_tools(self):
         """Get all search tools."""
         return self.mcp.tools

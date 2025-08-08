@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class IssueCreationMixin:
     """Mixin providing issue creation tools."""
-    
+
     @check_write_access
     @safe_tool_result
     async def create_issue(
@@ -178,7 +178,9 @@ class IssueCreationMixin:
             raise ValueError(f"Invalid input for issues: {e}") from e
 
         # Create issues in batch
-        created_issues = jira.batch_create_issues(issues_list, validate_only=validate_only)
+        created_issues = jira.batch_create_issues(
+            issues_list, validate_only=validate_only
+        )
 
         message = (
             "Issues validated successfully"

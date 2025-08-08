@@ -22,6 +22,7 @@ async def test_check_write_access_blocks_in_read_only():
     ctx = DummyContext(read_only=True)
     result = await dummy_tool(ctx, 3)
     import json
+
     data = json.loads(result)
     assert data["read_only_mode"] is True
 

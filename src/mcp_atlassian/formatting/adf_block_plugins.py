@@ -1,6 +1,6 @@
 """Block-level ADF plugins for structured content elements.
 
-This module contains plugins for block-level ADF nodes like panels, 
+This module contains plugins for block-level ADF nodes like panels,
 media, expand sections, and layouts.
 """
 

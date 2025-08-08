@@ -91,9 +91,9 @@ class WorklogMixin(JiraClient):
             # Convert time_spent string to seconds
             time_spent_seconds = self._parse_time_spent(time_spent)
 
-            # For worklogs, keep comment as plain text
-            # The worklog API doesn't support ADF format for comments
-            # so we skip the markdown conversion that would return a dict for Cloud
+            # Handle worklog comment format based on deployment type
+            # Cloud instances use ADF format, Server/DC use plain text
+            # Comment conversion is handled conditionally below
 
             # Step 1: Update original estimate if provided (separate API call)
             original_estimate_updated = False
@@ -113,7 +113,7 @@ class WorklogMixin(JiraClient):
             # Step 2: Prepare worklog data
             # For Jira Cloud REST API v3, use timeSpent not timeSpentSeconds
             worklog_data: dict[str, Any] = {"timeSpent": time_spent}
-            
+
             # Handle comment - Cloud needs ADF format for JSON requests
             if comment:
                 if self.config.is_cloud:
@@ -123,14 +123,17 @@ class WorklogMixin(JiraClient):
                 else:
                     # Server/DC can use plain text/wiki markup
                     worklog_data["comment"] = comment
-            
+
             # Set started time - required for Cloud API
             if started:
                 worklog_data["started"] = started
             else:
                 # Default to current time in ISO format if not provided
                 from datetime import datetime, timezone
-                worklog_data["started"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000+0000")
+
+                worklog_data["started"] = datetime.now(timezone.utc).strftime(
+                    "%Y-%m-%dT%H:%M:%S.000+0000"
+                )
 
             # Step 3: Prepare query parameters for remaining estimate
             params = {}
@@ -159,7 +162,7 @@ class WorklogMixin(JiraClient):
                 comment_text = str(comment)  # Simple string representation
             else:
                 comment_text = self._clean_text(comment)
-                
+
             return {
                 "id": result.get("id"),
                 "comment": comment_text,

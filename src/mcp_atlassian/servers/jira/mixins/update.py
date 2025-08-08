@@ -15,12 +15,14 @@ logger = logging.getLogger(__name__)
 
 class IssueUpdateMixin:
     """Mixin providing issue update and modification tools."""
-    
+
     @check_write_access
     async def update_issue(
         self,
         ctx: Context,
-        issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
+        issue_key: Annotated[
+            str, Field(description="Jira issue key (e.g., 'PROJ-123')")
+        ],
         fields: Annotated[
             dict[str, Any],
             Field(
@@ -142,7 +144,9 @@ class IssueUpdateMixin:
     async def add_comment(
         self,
         ctx: Context,
-        issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
+        issue_key: Annotated[
+            str, Field(description="Jira issue key (e.g., 'PROJ-123')")
+        ],
         comment: Annotated[str, Field(description="Comment text in Markdown format")],
     ) -> str:
         """Add a comment to a Jira issue.
@@ -169,7 +173,9 @@ class IssueUpdateMixin:
     async def transition_issue(
         self,
         ctx: Context,
-        issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
+        issue_key: Annotated[
+            str, Field(description="Jira issue key (e.g., 'PROJ-123')")
+        ],
         transition_id: Annotated[
             str,
             Field(

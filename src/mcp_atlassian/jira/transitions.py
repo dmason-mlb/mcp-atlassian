@@ -414,19 +414,23 @@ class TransitionsMixin(JiraClient, IssueOperationsProto, UsersOperationsProto):
         else:
             # For Server/DC, use wiki markup
             jira_formatted_comment = comment_str
-            
+
             # Basic markdown to Jira wiki markup conversion for common patterns
             # Bold: **text** -> *text*
-            jira_formatted_comment = re.sub(r'\*\*(.*?)\*\*', r'*\1*', jira_formatted_comment)
+            jira_formatted_comment = re.sub(
+                r"\*\*(.*?)\*\*", r"*\1*", jira_formatted_comment
+            )
             # Italic: *text* or _text_ -> _text_
-            jira_formatted_comment = re.sub(r'(?<!\*)\*([^*]+)\*(?!\*)', r'_\1_', jira_formatted_comment)
-            jira_formatted_comment = re.sub(r'_(.*?)_', r'_\1_', jira_formatted_comment)
+            jira_formatted_comment = re.sub(
+                r"(?<!\*)\*([^*]+)\*(?!\*)", r"_\1_", jira_formatted_comment
+            )
+            jira_formatted_comment = re.sub(r"_(.*?)_", r"_\1_", jira_formatted_comment)
             # Code: `text` -> {{text}}
-            jira_formatted_comment = re.sub(r'`([^`]+)`', r'{{\1}}', jira_formatted_comment)
-            
+            jira_formatted_comment = re.sub(
+                r"`([^`]+)`", r"{{\1}}", jira_formatted_comment
+            )
+
             comment_body = jira_formatted_comment
 
         # Add to transition data
-        transition_data["update"] = {
-            "comment": [{"add": {"body": comment_body}}]
-        }
+        transition_data["update"] = {"comment": [{"add": {"body": comment_body}}]}

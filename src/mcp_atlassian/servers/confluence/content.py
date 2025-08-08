@@ -21,10 +21,10 @@ content_mcp = FastMCP(
 
 class ContentServer:
     """Container for Confluence content interaction tools."""
-    
+
     def __init__(self):
         self.mcp = content_mcp
-        
+
     def get_tools(self):
         """Get all content interaction tools."""
         return self.mcp.tools
@@ -54,6 +54,7 @@ async def get_comments(
         JSON string representing a list of comment objects.
     """
     from . import get_confluence_fetcher  # lazy import to allow test patching
+
     confluence_fetcher = await get_confluence_fetcher(ctx)
     comments = confluence_fetcher.get_page_comments(page_id)
     formatted_comments = [comment.to_simplified_dict() for comment in comments]
@@ -84,6 +85,7 @@ async def get_labels(
         JSON string representing a list of label objects.
     """
     from . import get_confluence_fetcher  # lazy import to allow test patching
+
     confluence_fetcher = await get_confluence_fetcher(ctx)
     labels = confluence_fetcher.get_page_labels(page_id)
     formatted_labels = [label.to_simplified_dict() for label in labels]

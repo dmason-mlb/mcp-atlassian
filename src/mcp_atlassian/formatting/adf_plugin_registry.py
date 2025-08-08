@@ -1,6 +1,6 @@
 """Plugin registry for managing ADF plugins.
 
-This module provides the registry system for managing and processing 
+This module provides the registry system for managing and processing
 ADF plugins for block and inline content.
 """
 

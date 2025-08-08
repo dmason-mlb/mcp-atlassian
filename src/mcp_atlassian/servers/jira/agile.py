@@ -21,10 +21,10 @@ agile_mcp = FastMCP(
 
 class AgileServer:
     """Container for Jira agile tools."""
-    
+
     def __init__(self):
         self.mcp = agile_mcp
-        
+
     def get_tools(self):
         """Get all agile tools."""
         return self.mcp.tools

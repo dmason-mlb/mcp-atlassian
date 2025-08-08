@@ -1,89 +1,89 @@
 # MCP Atlassian Server - Critical Issues to Fix
 
-**Last Updated:** August 8, 2025  
+**Last Updated:** August 8, 2025
 **Test Report:** See `/Users/douglas.mason/Downloads/MCP_Atlassian_Server_Test_Report.md`
 
 ## HIGH PRIORITY ISSUES
 
-### 1. Content Format Compatibility - ADF vs Markdown  
-**Error:** "Operation value must be an Atlassian Document (see the Atlassian Document Format)"  
-**Affected Tools:** `jira_create_issue` (description field), `jira_add_comment`  
-**Impact:** Cannot create issues with descriptions or add comments  
+### 1. Content Format Compatibility - ADF vs Markdown
+**Error:** "Operation value must be an Atlassian Document (see the Atlassian Document Format)"
+**Affected Tools:** `jira_create_issue` (description field), `jira_add_comment`
+**Impact:** Cannot create issues with descriptions or add comments
 **Fix Required:** Implement automatic markdown-to-ADF conversion or update documentation
 
 ### 2. Comment Validation Failure
-**Error:** "Comment body is not valid!" when adding comments  
-**Impact:** Comment functionality unusable  
+**Error:** "Comment body is not valid!" when adding comments
+**Impact:** Comment functionality unusable
 **Fix Required:** Fix ADF format validation for comments
 
 ### 3. Confluence Operations Complete Failure
-**Issue:** All Confluence search and creation operations return empty results or fail  
-**Affected Tools:** `confluence_search_search`, `confluence_pages_create_page`, `confluence_search_search_user`  
-**Impact:** Confluence functionality completely unusable  
+**Issue:** All Confluence search and creation operations return empty results or fail
+**Affected Tools:** `confluence_search_search`, `confluence_pages_create_page`, `confluence_search_search_user`
+**Impact:** Confluence functionality completely unusable
 **Fix Required:** Investigate permissions, authentication scope, and API configuration
 
 ## MEDIUM PRIORITY ISSUES
 
 ### 4. Tool Naming Inconsistency
-**Issue:** Documentation shows `confluence_search_user` but actual tool is `confluence_search_search_user`  
-**Impact:** User confusion and failed tool calls  
+**Issue:** Documentation shows `confluence_search_user` but actual tool is `confluence_search_search_user`
+**Impact:** User confusion and failed tool calls
 **Fix Required:** Standardize naming or update documentation
 
-### 5. Batch Operations Failure  
-**Error:** `jira_batch_get_changelogs` fails with generic error  
-**Impact:** Batch operations not working  
+### 5. Batch Operations Failure
+**Error:** `jira_batch_get_changelogs` fails with generic error
+**Impact:** Batch operations not working
 **Fix Required:** Debug and fix batch changelog implementation
 
 ### 6. Authentication Parameter Issues
-**Issue:** `currentUser()` parameter not supported in `jira_get_user_profile`  
-**Workaround:** Use email address directly  
+**Issue:** `currentUser()` parameter not supported in `jira_get_user_profile`
+**Workaround:** Use email address directly
 **Fix Required:** Support `currentUser()` parameter or update documentation
 
 ### 7. Issue Creation Field Population
-**Issue:** Summary field not populated during `jira_create_issue`, requires separate update  
-**Impact:** Extra API call required for basic issue creation  
+**Issue:** Summary field not populated during `jira_create_issue`, requires separate update
+**Impact:** Extra API call required for basic issue creation
 **Fix Required:** Ensure all fields are properly set during creation
 
 ## LOW PRIORITY ISSUES
 
 ### 8. Empty Results for Valid Queries
-**Issue:** Various tools return empty arrays when data should exist  
-**Affected:** `jira_get_all_projects`, `jira_get_project_versions`, `jira_get_agile_boards`  
-**Impact:** Limited functionality due to filtering or permission issues  
+**Issue:** Various tools return empty arrays when data should exist
+**Affected:** `jira_get_all_projects`, `jira_get_project_versions`, `jira_get_agile_boards`
+**Impact:** Limited functionality due to filtering or permission issues
 **Fix Required:** Investigate filtering configurations and permissions
 
 ### 9. Generic Error Messages
-**Issue:** Many tools fail with "Error calling tool" without specific details  
-**Impact:** Difficult to debug and troubleshoot  
+**Issue:** Many tools fail with "Error calling tool" without specific details
+**Impact:** Difficult to debug and troubleshoot
 **Fix Required:** Improve error reporting and logging
 
 ### 10. Missing Issue Type Support
-**Issue:** Bug issue type creation failed, only Task and Story work  
-**Impact:** Limited issue type flexibility  
+**Issue:** Bug issue type creation failed, only Task and Story work
+**Impact:** Limited issue type flexibility
 **Fix Required:** Verify all issue types are supported in FTEST project
 
 ## DOCUMENTATION ISSUES
 
 ### 11. Format Requirements Not Clear
-**Issue:** Documentation suggests markdown support but tools require ADF  
+**Issue:** Documentation suggests markdown support but tools require ADF
 **Fix Required:** Update documentation to clearly specify format requirements
 
-### 12. Tool Name Mismatches  
-**Issue:** Some tool names in documentation don't match actual implementation  
+### 12. Tool Name Mismatches
+**Issue:** Some tool names in documentation don't match actual implementation
 **Fix Required:** Audit and update all tool names in documentation
 
 ### 13. Missing Error Handling Documentation
-**Issue:** No guidance on error scenarios and troubleshooting  
+**Issue:** No guidance on error scenarios and troubleshooting
 **Fix Required:** Add troubleshooting section to documentation
 
 ## TESTING GAPS
 
 ### 14. Agile Operations Untested
-**Issue:** No agile boards available in test environment  
+**Issue:** No agile boards available in test environment
 **Fix Required:** Set up proper test environment with agile boards for comprehensive testing
 
 ### 15. Advanced Jira Operations Untested
-**Issue:** Many write operations couldn't be tested due to prerequisite failures  
+**Issue:** Many write operations couldn't be tested due to prerequisite failures
 **Fix Required:** Fix basic operations first, then test advanced features
 
 ---

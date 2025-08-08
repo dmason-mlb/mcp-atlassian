@@ -23,7 +23,7 @@ FastMCP is a Python framework for building Model Context Protocol (MCP) servers 
 ```python
 @jira_mcp.tool(tags={"jira", "read"})
 async def get_issue(
-    ctx: Context, 
+    ctx: Context,
     issue_key: Annotated[str, Field(description="Jira issue key")]
 ) -> str:
     return await ctx.app.get_issue(issue_key)
@@ -39,7 +39,7 @@ async def get_issue(
 
 ### 1. Decorator Coupling
 **Constraint**: Tools must be defined as individual functions decorated with `@mcp.tool()`
-**Impact**: 
+**Impact**:
 - Cannot easily group related tools into classes
 - Each tool function must be a separate top-level function
 - Refactoring tools into class methods would break FastMCP's discovery mechanism

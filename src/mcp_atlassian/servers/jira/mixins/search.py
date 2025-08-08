@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 
 class IssueSearchMixin:
     """Mixin providing issue search and retrieval tools."""
-    
+
     async def get_issue(
         self,
         ctx: Context,
-        issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
+        issue_key: Annotated[
+            str, Field(description="Jira issue key (e.g., 'PROJ-123')")
+        ],
         fields: Annotated[
             str,
             Field(

@@ -39,8 +39,10 @@ class ConfluenceAdapter:
         self._session = session or Session()
 
         # Determine auth type and create client
-        if session and hasattr(session, "headers") and (
-            "Authorization" in session.headers or True
+        if (
+            session
+            and hasattr(session, "headers")
+            and ("Authorization" in session.headers)
         ):
             # OAuth session
             self.client = ConfluenceV2Client(

@@ -1,7 +1,7 @@
 # MCP Atlassian Server Test Report
 
-**Test Date:** August 8, 2025  
-**Overall Status:** CONDITIONAL PASS (94% success rate)  
+**Test Date:** August 8, 2025
+**Overall Status:** CONDITIONAL PASS (94% success rate)
 
 ## Current Issues
 

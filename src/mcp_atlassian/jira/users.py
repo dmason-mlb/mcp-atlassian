@@ -305,7 +305,7 @@ class UsersMixin(JiraClient):
     def get_user_profile(self, identifier: str) -> "JiraUser":
         """
         Retrieve Jira user profile information by identifier.
-        
+
         This is an alias for get_user_profile_by_identifier for backward compatibility.
 
         Args:
@@ -320,7 +320,7 @@ class UsersMixin(JiraClient):
             Exception: For other API errors.
         """
         return self.get_user_profile_by_identifier(identifier)
-    
+
     def get_user_profile_by_identifier(self, identifier: str) -> "JiraUser":
         """
         Retrieve Jira user profile information by identifier.

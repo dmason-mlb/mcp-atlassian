@@ -151,6 +151,7 @@ class JiraAdapter:
         if isinstance(comment, str) and self.cloud:
             try:
                 import json
+
                 loaded = json.loads(comment)
                 if isinstance(loaded, dict) and loaded.get("type") == "doc":
                     comment = loaded
