@@ -90,6 +90,7 @@ async def search(
     Returns:
         JSON string representing a list of simplified Confluence page objects.
     """
+    from . import get_confluence_fetcher  # lazy import to allow test patching
     confluence_fetcher = await get_confluence_fetcher(ctx)
     # Check if the query is a simple search term or already a CQL query
     if query and not any(
@@ -154,6 +155,7 @@ async def search_user(
     Returns:
         JSON string representing a list of simplified Confluence user search result objects.
     """
+    from . import get_confluence_fetcher  # lazy import to allow test patching
     confluence_fetcher = await get_confluence_fetcher(ctx)
 
     # If the query doesn't look like CQL, wrap it as a user fullname search

@@ -1,103 +1,116 @@
-# MCP Atlassian Server - Issues to Fix
+# MCP Atlassian Server - Critical Issues to Fix
 
-**Generated:** 2025-08-07  
-**Testing Environment:** MLB Atlassian Cloud  
-**Priority Levels:** 🔴 Critical | 🟡 High | 🟢 Medium | ⚪ Low
+**Last Updated:** August 8, 2025  
+**Test Report:** See `/Users/douglas.mason/Downloads/MCP_Atlassian_Server_Test_Report.md`
 
-## 🔴 Critical Issues (Must Fix)
+## HIGH PRIORITY ISSUES
 
-### 1. ADF Format Support Missing
-**Location:** All text input operations  
-**Impact:** Cannot create issues with descriptions, add comments, or use any rich text features  
+### 1. Missing API Implementation - jira_get_worklog
+**Error:** `'JiraAdapter' object has no attribute 'issue_get_worklog'`  
+**Impact:** Worklog functionality completely broken  
+**Fix Required:** Implement `issue_get_worklog` method in JiraAdapter class
+
+### 2. Content Format Compatibility - ADF vs Markdown  
 **Error:** "Operation value must be an Atlassian Document (see the Atlassian Document Format)"  
-**Fix Required:** Implement proper ADF document structure for all text fields  
+**Affected Tools:** `jira_create_issue` (description field), `jira_add_comment`  
+**Impact:** Cannot create issues with descriptions or add comments  
+**Fix Required:** Implement automatic markdown-to-ADF conversion or update documentation
 
-### 2. Worklog Implementation Broken
-**Location:** `jira_add_worklog` tool  
-**Impact:** Cannot log time on issues  
-**Error:** "'dict' object has no attribute 'to_simplified_dict'"  
-**Fix Required:** Fix the worklog object serialization and ensure proper API payload structure  
+### 3. Comment Validation Failure
+**Error:** "Comment body is not valid!" when adding comments  
+**Impact:** Comment functionality unusable  
+**Fix Required:** Fix ADF format validation for comments
 
-### 3. Comment System Non-Functional
-**Location:** `jira_add_comment` tool  
-**Impact:** Cannot add comments to issues  
-**Error:** "Comment body is not valid!"  
-**Fix Required:** Implement ADF format for comment bodies  
+### 4. Confluence Operations Complete Failure
+**Issue:** All Confluence search and creation operations return empty results or fail  
+**Affected Tools:** `confluence_search_search`, `confluence_pages_create_page`, `confluence_search_search_user`  
+**Impact:** Confluence functionality completely unusable  
+**Fix Required:** Investigate permissions, authentication scope, and API configuration
 
-## 🟡 High Priority Issues
+## MEDIUM PRIORITY ISSUES
 
-### 4. User Resolution Failure
-**Location:** `jira_get_user_profile`  
-**Impact:** Cannot resolve email addresses to account IDs  
-**Error:** "Could not resolve email 'douglas.mason@mlb.com' to a valid account ID"  
-**Fix Required:** Implement proper user lookup mechanism for Cloud instances  
+### 5. Tool Naming Inconsistency
+**Issue:** Documentation shows `confluence_search_user` but actual tool is `confluence_search_search_user`  
+**Impact:** User confusion and failed tool calls  
+**Fix Required:** Standardize naming or update documentation
 
-### 5. Confluence Page Creation Error
-**Location:** `confluence_pages_create_page`  
-**Impact:** Cannot create Confluence pages  
-**Error:** Generic "Error calling tool 'create_page'"  
-**Fix Required:** Debug and fix the Confluence page creation endpoint  
+### 6. Batch Operations Failure  
+**Error:** `jira_batch_get_changelogs` fails with generic error  
+**Impact:** Batch operations not working  
+**Fix Required:** Debug and fix batch changelog implementation
 
-### 6. Story Issue Type Creation Fails
-**Location:** `jira_create_issue` with Story type  
-**Impact:** Cannot create Story issues with additional fields  
-**Error:** Generic error when additional_fields provided  
-**Fix Required:** Fix field handling for different issue types  
+### 7. Authentication Parameter Issues
+**Issue:** `currentUser()` parameter not supported in `jira_get_user_profile`  
+**Workaround:** Use email address directly  
+**Fix Required:** Support `currentUser()` parameter or update documentation
 
-## 🟢 Medium Priority Issues
+### 8. Issue Creation Field Population
+**Issue:** Summary field not populated during `jira_create_issue`, requires separate update  
+**Impact:** Extra API call required for basic issue creation  
+**Fix Required:** Ensure all fields are properly set during creation
 
-### 7. Transition Comments Not Supported
-**Location:** `jira_transition_issue`  
-**Impact:** Cannot add comments during status transitions  
-**Error:** ADF validation error on comment field  
-**Fix Required:** Support ADF format in transition comments  
+## LOW PRIORITY ISSUES
 
-### 8. Missing Markdown to ADF Converter
-**Location:** Throughout the codebase  
-**Impact:** Users must manually format ADF documents  
-**Fix Required:** Add automatic markdown to ADF conversion  
+### 9. Empty Results for Valid Queries
+**Issue:** Various tools return empty arrays when data should exist  
+**Affected:** `jira_get_all_projects`, `jira_get_project_versions`, `jira_get_agile_boards`  
+**Impact:** Limited functionality due to filtering or permission issues  
+**Fix Required:** Investigate filtering configurations and permissions
 
-### 9. Poor Error Messages
-**Location:** Various tools  
-**Impact:** Difficult to debug issues  
-**Fix Required:** Improve error handling and provide clearer messages  
+### 10. Generic Error Messages
+**Issue:** Many tools fail with "Error calling tool" without specific details  
+**Impact:** Difficult to debug and troubleshoot  
+**Fix Required:** Improve error reporting and logging
 
-## ⚪ Low Priority Enhancements
+### 11. Missing Issue Type Support
+**Issue:** Bug issue type creation failed, only Task and Story work  
+**Impact:** Limited issue type flexibility  
+**Fix Required:** Verify all issue types are supported in FTEST project
 
-### 10. No Batch Operations Support
-**Location:** Issue operations  
-**Impact:** Inefficient for bulk operations  
-**Fix Required:** Add batch create/update/delete endpoints  
+## DOCUMENTATION ISSUES
 
-### 11. Missing Retry Logic
-**Location:** All API calls  
-**Impact:** Transient failures cause operation failures  
-**Fix Required:** Implement exponential backoff retry  
+### 12. Format Requirements Not Clear
+**Issue:** Documentation suggests markdown support but tools require ADF  
+**Fix Required:** Update documentation to clearly specify format requirements
 
-### 12. No Caching Layer
-**Location:** Frequently accessed data  
-**Impact:** Unnecessary API calls  
-**Fix Required:** Add caching for project info, user data, etc.  
+### 13. Tool Name Mismatches  
+**Issue:** Some tool names in documentation don't match actual implementation  
+**Fix Required:** Audit and update all tool names in documentation
 
-## Root Cause Analysis
+### 14. Missing Error Handling Documentation
+**Issue:** No guidance on error scenarios and troubleshooting  
+**Fix Required:** Add troubleshooting section to documentation
 
-The primary issue is that the MCP server was likely developed against an older version of the Atlassian API or Jira Server/Data Center, which used plain text for many fields. Atlassian Cloud now requires ADF (Atlassian Document Format) for all rich text fields.
+## TESTING GAPS
 
-## Recommended Fix Order
+### 15. Agile Operations Untested
+**Issue:** No agile boards available in test environment  
+**Fix Required:** Set up proper test environment with agile boards for comprehensive testing
 
-1. **Implement ADF Support** - This will fix multiple issues at once
-2. **Fix Worklog Implementation** - Core functionality
-3. **Fix User Resolution** - Needed for many operations
-4. **Add Markdown Converter** - Improve usability
-5. **Improve Error Handling** - Better debugging
-
-## Testing Requirements
-
-After fixes are implemented:
-- Re-test all failed operations
-- Add unit tests for ADF conversion
-- Add integration tests for Cloud API
-- Document ADF requirements in README
+### 16. Advanced Jira Operations Untested
+**Issue:** Many write operations couldn't be tested due to prerequisite failures  
+**Fix Required:** Fix basic operations first, then test advanced features
 
 ---
-*This document should be updated as issues are resolved*
+
+## Fix Priority Order
+
+1. **Content format compatibility** (fixes issues #2, #3)
+2. **Missing API implementations** (fixes issue #1) 
+3. **Confluence operations** (fixes issue #4)
+4. **Tool naming consistency** (fixes issue #5)
+5. **Batch operations** (fixes issue #6)
+6. **Error handling improvements** (fixes issues #7, #8, #10)
+7. **Documentation updates** (fixes issues #12, #13, #14)
+
+## Test Environment Requirements
+
+To properly test fixes:
+- Access to FTEST project with all issue types enabled
+- Personal Confluence space with proper permissions
+- Agile boards configured for sprint testing
+- Test data that can be safely created and deleted
+
+---
+
+*Generated by MCP Atlassian Server Testing Framework*
