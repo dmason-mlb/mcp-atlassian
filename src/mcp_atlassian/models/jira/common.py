@@ -66,7 +66,7 @@ class JiraUser(ApiModel):
                 logger.debug(f"Unexpected avatar data format: {type(avatars)}")
 
         return cls(
-            account_id=data.get("accountId", JIRA_DEFAULT_ID),
+            account_id=data.get("accountId", None),
             display_name=str(data.get("displayName", UNKNOWN)),
             email=data.get("emailAddress"),
             active=bool(data.get("active", True)),

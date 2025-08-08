@@ -147,8 +147,8 @@ class WorklogMixin(JiraClient):
             base_url = self.jira.resource_url("issue")
             url = f"{base_url}/{issue_key}/worklog"
 
-            # Use 'data' payload in line with tests expecting 'data' kwarg
-            result = self.jira.post(url, data=worklog_data, params=params)
+            # Use 'json_data' payload for consistency with other REST client calls
+            result = self.jira.post(url, json_data=worklog_data, params=params)
             if not isinstance(result, dict):
                 msg = f"Unexpected return value type from `jira.post`: {type(result)}"
                 logger.error(msg)
