@@ -102,8 +102,41 @@ async def create_issue(
     ] = None,
 ) -> str:
     """Create a new Jira issue with optional Epic link or parent for subtasks."""
+    # Parse components from comma-separated string to list
+    components_list = None
+    if components and isinstance(components, str):
+        components_list = [comp.strip() for comp in components.split(",") if comp.strip()]
+    elif components:
+        components_list = components
+
+    # Normalize additional_fields: accept dict or JSON string
+    normalized_additional_fields = None
+    if additional_fields is not None:
+        if isinstance(additional_fields, dict):
+            normalized_additional_fields = additional_fields
+        elif isinstance(additional_fields, str):
+            import json as _json
+            try:
+                parsed = _json.loads(additional_fields)
+                if isinstance(parsed, dict):
+                    normalized_additional_fields = parsed
+                else:
+                    raise ValueError("additional_fields JSON must decode to an object")
+            except Exception as e:
+                raise ValueError(f"Invalid JSON for additional_fields: {e}") from e
+        else:
+            raise ValueError("additional_fields must be a dictionary or JSON string.")
+
+    # Delegate to the mixin's tool (which returns a JSON string via its own decorator)
     return await server_instance.create_issue(
-        ctx, project_key, summary, issue_type, assignee, description, components, additional_fields
+        ctx,
+        project_key,
+        summary,
+        issue_type,
+        assignee,
+        description,
+        components_list,
+        normalized_additional_fields,
     )
 
 
