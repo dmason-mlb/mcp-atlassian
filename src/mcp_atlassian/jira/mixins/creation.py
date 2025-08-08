@@ -82,11 +82,23 @@ class IssueCreationMixin(
 
             # Add description if provided
             if description:
-                # Bypass conflicting _markdown_to_jira resolution by calling the
-                # formatting router directly and requesting string output for ADF
-                description_content = self.markdown_to_jira(
-                    description, return_raw_adf=False
-                )
+                # Jira Cloud requires ADF (document object). Server/DC uses wiki markup string.
+                if getattr(self.config, "is_cloud", False):
+                    description_content = self.markdown_to_jira(
+                        description, return_raw_adf=True
+                    )
+                    # Ensure we pass an object, not a JSON-encoded string
+                    if isinstance(description_content, str):
+                        try:
+                            import json as _json
+                            description_content = _json.loads(description_content)
+                        except Exception:  # noqa: BLE001
+                            # If it isn't JSON, leave as-is and let API validate
+                            pass
+                else:
+                    description_content = self.markdown_to_jira(
+                        description, return_raw_adf=False
+                    )
                 fields["description"] = description_content
 
             # Handle components
