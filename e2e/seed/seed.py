@@ -8,19 +8,34 @@ from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = Path(__file__).resolve().parents[2]
 
-# Minimal .env loader (avoid external dependency)
+# .env loader (use python-dotenv if available, else minimal parser)
 def _load_env_file(env_path: Path) -> None:
     if not env_path.exists():
         return
     try:
-        for line in env_path.read_text().splitlines():
+        try:
+            from dotenv import load_dotenv as _dz
+
+            _dz(env_path, override=False)
+            return
+        except Exception:
+            pass
+        for raw in env_path.read_text().splitlines():
+            line = raw.strip()
             if not line or line.strip().startswith('#'):
                 continue
+            if line.startswith('export '):
+                line = line[len('export '):].lstrip()
             if '=' in line:
                 key, val = line.split('=', 1)
                 key = key.strip()
+                # Drop inline comments
+                if ' #' in val:
+                    val = val.split(' #', 1)[0]
+                if ' ;' in val:
+                    val = val.split(' ;', 1)[0]
                 val = val.strip().strip('"').strip("'")
                 os.environ.setdefault(key, val)
     except Exception:

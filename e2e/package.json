@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "prep": "playwright install --with-deps",
-    "seed": "python3 seed/seed.py",
+    "seed": "uv run python seed/seed.py",
     "test": "playwright test",
-    "clean": "python3 cleanup/cleanup.py"
+    "clean": "uv run python cleanup/cleanup.py"
   },
   "devDependencies": {
     "@playwright/test": "^1.46.0",
