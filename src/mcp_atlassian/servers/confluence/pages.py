@@ -242,10 +242,10 @@ async def get_page_children(
 @check_write_access
 async def create_page(
     ctx: Context,
-    space_key: Annotated[
+    space_id: Annotated[
         str,
         Field(
-            description="The key of the space to create the page in (usually a short uppercase code like 'DEV', 'TEAM', or 'DOC')"
+            description="The ID of the space to create the page in (e.g., '123456789' for regular spaces or '2347565058' for personal spaces)"
         ),
     ],
     title: Annotated[str, Field(description="The title of the page")],
@@ -282,7 +282,7 @@ async def create_page(
 
     Args:
         ctx: The FastMCP context.
-        space_key: The key of the space.
+        space_id: The ID of the space.
         title: The title of the page.
         content: The content of the page (format depends on content_format).
         parent_id: Optional parent page ID.
@@ -312,7 +312,7 @@ async def create_page(
         content_representation = content_format  # Pass 'wiki' or 'storage' directly
 
     page = confluence_fetcher.create_page(
-        space_key=space_key,
+        space_id=space_id,
         title=title,
         body=content,
         parent_id=parent_id,

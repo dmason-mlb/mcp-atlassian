@@ -50,9 +50,14 @@ class ConfluenceSearchResult(ApiModel, TimestampMixin):
         # Convert search results to ConfluencePage models
         results = []
         for item in data.get("results", []):
-            # In Confluence search, the content is nested inside the result item
-            if content := item.get("content"):
-                results.append(ConfluencePage.from_api_response(content, **kwargs))
+            # Check if content is nested (v1 API) or direct (v2 API)
+            if "content" in item:
+                # V1 API response - content is nested
+                if content := item.get("content"):
+                    results.append(ConfluencePage.from_api_response(content, **kwargs))
+            elif item.get("type") == "page":
+                # V2 API or direct page response
+                results.append(ConfluencePage.from_api_response(item, **kwargs))
 
         return cls(
             total_size=data.get("totalSize", 0),

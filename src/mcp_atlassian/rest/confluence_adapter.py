@@ -72,6 +72,21 @@ class ConfluenceAdapter:
         # Store session reference for compatibility
         self._session = self.client.session
 
+    def get(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
+        """Generic GET request method for API endpoints.
+        
+        Args:
+            endpoint: The API endpoint path (e.g., "rest/api/search/user")
+            params: Query parameters for the request
+            
+        Returns:
+            The JSON response from the API
+        """
+        url = f"{self.url}/{endpoint.lstrip('/')}"
+        response = self._session.get(url, params=params)
+        response.raise_for_status()
+        return response.json()
+
     # === User Operations ===
 
     def get_user_details_by_username(self, username: str) -> dict[str, Any]:
