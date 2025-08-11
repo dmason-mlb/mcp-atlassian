@@ -1,11 +1,10 @@
 """Simplified tests to verify ADF implementation is working correctly."""
 
 import json
-from unittest.mock import Mock, patch, MagicMock
-import pytest
+from unittest.mock import patch
 
-from mcp_atlassian.formatting.router import FormatRouter
 from mcp_atlassian.formatting.adf_ast import ASTBasedADFGenerator as ADFGenerator
+from mcp_atlassian.formatting.router import FormatRouter
 from mcp_atlassian.preprocessing import ConfluencePreprocessor, JiraPreprocessor
 
 
@@ -15,13 +14,13 @@ class TestADFFormatDetection:
     def test_cloud_deployment_detection(self):
         """Test that Cloud URLs are correctly detected."""
         router = FormatRouter()
-        
+
         cloud_urls = [
             "https://example.atlassian.net",
             "https://test.atlassian.net/wiki",
             "https://company.atlassian.com",
         ]
-        
+
         for url in cloud_urls:
             result = router.convert_markdown("**test**", url)
             assert result["deployment_type"] == "cloud"
@@ -31,13 +30,13 @@ class TestADFFormatDetection:
     def test_server_deployment_detection(self):
         """Test that Server/DC URLs are correctly detected."""
         router = FormatRouter()
-        
+
         server_urls = [
             "https://jira.company.com",
             "https://confluence.internal.net",
             "http://localhost:8080",
         ]
-        
+
         for url in server_urls:
             result = router.convert_markdown("**test**", url)
             assert result["deployment_type"] == "server"
@@ -51,7 +50,7 @@ class TestADFContentGeneration:
     def test_basic_markdown_to_adf(self):
         """Test basic markdown elements convert to ADF."""
         generator = ADFGenerator()
-        
+
         markdown = """# Heading 1
 
 This is a paragraph with **bold** and *italic* text.
@@ -73,18 +72,18 @@ This is a paragraph with **bold** and *italic* text.
 def hello():
     print("Hello, World!")
 ```"""
-        
+
         result = generator.markdown_to_adf(markdown)
-        
+
         # Verify structure
         assert result["type"] == "doc"
         assert result["version"] == 1
         assert "content" in result
-        
+
         # Check that we have various node types
         content = result["content"]
         node_types = {node["type"] for node in content}
-        
+
         assert "heading" in node_types
         assert "paragraph" in node_types
         assert "bulletList" in node_types
@@ -94,7 +93,7 @@ def hello():
     def test_plugin_content_to_adf(self):
         """Test that plugin content converts to ADF."""
         generator = ADFGenerator()
-        
+
         markdown = """## Panel Example
 
 ::: panel info "Information Panel"
@@ -112,13 +111,13 @@ Due date: :date[2025-01-30]
 ## Mention Example
 
 Assigned to: @john.doe"""
-        
+
         result = generator.markdown_to_adf(markdown)
-        
+
         # Check content was generated
         assert result["type"] == "doc"
         assert len(result["content"]) > 0
-        
+
         # Verify panel was processed
         content_str = json.dumps(result)
         assert "panel" in content_str or "Panel" in content_str
@@ -130,19 +129,19 @@ class TestPreprocessorADFIntegration:
     def test_confluence_preprocessor_cloud(self):
         """Test Confluence preprocessor returns ADF for Cloud."""
         preprocessor = ConfluencePreprocessor(base_url="https://example.atlassian.net")
-        
+
         # Simulate Cloud instance
-        with patch.object(preprocessor.format_router, 'convert_markdown') as mock_convert:
+        with patch.object(
+            preprocessor.format_router, "convert_markdown"
+        ) as mock_convert:
             mock_convert.return_value = {
                 "content": {"type": "doc", "version": 1, "content": []},
                 "format": "adf",
-                "deployment_type": "cloud"
+                "deployment_type": "cloud",
             }
-            
-            result = preprocessor.markdown_to_confluence(
-                "**test**"
-            )
-            
+
+            result = preprocessor.markdown_to_confluence("**test**")
+
             # Should return dict for ADF
             assert isinstance(result, dict)
             assert result["type"] == "doc"
@@ -150,10 +149,10 @@ class TestPreprocessorADFIntegration:
     def test_confluence_preprocessor_server(self):
         """Test Confluence preprocessor returns storage for Server."""
         preprocessor = ConfluencePreprocessor(base_url="https://confluence.company.com")
-        
+
         # For server, it should return storage format
         result = preprocessor.markdown_to_confluence_storage("**test**")
-        
+
         # Should return string for storage format
         assert isinstance(result, str)
         assert "<strong>test</strong>" in result
@@ -161,19 +160,19 @@ class TestPreprocessorADFIntegration:
     def test_jira_preprocessor_cloud(self):
         """Test Jira preprocessor returns ADF for Cloud."""
         preprocessor = JiraPreprocessor()
-        
+
         # Simulate Cloud instance
-        with patch.object(preprocessor.format_router, 'convert_markdown') as mock_convert:
+        with patch.object(
+            preprocessor.format_router, "convert_markdown"
+        ) as mock_convert:
             mock_convert.return_value = {
                 "content": {"type": "doc", "version": 1, "content": []},
                 "format": "adf",
-                "deployment_type": "cloud"
+                "deployment_type": "cloud",
             }
-            
-            result = preprocessor.markdown_to_jira(
-                "**test**"
-            )
-            
+
+            result = preprocessor.markdown_to_jira("**test**")
+
             # Should return dict for ADF
             assert isinstance(result, dict)
             assert result["type"] == "doc"
@@ -181,10 +180,10 @@ class TestPreprocessorADFIntegration:
     def test_jira_preprocessor_server(self):
         """Test Jira preprocessor returns wiki markup for Server."""
         preprocessor = JiraPreprocessor()
-        
+
         # For server, it should return wiki markup
         result = preprocessor.markdown_to_jira("**test**")
-        
+
         # Should return string for wiki format
         assert isinstance(result, str)
         assert "*test*" in result
@@ -196,7 +195,7 @@ class TestADFRealWorldScenarios:
     def test_complex_document_structure(self):
         """Test a complex document with multiple elements."""
         generator = ADFGenerator()
-        
+
         markdown = """# Project Documentation
 
 ## Overview
@@ -251,14 +250,14 @@ Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 ---
 
 *Last updated: 2025-01-30*"""
-        
+
         result = generator.markdown_to_adf(markdown)
-        
+
         # Verify the document was processed
         assert result["type"] == "doc"
         assert result["version"] == 1
         assert len(result["content"]) > 0
-        
+
         # Check for various elements
         content_json = json.dumps(result)
         assert "Project Documentation" in content_json
@@ -270,20 +269,22 @@ Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
     def test_performance_metrics(self):
         """Test performance metrics collection."""
         router = FormatRouter()
-        
+
         # Perform several conversions
         for i in range(5):
-            router.convert_markdown(f"Test content {i}", "https://example.atlassian.net")
-        
+            router.convert_markdown(
+                f"Test content {i}", "https://example.atlassian.net"
+            )
+
         # Get metrics
         metrics = router.get_performance_metrics()
-        
+
         # Verify metrics structure
         assert "detection_cache_hit_rate" in metrics
         assert "average_conversion_time" in metrics
         assert "average_detection_time" in metrics
         assert "cache_stats" in metrics
-        
+
         # Check that conversions happened (look at successful conversions in converter_stats)
         converter_stats = metrics.get("converter_stats", {})
         if converter_stats:

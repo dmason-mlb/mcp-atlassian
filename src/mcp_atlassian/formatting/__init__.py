@@ -6,7 +6,6 @@ This package provides formatters for converting markdown to various Atlassian fo
 """
 
 from .adf_ast import ASTBasedADFGenerator
-from .adf import ADFGenerator  # Keep for backward compatibility
 from .router import FormatRouter
 
-__all__ = ["ASTBasedADFGenerator", "ADFGenerator", "FormatRouter"]
+__all__ = ["ASTBasedADFGenerator", "FormatRouter"]

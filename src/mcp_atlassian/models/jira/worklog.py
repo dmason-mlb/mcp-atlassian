@@ -27,7 +27,9 @@ class JiraWorklog(ApiModel, TimestampMixin):
 
     id: str = JIRA_DEFAULT_ID
     author: JiraUser | None = None
-    comment: str | None = None
+    update_author: JiraUser | None = None
+    comment: dict | str | None = None
+    issue_id: str = EMPTY_STRING
     created: str = EMPTY_STRING
     updated: str = EMPTY_STRING
     started: str = EMPTY_STRING
@@ -54,10 +56,12 @@ class JiraWorklog(ApiModel, TimestampMixin):
             return cls()
 
         # Extract author data
-        author = None
         author_data = data.get("author")
-        if author_data:
-            author = JiraUser.from_api_response(author_data)
+        author = JiraUser.from_api_response(author_data or {})
+
+        # Extract update author data
+        update_author_data = data.get("updateAuthor")
+        update_author = JiraUser.from_api_response(update_author_data or {})
 
         # Ensure ID is a string
         worklog_id = data.get("id", JIRA_DEFAULT_ID)
@@ -73,15 +77,26 @@ class JiraWorklog(ApiModel, TimestampMixin):
         except (ValueError, TypeError):
             time_spent_seconds = 0
 
+        # Normalize comment: some APIs return ADF dict; convert to string
+        raw_comment = data.get("comment")
+        if isinstance(raw_comment, dict):
+            safe_comment: dict | str | None = raw_comment
+        elif raw_comment is None:
+            safe_comment = {}
+        else:
+            safe_comment = str(raw_comment)
+
         return cls(
             id=worklog_id,
             author=author,
-            comment=data.get("comment"),
-            created=str(data.get("created", EMPTY_STRING)),
-            updated=str(data.get("updated", EMPTY_STRING)),
-            started=str(data.get("started", EMPTY_STRING)),
+            update_author=update_author,
+            comment=safe_comment,
+            created=str(data.get("created") or EMPTY_STRING),
+            updated=str(data.get("updated") or EMPTY_STRING),
+            started=str(data.get("started") or EMPTY_STRING),
             time_spent=str(data.get("timeSpent", EMPTY_STRING)),
             time_spent_seconds=time_spent_seconds,
+            issue_id=str(data.get("issueId", EMPTY_STRING) or EMPTY_STRING),
         )
 
     def to_simplified_dict(self) -> dict[str, Any]:

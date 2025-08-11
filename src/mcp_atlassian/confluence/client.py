@@ -3,8 +3,9 @@
 import logging
 import os
 
-from atlassian import Confluence
 from requests import Session
+
+from mcp_atlassian.rest.adapters import ConfluenceAdapter
 
 from ..exceptions import MCPAtlassianAuthenticationError
 from ..utils.logging import get_masked_session_headers, log_config_param, mask_sensitive
@@ -50,7 +51,7 @@ class ConfluenceClient:
             api_url = f"https://api.atlassian.com/ex/confluence/{self.config.oauth_config.cloud_id}"
 
             # Initialize Confluence with the session
-            self.confluence = Confluence(
+            self.confluence = ConfluenceAdapter(
                 url=api_url,
                 session=session,
                 cloud=True,  # OAuth is only for Cloud
@@ -62,7 +63,7 @@ class ConfluenceClient:
                 f"URL: {self.config.url}, "
                 f"Token (masked): {mask_sensitive(str(self.config.personal_token))}"
             )
-            self.confluence = Confluence(
+            self.confluence = ConfluenceAdapter(
                 url=self.config.url,
                 token=self.config.personal_token,
                 cloud=self.config.is_cloud,
@@ -75,7 +76,7 @@ class ConfluenceClient:
                 f"API Token present: {bool(self.config.api_token)}, "
                 f"Is Cloud: {self.config.is_cloud}"
             )
-            self.confluence = Confluence(
+            self.confluence = ConfluenceAdapter(
                 url=self.config.url,
                 username=self.config.username,
                 password=self.config.api_token,  # API token is used as password

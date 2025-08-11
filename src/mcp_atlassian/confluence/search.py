@@ -60,8 +60,21 @@ class SearchMixin(ConfluenceClient):
 
             logger.info(f"Applied spaces filter to query: {cql}")
 
-        # Execute the CQL search query
-        results = self.confluence.cql(cql=cql, limit=limit)
+        # Always use v2 API for search
+        logger.debug(f"SearchMixin: About to search with CQL: {cql}")
+        if not hasattr(self, '_v2_adapter_instance'):
+            # Create v2 adapter for all auth types
+            from .v2_adapter import ConfluenceV2Adapter
+            logger.debug(f"Creating v2 adapter for search")
+            self._v2_adapter_instance = ConfluenceV2Adapter(
+                session=self.confluence._session,
+                base_url=self.config.url
+            )
+        
+        # Execute the CQL search query using v2 API
+        logger.debug(f"Calling v2_adapter.search with CQL: {cql}")
+        results = self._v2_adapter_instance.search(cql=cql, limit=limit)
+        logger.debug(f"Got {len(results.get('results', []))} results from search")
 
         # Convert the response to a search result model
         search_result = ConfluenceSearchResult.from_api_response(

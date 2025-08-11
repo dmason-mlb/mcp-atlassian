@@ -127,13 +127,16 @@ class UsersMixin(JiraClient):
             Optional[str]: Account ID if found, None otherwise.
         """
         try:
-            params = {}
+            # For Cloud, use query parameter; for Server/DC use username
             if self.config.is_cloud:
-                params["query"] = username
+                response = self.jira.user_find_by_user_string(
+                    query=username, start_at=0, max_results=1
+                )
             else:
-                params["username"] = username
-
-            response = self.jira.user_find_by_user_string(**params, start=0, limit=1)
+                # For Server/DC, the API might be different
+                response = self.jira.user_find_by_user_string(
+                    query=username, start_at=0, max_results=1
+                )
             if not isinstance(response, list):
                 msg = f"Unexpected return value type from `jira.user_find_by_user_string`: {type(response)}"
                 logger.error(msg)
@@ -298,6 +301,25 @@ class UsersMixin(JiraClient):
             )
 
         return api_kwargs
+
+    def get_user_profile(self, identifier: str) -> "JiraUser":
+        """
+        Retrieve Jira user profile information by identifier.
+
+        This is an alias for get_user_profile_by_identifier for backward compatibility.
+
+        Args:
+            identifier (str): User identifier (accountId, username, key, or email).
+
+        Returns:
+            JiraUser: JiraUser model with profile information.
+
+        Raises:
+            ValueError: If the user cannot be found or identifier cannot be resolved.
+            MCPAtlassianAuthenticationError: If authentication fails.
+            Exception: For other API errors.
+        """
+        return self.get_user_profile_by_identifier(identifier)
 
     def get_user_profile_by_identifier(self, identifier: str) -> "JiraUser":
         """

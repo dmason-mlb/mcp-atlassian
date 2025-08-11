@@ -389,8 +389,8 @@ def jira_client(mock_config, mock_atlassian_jira):
     Returns:
         JiraClient: Configured client instance
     """
-    with patch("atlassian.Jira") as mock_jira_class:
-        mock_jira_class.return_value = mock_atlassian_jira
+    with patch("mcp_atlassian.rest.adapters.JiraAdapter") as mock_jira_adapter_class:
+        mock_jira_adapter_class.return_value = mock_atlassian_jira
 
         client = JiraClient(config=mock_config)
         # Replace the actual Jira instance with our mock
@@ -414,8 +414,8 @@ def jira_fetcher(mock_config, mock_atlassian_jira):
     """
     from mcp_atlassian.jira import JiraFetcher
 
-    with patch("atlassian.Jira") as mock_jira_class:
-        mock_jira_class.return_value = mock_atlassian_jira
+    with patch("mcp_atlassian.rest.adapters.JiraAdapter") as mock_jira_adapter_class:
+        mock_jira_adapter_class.return_value = mock_atlassian_jira
 
         fetcher = JiraFetcher(config=mock_config)
         # Replace the actual Jira instance with our mock

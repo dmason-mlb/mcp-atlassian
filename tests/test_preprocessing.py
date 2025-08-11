@@ -236,15 +236,30 @@ For more information, see [our website|https://example.com].
 def test_markdown_to_jira(preprocessor_with_jira):
     """Test conversion of Markdown to Jira markup."""
     # Test headers
-    assert preprocessor_with_jira.markdown_to_jira("# Heading 1", enable_adf=False) == "h1. Heading 1"
-    assert preprocessor_with_jira.markdown_to_jira("## Heading 2", enable_adf=False) == "h2. Heading 2"
+    assert (
+        preprocessor_with_jira.markdown_to_jira("# Heading 1", enable_adf=False)
+        == "h1. Heading 1"
+    )
+    assert (
+        preprocessor_with_jira.markdown_to_jira("## Heading 2", enable_adf=False)
+        == "h2. Heading 2"
+    )
 
     # Test text formatting
-    assert preprocessor_with_jira.markdown_to_jira("**bold text**", enable_adf=False) == "*bold text*"
-    assert preprocessor_with_jira.markdown_to_jira("*italic text*", enable_adf=False) == "_italic text_"
+    assert (
+        preprocessor_with_jira.markdown_to_jira("**bold text**", enable_adf=False)
+        == "*bold text*"
+    )
+    assert (
+        preprocessor_with_jira.markdown_to_jira("*italic text*", enable_adf=False)
+        == "_italic text_"
+    )
 
     # Test code blocks
-    assert preprocessor_with_jira.markdown_to_jira("`code`", enable_adf=False) == "{{code}}"
+    assert (
+        preprocessor_with_jira.markdown_to_jira("`code`", enable_adf=False)
+        == "{{code}}"
+    )
 
     # For multiline code blocks, check content is preserved rather than exact format
     converted_code_block = preprocessor_with_jira.markdown_to_jira(
@@ -254,10 +269,14 @@ def test_markdown_to_jira(preprocessor_with_jira):
     assert "multiline code" in converted_code_block
 
     # Test lists
-    list_conversion = preprocessor_with_jira.markdown_to_jira("- Item 1", enable_adf=False)
+    list_conversion = preprocessor_with_jira.markdown_to_jira(
+        "- Item 1", enable_adf=False
+    )
     assert "* Item 1" in list_conversion
 
-    numbered_list = preprocessor_with_jira.markdown_to_jira("1. Item 1", enable_adf=False)
+    numbered_list = preprocessor_with_jira.markdown_to_jira(
+        "1. Item 1", enable_adf=False
+    )
     assert "Item 1" in numbered_list
     assert "1" in numbered_list
 
@@ -281,7 +300,9 @@ def hello():
 For more information, see [our website](https://example.com).
 """
 
-    converted = preprocessor_with_jira.markdown_to_jira(complex_markdown, enable_adf=False)
+    converted = preprocessor_with_jira.markdown_to_jira(
+        complex_markdown, enable_adf=False
+    )
     assert "h1. Project Overview" in converted
     assert "h2. Introduction" in converted
     assert "*improve*" in converted

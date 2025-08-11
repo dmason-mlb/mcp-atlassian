@@ -87,7 +87,7 @@ class TestConfluenceClientCustomHeaders:
         mock_confluence._session = mock_session
 
         monkeypatch.setattr(
-            "mcp_atlassian.confluence.client.Confluence",
+            "mcp_atlassian.rest.adapters.ConfluenceAdapter",
             lambda **kwargs: mock_confluence,
         )
         monkeypatch.setattr(
@@ -121,7 +121,7 @@ class TestConfluenceClientCustomHeaders:
         mock_confluence._session = mock_session
 
         monkeypatch.setattr(
-            "mcp_atlassian.confluence.client.Confluence",
+            "mcp_atlassian.rest.adapters.ConfluenceAdapter",
             lambda **kwargs: mock_confluence,
         )
         monkeypatch.setattr(
