@@ -8,8 +8,6 @@ from fastmcp import Context
 from pydantic import Field
 
 from mcp_atlassian.servers.dependencies import get_jira_fetcher
-from mcp_atlassian.utils.decorators import check_write_access
-from mcp_atlassian.utils.tool_helpers import safe_tool_result
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +15,6 @@ logger = logging.getLogger(__name__)
 class IssueCreationMixin:
     """Mixin providing issue creation tools."""
 
-    @check_write_access
-    @safe_tool_result
     async def create_issue(
         self,
         ctx: Context,
@@ -74,6 +70,13 @@ class IssueCreationMixin:
                 default=None,
             ),
         ] = None,
+        attachments: Annotated[
+            list[str] | None,
+            Field(
+                description="(Optional) List of file paths to attach to the issue",
+                default=None,
+            ),
+        ] = None,
     ) -> str:
         """Create a new Jira issue with optional Epic link or parent for subtasks.
 
@@ -86,9 +89,10 @@ class IssueCreationMixin:
             description: Issue description.
             components: Comma-separated list of component names.
             additional_fields: Dictionary of additional fields.
+            attachments: Optional list of file paths to attach to the issue after creation.
 
         Returns:
-            JSON string representing the created issue object.
+            JSON string representing the created issue object with optional attachment results.
 
         Raises:
             ValueError: If in read-only mode or Jira client is unavailable.
@@ -116,14 +120,30 @@ class IssueCreationMixin:
             **extra_fields,
         )
         result = issue.to_simplified_dict()
-        return json.dumps(
-            {"message": "Issue created successfully", "issue": result},
-            indent=2,
-            ensure_ascii=False,
-        )
+        
+        # Handle attachments if provided
+        attachment_results = None
+        if attachments and isinstance(attachments, list):
+            try:
+                issue_key = issue.key
+                logger.info(f"Uploading {len(attachments)} attachments to {issue_key}")
+                attachment_results = jira.upload_attachments(issue_key, attachments)
+                logger.info(f"Attachment upload results: {attachment_results}")
+            except Exception as e:
+                logger.error(f"Error uploading attachments to {issue_key}: {str(e)}")
+                attachment_results = {
+                    "success": False,
+                    "error": str(e),
+                    "failed": [{"filename": f, "error": str(e)} for f in attachments]
+                }
+        
+        # Include attachment results in response if applicable
+        response = {"message": "Issue created successfully", "issue": result}
+        if attachment_results:
+            response["attachment_results"] = attachment_results
+        
+        return json.dumps(response, indent=2, ensure_ascii=False)
 
-    @check_write_access
-    @safe_tool_result
     async def batch_create_issues(
         self,
         ctx: Context,

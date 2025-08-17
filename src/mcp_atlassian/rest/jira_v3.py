@@ -760,15 +760,23 @@ class JiraV3Client(BaseRESTClient):
         with open(filename, "rb") as file_handle:
             files = {"file": (os.path.basename(filename), file_handle, mime_type)}
 
-            response = self.session.post(
-                f"{self.base_url}/rest/api/3/issue/{issue_key}/attachments",
-                files=files,
-                headers={
-                    "X-Atlassian-Token": "no-check",
-                },
-            )
-            response.raise_for_status()
-            return response.json()
+            # Temporarily remove Content-Type from session headers for multipart upload
+            original_content_type = self.session.headers.pop("Content-Type", None)
+            try:
+                # Set X-Atlassian-Token for XSRF protection
+                headers = {"X-Atlassian-Token": "no-check"}
+                
+                response = self.session.post(
+                    f"{self.base_url}/rest/api/3/issue/{issue_key}/attachments",
+                    files=files,
+                    headers=headers,
+                )
+                response.raise_for_status()
+                return response.json()
+            finally:
+                # Restore original Content-Type header
+                if original_content_type:
+                    self.session.headers["Content-Type"] = original_content_type
 
     # === Bulk Operations ===
 

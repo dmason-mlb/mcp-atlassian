@@ -8,7 +8,6 @@ from fastmcp import Context
 from pydantic import Field
 
 from mcp_atlassian.servers.dependencies import get_jira_fetcher
-from mcp_atlassian.utils.decorators import check_write_access
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +15,6 @@ logger = logging.getLogger(__name__)
 class IssueUpdateMixin:
     """Mixin providing issue update and modification tools."""
 
-    @check_write_access
     async def update_issue(
         self,
         ctx: Context,
@@ -118,7 +116,6 @@ class IssueUpdateMixin:
             logger.error(f"Error updating issue {issue_key}: {str(e)}", exc_info=True)
             raise ValueError(f"Failed to update issue {issue_key}: {str(e)}")
 
-    @check_write_access
     async def delete_issue(
         self,
         ctx: Context,
@@ -140,7 +137,6 @@ class IssueUpdateMixin:
         jira.delete_issue(issue_key)
         return json.dumps({"message": f"Issue {issue_key} deleted successfully"})
 
-    @check_write_access
     async def add_comment(
         self,
         ctx: Context,
@@ -169,7 +165,6 @@ class IssueUpdateMixin:
 
     # Note: Worklog tool removed. This mixin no longer exposes add_worklog.
 
-    @check_write_access
     async def transition_issue(
         self,
         ctx: Context,

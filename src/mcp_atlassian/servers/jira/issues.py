@@ -101,6 +101,16 @@ async def create_issue(
             default=None,
         ),
     ] = None,
+    attachments: Annotated[
+        str | None,
+        Field(
+            description=(
+                "(Optional) JSON string array or comma-separated list of file paths to attach to the issue. "
+                "Example: '/path/to/file1.txt,/path/to/file2.txt' or ['/path/to/file1.txt','/path/to/file2.txt']"
+            ),
+            default=None,
+        ),
+    ] = None,
 ) -> str:
     """Create a new Jira issue with optional Epic link or parent for subtasks."""
     # Parse components from comma-separated string to list
@@ -131,6 +141,28 @@ async def create_issue(
         else:
             raise ValueError("additional_fields must be a dictionary or JSON string.")
 
+    # Parse attachments parameter
+    attachment_paths = None
+    if attachments:
+        import json as _json
+        
+        if isinstance(attachments, str):
+            try:
+                parsed = _json.loads(attachments)
+                if isinstance(parsed, list):
+                    attachment_paths = [str(p) for p in parsed]
+                else:
+                    raise ValueError("attachments JSON string must be an array.")
+            except _json.JSONDecodeError:
+                # Assume comma-separated if not valid JSON array
+                attachment_paths = [
+                    p.strip() for p in attachments.split(",") if p.strip()
+                ]
+        else:
+            raise ValueError(
+                "attachments must be a JSON array string or comma-separated string."
+            )
+
     # Delegate to the mixin's tool (which returns a JSON string via its own decorator)
     return await server_instance.create_issue(
         ctx,
@@ -141,6 +173,7 @@ async def create_issue(
         description,
         components_list,
         normalized_additional_fields,
+        attachment_paths,
     )
 
 
@@ -230,6 +263,7 @@ async def delete_issue(
 
 @issues_mcp.tool(tags={"jira", "write"})
 @check_write_access
+@safe_tool_result
 async def add_comment(
     ctx: Context,
     issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],

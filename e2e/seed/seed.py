@@ -124,8 +124,9 @@ async def main() -> None:
             await session.initialize()
 
             # Create Jira issue
+            print(f"Creating Jira issue in project {jira_project} with label {label}")
             jira_create = await session.call_tool(
-                "jira_create_issue",
+                "jira_issues_create_issue",
                 {
                     "project_key": jira_project,
                     "summary": f"[E2E] Visual Render Validation {label}",
@@ -134,13 +135,15 @@ async def main() -> None:
                     "additional_fields": {"labels": [label]},
                 },
             )
+            print(f"Jira create response: {jira_create}")
             jira_obj = extract_json(jira_create)
+            print(f"Extracted JSON: {jira_obj}")
             issue_key = jira_obj.get("key") or jira_obj.get("issue_key")
 
             # Add comment
             if issue_key:
                 await session.call_tool(
-                    "jira_add_comment",
+                    "jira_issues_add_comment",
                     {
                         "issue_key": issue_key,
                         "comment": "E2E seed comment with `code` and bold **text**.",
@@ -154,7 +157,7 @@ async def main() -> None:
                     text_path = ART_DIR / "test-attachment.txt"
                     text_path.write_text("This is an E2E attachment file. Label: " + label)
                     await session.call_tool(
-                        "jira_upload_attachment",
+                        "jira_management_upload_attachment",
                         {"issue_key": issue_key, "file_path": str(text_path)},
                     )
                 except Exception:
@@ -167,15 +170,16 @@ async def main() -> None:
                         img_dst = ART_DIR / "test-image.png"
                         img_dst.write_bytes(img_src.read_bytes())
                         await session.call_tool(
-                            "jira_upload_attachment",
+                            "jira_management_upload_attachment",
                             {"issue_key": issue_key, "file_path": str(img_dst)},
                         )
                     except Exception:
                         pass
 
             # Create Confluence page
+            print(f"Creating Confluence page in space {confluence_space} with label {label}")
             conf_create = await session.call_tool(
-                "confluence_create_page",
+                "confluence_pages_create_page",
                 {
                     "space_key": confluence_space,
                     "title": f"[E2E] Visual Render Validation {label}",
@@ -183,14 +187,16 @@ async def main() -> None:
                     "content_format": "markdown",
                 },
             )
+            print(f"Confluence create response: {conf_create}")
             conf_obj = extract_json(conf_create)
+            print(f"Extracted Confluence JSON: {conf_obj}")
             page_id = conf_obj.get("id") or conf_obj.get("page_id") or conf_obj.get("data", {}).get("id")
 
             # Add label for cleanup/querying
             if page_id:
                 try:
                     await session.call_tool(
-                        "confluence_add_label",
+                        "confluence_content_add_label",
                         {"page_id": str(page_id), "name": label},
                     )
                 except Exception:
