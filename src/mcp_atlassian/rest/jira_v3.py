@@ -765,7 +765,7 @@ class JiraV3Client(BaseRESTClient):
             try:
                 # Set X-Atlassian-Token for XSRF protection
                 headers = {"X-Atlassian-Token": "no-check"}
-                
+
                 response = self.session.post(
                     f"{self.base_url}/rest/api/3/issue/{issue_key}/attachments",
                     files=files,

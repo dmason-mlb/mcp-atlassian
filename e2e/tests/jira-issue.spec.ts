@@ -17,5 +17,3 @@ test('Jira description renders markdown properly', async ({ page }) => {
     maxDiffPixelRatio: 0.03,
   });
 });
-
-

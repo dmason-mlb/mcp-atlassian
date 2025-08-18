@@ -29,7 +29,7 @@ class TestJiraUserProfile:
         # Create app context with Jira config
         mock_jira_config = MagicMock()
         mock_jira_config.is_auth_configured.return_value = True
-        
+
         from mcp_atlassian.servers.context import MainAppContext
         app_context = MainAppContext(
             full_jira_config=mock_jira_config,
@@ -37,15 +37,15 @@ class TestJiraUserProfile:
             read_only=False,
             enabled_tools=None,
         )
-        
+
         # Mock FastMCP with proper request_context path
         mock_fastmcp = MagicMock()
         mock_request_context = MagicMock()
         mock_request_context.lifespan_context = {"app_lifespan_context": app_context}
-        
+
         # Set up the _mcp_server.request_context path that Context expects
         mock_fastmcp._mcp_server.request_context = mock_request_context
-        
+
         return Context(fastmcp=mock_fastmcp)
 
     @pytest.fixture
@@ -75,14 +75,14 @@ class TestJiraUserProfile:
             "accountType": "atlassian"
         }
         mock_jira_fetcher.get_user_profile.return_value = mock_user
-        
+
         with patch("mcp_atlassian.servers.jira.management.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act
             result = await get_user_profile(mock_context, "user@example.com")
             parsed = json.loads(result)
-            
+
             # Assert - The function returns the user data directly, not a success wrapper
             assert parsed["accountId"] == "5dfa93ea4517db0caf3738b4"
             assert parsed["emailAddress"] == "douglas.mason@mlb.com"
@@ -97,14 +97,14 @@ class TestJiraUserProfile:
         """Test user profile retrieval when user is not found."""
         # Arrange
         mock_jira_fetcher.get_user_profile.side_effect = ValueError("User not found")
-        
+
         with patch("mcp_atlassian.servers.jira.management.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act
             result = await get_user_profile(mock_context, "nonexistent@example.com")
             parsed = json.loads(result)
-            
+
             # Assert - The function returns an error dict without 'success' field
             assert "error" in parsed
             assert "User not found" in parsed["error"]
@@ -114,14 +114,14 @@ class TestJiraUserProfile:
         """Test user profile retrieval with authentication error."""
         # Arrange
         mock_jira_fetcher.get_user_profile.side_effect = MCPAtlassianAuthenticationError("Invalid token")
-        
+
         with patch("mcp_atlassian.servers.jira.management.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act
             result = await get_user_profile(mock_context, "user@example.com")
             parsed = json.loads(result)
-            
+
             # Assert - The function returns an error dict without 'success' field
             assert "error" in parsed
             assert "Failed to get user profile" in parsed["error"]
@@ -131,14 +131,14 @@ class TestJiraUserProfile:
         """Test user profile retrieval with network error."""
         # Arrange
         mock_jira_fetcher.get_user_profile.side_effect = HTTPError("Connection timeout")
-        
+
         with patch("mcp_atlassian.servers.jira.management.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act
             result = await get_user_profile(mock_context, "user@example.com")
             parsed = json.loads(result)
-            
+
             # Assert - The function returns an error dict without 'success' field
             assert "error" in parsed
             assert "Failed to get user profile" in parsed["error"]
@@ -148,10 +148,10 @@ class TestJiraUserProfile:
         """Test user profile retrieval with unexpected error."""
         # Arrange
         mock_jira_fetcher.get_user_profile.side_effect = RuntimeError("Unexpected error")
-        
+
         with patch("mcp_atlassian.servers.jira.management.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act & Assert - RuntimeError is not caught, so it should propagate
             with pytest.raises(RuntimeError, match="Unexpected error"):
                 await get_user_profile(mock_context, "user@example.com")
@@ -166,7 +166,7 @@ class TestJiraGetIssue:
         # Create app context with Jira config
         mock_jira_config = MagicMock()
         mock_jira_config.is_auth_configured.return_value = True
-        
+
         from mcp_atlassian.servers.context import MainAppContext
         app_context = MainAppContext(
             full_jira_config=mock_jira_config,
@@ -174,15 +174,15 @@ class TestJiraGetIssue:
             read_only=False,
             enabled_tools=None,
         )
-        
+
         # Mock FastMCP with proper request_context path
         mock_fastmcp = MagicMock()
         mock_request_context = MagicMock()
         mock_request_context.lifespan_context = {"app_lifespan_context": app_context}
-        
+
         # Set up the _mcp_server.request_context path that Context expects
         mock_fastmcp._mcp_server.request_context = mock_request_context
-        
+
         return Context(fastmcp=mock_fastmcp)
 
     @pytest.fixture
@@ -231,14 +231,14 @@ class TestJiraGetIssue:
             }
         }
         mock_jira_fetcher.get_issue.return_value = mock_issue
-        
+
         with patch("mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act
             result = await get_issue(mock_context, "FTEST-123")
             parsed = json.loads(result)
-            
+
             # Assert - Verify real response structure
             assert parsed["id"] == "1166230"
             assert parsed["key"] == "FTEST-120"
@@ -259,10 +259,10 @@ class TestJiraGetIssue:
             "customfield_10010": "Epic Link"
         }
         mock_jira_fetcher.get_issue.return_value = mock_issue
-        
+
         with patch("mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act
             result = await get_issue(
                 mock_context,
@@ -270,7 +270,7 @@ class TestJiraGetIssue:
                 fields="summary,customfield_10010"
             )
             parsed = json.loads(result)
-            
+
             # Assert
             assert parsed["customfield_10010"] == "Epic Link"
 
@@ -284,13 +284,13 @@ class TestJiraGetIssue:
             "fields": {"all": "fields", "included": True}
         }
         mock_jira_fetcher.get_issue.return_value = mock_issue
-        
+
         with patch("mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act
             result = await get_issue(mock_context, "FTEST-789", fields="*all")
-            
+
             # Assert
             mock_jira_fetcher.get_issue.assert_called_once()
             call_args = mock_jira_fetcher.get_issue.call_args
@@ -309,14 +309,14 @@ class TestJiraGetIssue:
             ]
         }
         mock_jira_fetcher.get_issue.return_value = mock_issue
-        
+
         with patch("mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act
             result = await get_issue(mock_context, "FTEST-321", comment_limit=2)
             parsed = json.loads(result)
-            
+
             # Assert
             assert len(parsed.get("comments", [])) <= 2
 
@@ -325,10 +325,10 @@ class TestJiraGetIssue:
         """Test getting a non-existent issue."""
         # Arrange
         mock_jira_fetcher.get_issue.side_effect = MCPAtlassianError("Issue not found")
-        
+
         with patch("mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act & Assert
             with pytest.raises(MCPAtlassianError, match="Issue not found"):
                 await get_issue(mock_context, "NONEXISTENT-999")
@@ -343,7 +343,7 @@ class TestJiraToolRegistration:
         # Act
         tools = await jira_mcp.get_tools()
         tool_names = list(tools.keys())
-        
+
         # Assert core tools are registered
         # Tools are prefixed with their mount point (e.g., "management_get_user_profile")
         assert any("get_user_profile" in name for name in tool_names)
@@ -354,7 +354,7 @@ class TestJiraToolRegistration:
         """Test that Jira tools have correct tags."""
         # Act
         all_tools = await jira_mcp.get_tools()
-        
+
         # Assert
         for tool_name, tool_def in all_tools.items():
             # Check if tool_def has inputSchema which contains the tags info
@@ -374,7 +374,7 @@ class TestEdgeCases:
         # Create app context with Jira config
         mock_jira_config = MagicMock()
         mock_jira_config.is_auth_configured.return_value = True
-        
+
         from mcp_atlassian.servers.context import MainAppContext
         app_context = MainAppContext(
             full_jira_config=mock_jira_config,
@@ -382,15 +382,15 @@ class TestEdgeCases:
             read_only=False,
             enabled_tools=None,
         )
-        
+
         # Mock FastMCP with proper request_context path
         mock_fastmcp = MagicMock()
         mock_request_context = MagicMock()
         mock_request_context.lifespan_context = {"app_lifespan_context": app_context}
-        
+
         # Set up the _mcp_server.request_context path that Context expects
         mock_fastmcp._mcp_server.request_context = mock_request_context
-        
+
         return Context(fastmcp=mock_fastmcp)
 
     @pytest.mark.anyio
@@ -399,10 +399,10 @@ class TestEdgeCases:
         # Arrange
         mock_jira_fetcher = Mock(spec=JiraFetcher)
         mock_jira_fetcher.get_issue.side_effect = ValueError("Invalid issue key")
-        
+
         with patch("mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act & Assert
             with pytest.raises(ValueError):
                 await get_issue(mock_context, "")
@@ -415,13 +415,13 @@ class TestEdgeCases:
         mock_issue = Mock(spec=JiraIssue)
         mock_issue.to_simplified_dict.return_value = {"key": "FTEST-MAX"}
         mock_jira_fetcher.get_issue.return_value = mock_issue
-        
+
         with patch("mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act
             await get_issue(mock_context, "FTEST-MAX", comment_limit=100)
-            
+
             # Assert
             call_args = mock_jira_fetcher.get_issue.call_args
             assert call_args[1]["comment_limit"] == 100
@@ -443,15 +443,15 @@ class TestEdgeCases:
             "accountid:123456",  # Account ID
             "key:userkey"  # Key for Server/DC
         ]
-        
+
         mock_jira_fetcher = Mock(spec=JiraFetcher)  # Use Mock, not AsyncMock
         mock_user = Mock(spec=JiraUser)
         mock_user.to_simplified_dict.return_value = {"accountId": "123"}
         mock_jira_fetcher.get_user_profile.return_value = mock_user
-        
+
         with patch("mcp_atlassian.servers.jira.management.get_jira_fetcher") as mock_get_fetcher:
             mock_get_fetcher.return_value = mock_jira_fetcher
-            
+
             # Act & Assert
             for identifier in test_identifiers:
                 result = await get_user_profile(mock_context, identifier)
@@ -470,7 +470,7 @@ class TestConcurrentRequests:
         # Create app context with Jira config
         mock_jira_config = MagicMock()
         mock_jira_config.is_auth_configured.return_value = True
-        
+
         from mcp_atlassian.servers.context import MainAppContext
         app_context = MainAppContext(
             full_jira_config=mock_jira_config,
@@ -478,7 +478,7 @@ class TestConcurrentRequests:
             read_only=False,
             enabled_tools=None,
         )
-        
+
         # Create multiple contexts with proper request_context path
         contexts = []
         for _ in range(5):
@@ -487,36 +487,36 @@ class TestConcurrentRequests:
             mock_request_context.lifespan_context = {"app_lifespan_context": app_context}
             mock_fastmcp._mcp_server.request_context = mock_request_context
             contexts.append(Context(fastmcp=mock_fastmcp))
-        
+
         issue_keys = [f"FTEST-{i}" for i in range(100, 105)]
-        
+
         mock_jira_fetcher = Mock(spec=JiraFetcher)
-        
+
         def mock_get_issue(issue_key=None, **kwargs):
             mock_issue = Mock(spec=JiraIssue)
             mock_issue.to_simplified_dict.return_value = {"key": issue_key}
             return mock_issue
-        
+
         mock_jira_fetcher.get_issue = mock_get_issue
-        
+
         with patch("mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher") as mock_get_fetcher:
             # Make get_jira_fetcher return a coroutine
             async def async_return_fetcher(*args, **kwargs):
                 return mock_jira_fetcher
             mock_get_fetcher.side_effect = async_return_fetcher
-            
+
             # Act - Use anyio's task group for proper async handling
             from anyio import create_task_group
             results = []
-            
+
             async def run_get_issue(ctx, key):
                 result = await get_issue(ctx, key)
                 results.append((key, result))
-            
+
             async with create_task_group() as tg:
                 for ctx, key in zip(contexts, issue_keys):
                     tg.start_soon(run_get_issue, ctx, key)
-            
+
             # Assert
             results.sort(key=lambda x: x[0])  # Sort by key for consistent ordering
             for key, result in results:

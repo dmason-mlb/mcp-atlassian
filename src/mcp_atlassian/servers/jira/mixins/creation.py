@@ -120,7 +120,7 @@ class IssueCreationMixin:
             **extra_fields,
         )
         result = issue.to_simplified_dict()
-        
+
         # Handle attachments if provided
         attachment_results = None
         if attachments and isinstance(attachments, list):
@@ -136,12 +136,12 @@ class IssueCreationMixin:
                     "error": str(e),
                     "failed": [{"filename": f, "error": str(e)} for f in attachments]
                 }
-        
+
         # Include attachment results in response if applicable
         response = {"message": "Issue created successfully", "issue": result}
         if attachment_results:
             response["attachment_results"] = attachment_results
-        
+
         return json.dumps(response, indent=2, ensure_ascii=False)
 
     async def batch_create_issues(

@@ -74,11 +74,11 @@ class ConfluenceAdapter:
 
     def get(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
         """Generic GET request method for API endpoints.
-        
+
         Args:
             endpoint: The API endpoint path (e.g., "rest/api/search/user")
             params: Query parameters for the request
-            
+
         Returns:
             The JSON response from the API
         """

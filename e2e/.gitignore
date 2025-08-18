@@ -4,5 +4,3 @@ test-results/
 .artifacts/seed.json
 storageState.json
 *.log
-
-

@@ -424,19 +424,19 @@ class ConfluenceV2Adapter:
                 "cql": cql,
                 "limit": limit,
             }
-            
+
             logger.debug(f"Searching with CQL endpoint: {url}")
             logger.debug(f"CQL query: {cql}")
-            
+
             response = self.session.get(url, params=params)
             response.raise_for_status()
-            
+
             result = response.json()
             logger.debug(f"Successfully searched, found {len(result.get('results', []))} results")
-            
+
             # The v1 CQL endpoint returns the expected format directly
             return result
-            
+
         except HTTPError as e:
             logger.error(f"HTTP error searching with CQL '{cql}': {e}")
             if e.response is not None:

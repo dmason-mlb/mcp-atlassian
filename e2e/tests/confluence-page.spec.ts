@@ -15,5 +15,3 @@ test('Confluence page renders markdown/ADF', async ({ page }) => {
     maxDiffPixelRatio: 0.04,
   });
 });
-
-

@@ -111,8 +111,8 @@ class FormatRouter:
         logger.info(f"[DEBUG]   base_url: '{base_url}'")
         logger.info(f"[DEBUG]   force_format: {force_format}")
         logger.info(f"[DEBUG]   user_id: '{user_id}'")
-        logger.info(f"[DEBUG]   markdown_text length: {len(markdown_text)}")
-        logger.debug(f"[DEBUG]   markdown_text preview: {markdown_text[:200]}...")
+        logger.info(f"[DEBUG]   markdown_text length: {len(markdown_text) if markdown_text is not None else 0}")
+        logger.debug(f"[DEBUG]   markdown_text preview: {(markdown_text or '')[:200]}...")
 
         try:
             # Determine format type
@@ -205,6 +205,9 @@ class FormatRouter:
         """
         start_time = time.time()
         self.metrics["detections_total"] = self.metrics["detections_total"] + 1
+        
+        # Initialize cache_key to avoid UnboundLocalError in finally block
+        cache_key = ""
 
         # DEBUG: Log entry
         logger.info(

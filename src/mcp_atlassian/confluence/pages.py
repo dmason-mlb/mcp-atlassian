@@ -55,7 +55,7 @@ class PagesMixin(ConfluenceClient):
                     session=self.confluence._session,
                     base_url=self.config.url
                 )
-            
+
             logger.debug(
                 f"Using v2 API to get page '{page_id}'"
             )
@@ -322,7 +322,7 @@ class PagesMixin(ConfluenceClient):
                     session=self.confluence._session,
                     base_url=self.config.url
                 )
-            
+
             logger.debug(
                 f"Using v2 API to create page '{title}' in space {space_id}"
             )
@@ -410,7 +410,7 @@ class PagesMixin(ConfluenceClient):
                     session=self.confluence._session,
                     base_url=self.config.url
                 )
-            
+
             logger.debug(
                 f"Using v2 API to update page '{page_id}'"
             )
@@ -527,7 +527,7 @@ class PagesMixin(ConfluenceClient):
                     session=self.confluence._session,
                     base_url=self.config.url
                 )
-            
+
             logger.debug(
                 f"Using v2 API to delete page '{page_id}'"
             )

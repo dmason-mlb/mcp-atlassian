@@ -31,12 +31,12 @@ class ConfluenceUserSearchResult(ApiModel):
     def displayName(self) -> str | None:
         """Get display name from user object for backward compatibility."""
         return self.user.display_name if self.user else None
-    
+
     @property
     def username(self) -> str | None:
         """Get username from user object for backward compatibility."""
         return self.user.username if self.user else None
-    
+
     @property
     def email(self) -> str | None:
         """Get email from user object for backward compatibility."""

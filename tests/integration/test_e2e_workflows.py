@@ -35,7 +35,7 @@ class TestJiraE2EWorkflows:
         """Test complete issue lifecycle: create, update, transition, delete."""
         # This test demonstrates the full workflow
         from mcp_atlassian.servers.jira import jira_mcp
-        
+
         # Step 1: Create an issue in FTEST project
         create_result = await jira_mcp.tools["create_issue"](
             integration_context,
@@ -46,10 +46,10 @@ class TestJiraE2EWorkflows:
         )
         created_issue = json.loads(create_result)
         issue_key = created_issue.get("key")
-        
+
         assert issue_key is not None
         assert issue_key.startswith("FTEST-")
-        
+
         try:
             # Step 2: Update the issue
             update_result = await jira_mcp.tools["update_issue"](
@@ -62,7 +62,7 @@ class TestJiraE2EWorkflows:
             )
             updated_issue = json.loads(update_result)
             assert "Updated E2E Test" in updated_issue.get("fields", {}).get("summary", "")
-            
+
             # Step 3: Add a comment
             comment_result = await jira_mcp.tools["add_comment"](
                 integration_context,
@@ -71,14 +71,14 @@ class TestJiraE2EWorkflows:
             )
             comment_data = json.loads(comment_result)
             assert comment_data.get("success") is True
-            
+
             # Step 4: Get available transitions
             transitions_result = await jira_mcp.tools["get_transitions"](
                 integration_context,
                 issue_key=issue_key
             )
             transitions = json.loads(transitions_result)
-            
+
             # Step 5: Transition the issue (if possible)
             if transitions and len(transitions) > 0:
                 first_transition = transitions[0]
@@ -87,7 +87,7 @@ class TestJiraE2EWorkflows:
                     issue_key=issue_key,
                     transition_id=first_transition["id"]
                 )
-                
+
         finally:
             # Step 6: Clean up - delete the test issue
             if issue_key:
@@ -102,7 +102,7 @@ class TestJiraE2EWorkflows:
     async def test_search_and_bulk_operations(self, integration_context):
         """Test search functionality and bulk operations."""
         from mcp_atlassian.servers.jira import jira_mcp
-        
+
         # Search for issues in FTEST project
         search_result = await jira_mcp.tools["search"](
             integration_context,
@@ -110,14 +110,14 @@ class TestJiraE2EWorkflows:
             limit=5
         )
         search_data = json.loads(search_result)
-        
+
         assert "issues" in search_data
         assert search_data.get("total", 0) >= 0
-        
+
         # If we have issues, test bulk comment operation
         if search_data.get("issues"):
             issue_keys = [issue["key"] for issue in search_data["issues"][:2]]
-            
+
             # Batch create comments
             for key in issue_keys:
                 await jira_mcp.tools["add_comment"](
@@ -130,7 +130,7 @@ class TestJiraE2EWorkflows:
     async def test_agile_workflow(self, integration_context):
         """Test Agile-specific workflows: sprints, boards."""
         from mcp_atlassian.servers.jira_agile import jira_agile_tools
-        
+
         # Get agile boards
         boards_result = await jira_agile_tools["get_agile_boards"](
             integration_context,
@@ -138,10 +138,10 @@ class TestJiraE2EWorkflows:
             limit=5
         )
         boards = json.loads(boards_result)
-        
+
         if boards.get("values"):
             board_id = boards["values"][0]["id"]
-            
+
             # Get active sprints
             sprints_result = await jira_agile_tools["get_sprints_from_board"](
                 integration_context,
@@ -149,7 +149,7 @@ class TestJiraE2EWorkflows:
                 state="active"
             )
             sprints = json.loads(sprints_result)
-            
+
             # Create a test sprint if board supports it
             if boards["values"][0].get("type") == "scrum":
                 sprint_result = await jira_agile_tools["create_sprint"](
@@ -187,7 +187,7 @@ class TestConfluenceE2EWorkflows:
     async def test_complete_page_lifecycle(self, integration_context, personal_space_id):
         """Test complete page lifecycle: create, update, comment, delete."""
         from mcp_atlassian.servers.confluence import confluence_mcp
-        
+
         # Step 1: Create a test page
         create_result = await confluence_mcp.tools["create_page"](
             integration_context,
@@ -197,9 +197,9 @@ class TestConfluenceE2EWorkflows:
         )
         created_page = json.loads(create_result)
         page_id = created_page.get("id")
-        
+
         assert page_id is not None
-        
+
         try:
             # Step 2: Update the page
             update_result = await confluence_mcp.tools["update_page"](
@@ -210,7 +210,7 @@ class TestConfluenceE2EWorkflows:
             )
             updated_page = json.loads(update_result)
             assert "Updated E2E Test" in updated_page.get("title", "")
-            
+
             # Step 3: Add a comment
             comment_result = await confluence_mcp.tools["add_comment"](
                 integration_context,
@@ -219,7 +219,7 @@ class TestConfluenceE2EWorkflows:
             )
             comment_data = json.loads(comment_result)
             assert comment_data.get("id") is not None
-            
+
             # Step 4: Add labels
             label_result = await confluence_mcp.tools["add_label"](
                 integration_context,
@@ -228,7 +228,7 @@ class TestConfluenceE2EWorkflows:
             )
             labels = json.loads(label_result)
             assert any(label["name"] == "e2e-test" for label in labels)
-            
+
             # Step 5: Get the page to verify
             get_result = await confluence_mcp.tools["get_page"](
                 integration_context,
@@ -237,7 +237,7 @@ class TestConfluenceE2EWorkflows:
             )
             page_data = json.loads(get_result)
             assert page_data.get("page", {}).get("id") == page_id
-            
+
         finally:
             # Step 6: Clean up - delete the test page
             if page_id:
@@ -252,7 +252,7 @@ class TestConfluenceE2EWorkflows:
     async def test_search_and_navigation(self, integration_context):
         """Test search functionality and page navigation."""
         from mcp_atlassian.servers.confluence import confluence_mcp
-        
+
         # Search for pages
         search_result = await confluence_mcp.tools["search"](
             integration_context,
@@ -260,14 +260,14 @@ class TestConfluenceE2EWorkflows:
             limit=10
         )
         search_data = json.loads(search_result)
-        
+
         assert "results" in search_data
-        
+
         # If we have results, test page children navigation
         if search_data.get("results"):
             first_page = search_data["results"][0]
             page_id = first_page.get("id")
-            
+
             if page_id:
                 # Get page children
                 children_result = await confluence_mcp.tools["get_page_children"](
@@ -298,7 +298,7 @@ class TestCrossServiceWorkflows:
         """Test creating linked content between Jira and Confluence."""
         from mcp_atlassian.servers.confluence import confluence_mcp
         from mcp_atlassian.servers.jira import jira_mcp
-        
+
         # Create a Jira issue
         jira_result = await jira_mcp.tools["create_issue"](
             integration_context,
@@ -309,7 +309,7 @@ class TestCrossServiceWorkflows:
         )
         jira_issue = json.loads(jira_result)
         issue_key = jira_issue.get("key")
-        
+
         try:
             # Create a Confluence page that references the Jira issue
             space_id = os.getenv("CONFLUENCE_TEST_SPACE_ID", "~testuser")
@@ -321,25 +321,25 @@ class TestCrossServiceWorkflows:
             )
             confluence_page = json.loads(confluence_result)
             page_id = confluence_page.get("id")
-            
+
             # Add a comment in Jira linking to the Confluence page
             if page_id:
                 confluence_url = os.getenv("CONFLUENCE_URL", "")
                 comment_text = f"Documentation created: {confluence_url}/pages/{page_id}"
-                
+
                 await jira_mcp.tools["add_comment"](
                     integration_context,
                     issue_key=issue_key,
                     comment=comment_text
                 )
-            
+
             # Clean up Confluence page
             if page_id:
                 await confluence_mcp.tools["delete_page"](
                     integration_context,
                     page_id=page_id
                 )
-                
+
         finally:
             # Clean up Jira issue
             if issue_key:
@@ -364,7 +364,7 @@ class TestAuthenticationFlows:
         }):
             async with main_lifespan(main_mcp) as ctx:
                 app_context = ctx["app_lifespan_context"]
-                
+
                 # Verify OAuth configuration is loaded
                 if app_context.full_jira_config:
                     assert app_context.full_jira_config.auth_type == "oauth"
@@ -379,7 +379,7 @@ class TestAuthenticationFlows:
         }):
             async with main_lifespan(main_mcp) as ctx:
                 app_context = ctx["app_lifespan_context"]
-                
+
                 # Verify API token configuration
                 if app_context.full_jira_config:
                     assert app_context.full_jira_config.auth_type == "basic"
@@ -394,7 +394,7 @@ class TestAuthenticationFlows:
         }):
             async with main_lifespan(main_mcp) as ctx:
                 app_context = ctx["app_lifespan_context"]
-                
+
                 # Verify PAT configuration
                 if app_context.full_jira_config:
                     assert app_context.full_jira_config.auth_type == "pat"
@@ -410,7 +410,7 @@ class TestPerformanceAndScale:
         """Test concurrent execution of multiple tools."""
         async with main_lifespan(main_mcp) as ctx:
             context = Context(lifespan_context=ctx)
-            
+
             # Create multiple concurrent tasks
             tasks = []
             for i in range(5):
@@ -430,10 +430,10 @@ class TestPerformanceAndScale:
                         limit=1
                     )
                 tasks.append(task)
-            
+
             # Execute concurrently
             results = await asyncio.gather(*tasks, return_exceptions=True)
-            
+
             # Verify all completed
             for result in results:
                 if not isinstance(result, Exception):
@@ -444,10 +444,10 @@ class TestPerformanceAndScale:
     async def test_token_cache_performance(self):
         """Test token validation cache performance."""
         from mcp_atlassian.servers.main import token_validation_cache, token_cache_lock
-        
+
         # Simulate multiple token validations
         tokens = [f"token_{i}" for i in range(100)]
-        
+
         async def validate_token(token):
             with token_cache_lock:
                 # Check cache
@@ -457,17 +457,17 @@ class TestPerformanceAndScale:
                     await asyncio.sleep(0.001)
                     token_validation_cache[cache_key] = (True, token, None, None)
                 return token_validation_cache[cache_key]
-        
+
         # First pass - populate cache
         tasks = [validate_token(token) for token in tokens]
         await asyncio.gather(*tasks)
-        
+
         # Second pass - should hit cache
         import time
         start = time.time()
         tasks = [validate_token(token) for token in tokens]
         await asyncio.gather(*tasks)
         elapsed = time.time() - start
-        
+
         # Cache hits should be fast
         assert elapsed < 0.1  # 100ms for 100 cache hits

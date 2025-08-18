@@ -242,7 +242,7 @@ REAL_ISSUE_TRANSITIONS = [
     }
 ]
 
-# Search Operations  
+# Search Operations
 REAL_SEARCH_RESPONSE = {
     "total": 74,
     "start_at": -1,

@@ -145,7 +145,7 @@ async def create_issue(
     attachment_paths = None
     if attachments:
         import json as _json
-        
+
         if isinstance(attachments, str):
             try:
                 parsed = _json.loads(attachments)

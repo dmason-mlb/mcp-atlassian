@@ -70,7 +70,7 @@ class SearchMixin(ConfluenceClient):
                 session=self.confluence._session,
                 base_url=self.config.url
             )
-        
+
         # Execute the CQL search query using v2 API
         logger.debug(f"Calling v2_adapter.search with CQL: {cql}")
         results = self._v2_adapter_instance.search(cql=cql, limit=limit)
