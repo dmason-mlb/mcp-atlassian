@@ -1,30 +1,31 @@
 # MCP Atlassian
 
-![PyPI Version](https://img.shields.io/pypi/v/mcp-atlassian)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/mcp-atlassian)
-![PePy - Total Downloads](https://static.pepy.tech/personalized-badge/mcp-atlassian?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Total%20Downloads)
-[![Run Tests](https://github.com/sooperset/mcp-atlassian/actions/workflows/tests.yml/badge.svg)](https://github.com/sooperset/mcp-atlassian/actions/workflows/tests.yml)
-![License](https://img.shields.io/github/license/sooperset/mcp-atlassian)
+[![Run Tests](https://github.com/dmason-mlb/mcp-atlassian/actions/workflows/tests.yml/badge.svg)](https://github.com/dmason-mlb/mcp-atlassian/actions/workflows/tests.yml)
+![License](https://img.shields.io/github/license/dmason-mlb/mcp-atlassian)
 
 Model Context Protocol (MCP) server for Atlassian products (Confluence and Jira). This integration supports both Confluence & Jira Cloud and Server/Data Center deployments.
 
 ## Quick Start (60 seconds)
 
 ```bash
-# 1. Pull the Docker image
-docker pull ghcr.io/sooperset/mcp-atlassian:latest
+# 1. Install dependencies
+uv sync --frozen --all-extras --dev
 
 # 2. Get your API token (for Cloud)
 # Visit: https://id.atlassian.com/manage-profile/security/api-tokens
 
-# 3. Configure your IDE (see IDE Integration below)
-# Add to Claude Desktop or Cursor config with your credentials
+# 3. Configure environment
+cp .env.example .env
+# Edit .env with your credentials
+
+# 4. Run the server
+uv run mcp-atlassian
 ```
 
 ## Prerequisites
 
-- **Docker** installed and running
-- **Python 3.10+** (for local development only)
+- **Python 3.10+** installed
+- **uv** package manager ([installation guide](https://docs.astral.sh/uv/getting-started/installation/))
 - **Atlassian account** with appropriate permissions
 - **API credentials**: API token (Cloud) or Personal Access Token (Server/DC)
 
@@ -61,7 +62,7 @@ https://github.com/user-attachments/assets/7fe9c488-ad0c-4876-9b54-120b666bb785
 ### Compatibility
 
 | Product        | Deployment Type    | Support Status              |
-|----------------|--------------------|-----------------------------|
+|----------------|--------------------|------------------------------|
 | **Confluence** | Cloud              | ✅ Fully supported           |
 | **Confluence** | Server/Data Center | ✅ Supported (version 6.0+)  |
 | **Jira**       | Cloud              | ✅ Fully supported           |
@@ -69,17 +70,23 @@ https://github.com/user-attachments/assets/7fe9c488-ad0c-4876-9b54-120b666bb785
 
 ## Installation
 
-MCP Atlassian is distributed as a Docker image. This is the recommended way to run the server.
+### Local Development Setup
 
 ```bash
-# Pull the pre-built image
-docker pull ghcr.io/sooperset/mcp-atlassian:latest
+# Clone the repository
+git clone https://github.com/dmason-mlb/mcp-atlassian.git
+cd mcp-atlassian
 
-# For local development (requires Python 3.10+)
+# Install dependencies
 uv sync --frozen --all-extras --dev
+
+# Activate virtual environment
 source .venv/bin/activate  # Unix/macOS
 # or
 .venv\Scripts\activate.ps1  # Windows
+
+# Set up pre-commit hooks
+pre-commit install
 ```
 
 ## Configuration
@@ -131,16 +138,10 @@ See the [OAuth Setup Guide](#oauth-20-configuration-example-cloud-only) for deta
 {
   "mcpServers": {
     "mcp-atlassian": {
-      "command": "docker",
+      "command": "uv",
       "args": [
-        "run", "-i", "--rm",
-        "-e", "CONFLUENCE_URL",
-        "-e", "CONFLUENCE_USERNAME",
-        "-e", "CONFLUENCE_API_TOKEN",
-        "-e", "JIRA_URL",
-        "-e", "JIRA_USERNAME",
-        "-e", "JIRA_API_TOKEN",
-        "ghcr.io/sooperset/mcp-atlassian:latest"
+        "run", "--directory", "/path/to/mcp-atlassian",
+        "mcp-atlassian"
       ],
       "env": {
         "CONFLUENCE_URL": "https://your-company.atlassian.net/wiki",
@@ -162,14 +163,10 @@ See the [OAuth Setup Guide](#oauth-20-configuration-example-cloud-only) for deta
 {
   "mcpServers": {
     "mcp-atlassian": {
-      "command": "docker",
+      "command": "uv",
       "args": [
-        "run", "--rm", "-i",
-        "-e", "CONFLUENCE_URL",
-        "-e", "CONFLUENCE_PERSONAL_TOKEN",
-        "-e", "JIRA_URL",
-        "-e", "JIRA_PERSONAL_TOKEN",
-        "ghcr.io/sooperset/mcp-atlassian:latest"
+        "run", "--directory", "/path/to/mcp-atlassian",
+        "mcp-atlassian"
       ],
       "env": {
         "CONFLUENCE_URL": "https://confluence.your-company.com",
@@ -190,10 +187,7 @@ See the [OAuth Setup Guide](#oauth-20-configuration-example-cloud-only) for deta
 
 Run the OAuth setup wizard:
 ```bash
-docker run --rm -i \
-  -p 8080:8080 \
-  -v "${HOME}/.mcp-atlassian:/home/app/.mcp-atlassian" \
-  ghcr.io/sooperset/mcp-atlassian:latest --oauth-setup -v
+uv run mcp-atlassian --oauth-setup -v
 ```
 
 Then configure your IDE:
@@ -201,18 +195,10 @@ Then configure your IDE:
 {
   "mcpServers": {
     "mcp-atlassian": {
-      "command": "docker",
+      "command": "uv",
       "args": [
-        "run", "--rm", "-i",
-        "-v", "<path_to_home>/.mcp-atlassian:/home/app/.mcp-atlassian",
-        "-e", "JIRA_URL",
-        "-e", "CONFLUENCE_URL",
-        "-e", "ATLASSIAN_OAUTH_CLIENT_ID",
-        "-e", "ATLASSIAN_OAUTH_CLIENT_SECRET",
-        "-e", "ATLASSIAN_OAUTH_REDIRECT_URI",
-        "-e", "ATLASSIAN_OAUTH_SCOPE",
-        "-e", "ATLASSIAN_OAUTH_CLOUD_ID",
-        "ghcr.io/sooperset/mcp-atlassian:latest"
+        "run", "--directory", "/path/to/mcp-atlassian",
+        "mcp-atlassian"
       ],
       "env": {
         "JIRA_URL": "https://your-company.atlassian.net",
@@ -235,10 +221,7 @@ Then configure your IDE:
 
 Start server with HTTP transport:
 ```bash
-docker run --rm -p 9000:9000 \
-  --env-file /path/to/.env \
-  ghcr.io/sooperset/mcp-atlassian:latest \
-  --transport streamable-http --port 9000
+uv run mcp-atlassian --transport streamable-http --port 9000
 ```
 
 Configure IDE with user-specific auth:
@@ -260,7 +243,7 @@ Configure IDE with user-specific auth:
 <details>
 <summary>Advanced Configuration Options</summary>
 
-- **Environment File**: Use `--env-file` flag instead of individual `-e` flags
+- **Environment File**: Use `--env-file` flag for environment variables
 - **Proxy Support**: Configure `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`
 - **Custom Headers**: Set `JIRA_CUSTOM_HEADERS`, `CONFLUENCE_CUSTOM_HEADERS`
 - **Space/Project Filters**: Use `CONFLUENCE_SPACES_FILTER`, `JIRA_PROJECTS_FILTER`
@@ -297,9 +280,6 @@ See [**TOOLSET.md**](docs/TOOLSET.md) for the complete catalog with schemas and 
 | `npm run seed` | Seed test data | Before e2e tests |
 | `npm run test` | Run e2e tests | Integration testing |
 | `npm run clean` | Clean test data | After testing |
-| **Docker Commands** |
-| `docker build -t mcp-atlassian .` | Build image locally | Local testing |
-| `docker run ... --transport sse --port 9000` | Run with SSE transport | HTTP testing |
 
 ### Project Structure
 
@@ -328,7 +308,6 @@ mcp-atlassian/
 ├── scripts/               # Utility scripts
 ├── .env.example          # Configuration template
 ├── pyproject.toml        # Python project config
-├── Dockerfile           # Container definition
 └── smithery.yaml        # Smithery.ai deployment
 ```
 
@@ -358,7 +337,7 @@ cd e2e && npm run test
 | **SSL Certificate errors** | Set `JIRA_SSL_VERIFY=false` or `CONFLUENCE_SSL_VERIFY=false` for self-signed certs |
 | **Permission denied** | Verify account has sufficient Atlassian permissions |
 | **Python version error** | Requires Python 3.10+. Check with `python --version` |
-| **Docker not found** | Ensure Docker Desktop is installed and running |
+| **uv not found** | Install uv: https://docs.astral.sh/uv/getting-started/installation/ |
 | **Port already in use** | Change port with `--port` flag or `PORT` env var |
 | **Custom headers not working** | Enable `MCP_VERY_VERBOSE=true` to debug header parsing |
 
@@ -366,7 +345,7 @@ cd e2e && npm run test
 
 ```bash
 # Test with MCP Inspector
-npx @modelcontextprotocol/inspector uvx mcp-atlassian
+npx @modelcontextprotocol/inspector uv run --directory /path/to/mcp-atlassian mcp-atlassian
 
 # View logs (macOS)
 tail -n 20 -f ~/Library/Logs/Claude/mcp*.log
@@ -392,11 +371,8 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ### Smithery.ai
 Configuration available in [smithery.yaml](smithery.yaml) for automated deployment.
 
-### Docker Hub / GitHub Container Registry
-Pre-built images available at `ghcr.io/sooperset/mcp-atlassian:latest`
-
-### PyPI
-Install via pip: `pip install mcp-atlassian` (requires Python 3.10+)
+### Local Development
+This fork is focused on local development. Install dependencies with `uv sync` and run with `uv run mcp-atlassian`.
 
 ## Security
 
@@ -413,9 +389,9 @@ Licensed under MIT - see [LICENSE](LICENSE) file. This is not an official Atlass
 ## Support
 
 - **Documentation**: [Full docs](docs/) | [Tool Reference](docs/TOOLSET.md)
-- **Issues**: [GitHub Issues](https://github.com/sooperset/mcp-atlassian/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/sooperset/mcp-atlassian/discussions)
+- **Issues**: [GitHub Issues](https://github.com/dmason-mlb/mcp-atlassian/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/dmason-mlb/mcp-atlassian/discussions)
 
 ---
 
-*Built with ❤️ for the MCP ecosystem by [sooperset](https://github.com/sooperset)*
+*Built with ❤️ for the MCP ecosystem by [dmason-mlb](https://github.com/dmason-mlb)*
