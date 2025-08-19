@@ -1,15 +1,16 @@
 import { test, expect } from '@playwright/test';
 import seed from '../.artifacts/seed.json' with { type: 'json' };
+import { waitForAppReady } from '../utils/wait';
 
 test.describe('Jira Issue Content Validation', () => {
   test.beforeEach(async ({ page }) => {
     if (!seed?.jira?.issueUrl) test.skip(true, 'No Jira issue URL in seed.json');
     await page.goto(seed.jira.issueUrl);
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page, 'jira');
   });
 
   test('Jira description renders markdown properly', async ({ page }) => {
-    const content = page.locator('main, [data-test-id="issue-view"], [data-testid="issue-view"]').first();
+    const content = page.locator('[data-testid="issue-view"]').first();
 
     // Basic content validation
     await expect(content).toContainText('Test Objectives');
@@ -17,27 +18,27 @@ test.describe('Jira Issue Content Validation', () => {
     await expect(content).toContainText('Numbered Lists');
 
     // Code block validation
-    await expect(content.locator('pre')).toHaveCountGreaterThan(0);
+    expect(await content.locator('pre').count()).toBeGreaterThan(0);
     await expect(content.locator('code')).toContainText('console.log');
 
     // List validation
     const bulletList = content.locator('ul');
-    await expect(bulletList).toHaveCountGreaterThan(0);
+    expect(await bulletList.count()).toBeGreaterThan(0);
     await expect(bulletList.locator('li')).toContainText('Bullet Points');
 
     const numberedList = content.locator('ol');
-    await expect(numberedList).toHaveCountGreaterThan(0);
+    expect(await numberedList.count()).toBeGreaterThan(0);
     await expect(numberedList.locator('li').first()).toContainText('One');
 
     // Table validation
     const table = content.locator('table');
-    await expect(table).toHaveCountGreaterThan(0);
+    expect(await table.count()).toBeGreaterThan(0);
     await expect(table.locator('th')).toContainText('Col A');
     await expect(table.locator('td')).toContainText('A');
 
     // Blockquote validation
     const blockquote = content.locator('blockquote');
-    await expect(blockquote).toHaveCountGreaterThan(0);
+    expect(await blockquote.count()).toBeGreaterThan(0);
     await expect(blockquote).toContainText('Blockquote');
 
     // Inline code validation

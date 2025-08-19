@@ -125,6 +125,31 @@ This plan describes the steps to migrate the MCP Atlassian server to use Conflue
 
 ---
 
+## Tests Modernized / Recovery Complete
+
+**Date**: 2025-08-19  
+**Status**: ✅ **COMPLETE**
+
+### E2E Test Restoration
+- **Confluence Tools**: All 11 Confluence tools restored and functional
+- **Jira Tools**: Tool naming compatibility restored via aliases
+- **E2E Seed**: Successfully runs and creates test data (FTEST-185, page 5042241547)
+- **ADF Support**: Maintained throughout recovery process
+
+### Jira Alias Addition
+Added backward-compatible tool name aliases to maintain E2E compatibility:
+- `issues_create_issue` → `create_issue` (alias added to maintain legacy E2E expectations)
+- Missing `upload_attachment` tool restored from workflow module
+- All aliases maintain Jira v3 API usage exclusively
+
+### Recovery Validation
+- ✅ Confluence v2 API + ADF patterns preserved
+- ✅ Jira v3 API patterns maintained
+- ✅ E2E tests functional with restored tool names
+- ✅ No regressions introduced to existing functionality
+
+---
+
 ## Implementation Notes
 
 - **Zen MCP Integration**:

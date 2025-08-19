@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 import seed from '../.artifacts/seed.json' with { type: 'json' };
+import { waitForAppReady, waitForContentReady } from '../utils/wait';
 
 test.describe('Interactive Elements Testing', () => {
   test.describe('Jira Interactive Elements', () => {
     test.beforeEach(async ({ page }) => {
       if (!seed?.jira?.issueUrl) test.skip(true, 'No Jira issue URL in seed.json');
       await page.goto(seed.jira.issueUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'jira');
     });
 
     test('Jira comment section is interactive', async ({ page }) => {
@@ -124,7 +125,8 @@ test.describe('Interactive Elements Testing', () => {
     test.beforeEach(async ({ page }) => {
       if (!seed?.confluence?.pageUrl) test.skip(true, 'No Confluence page URL in seed.json');
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
     });
 
     test('Confluence page actions are accessible', async ({ page }) => {
@@ -218,7 +220,7 @@ test.describe('Interactive Elements Testing', () => {
 
     test('Confluence navigation elements work', async ({ page }) => {
       // Test breadcrumb navigation
-      const breadcrumbs = page.locator('[data-testid="breadcrumbs"], .breadcrumbs, nav');
+      const breadcrumbs = page.locator('[data-testid="breadcrumbs"]');
 
       if (await breadcrumbs.isVisible()) {
         const breadcrumbLinks = breadcrumbs.locator('a');
@@ -248,7 +250,7 @@ test.describe('Interactive Elements Testing', () => {
     });
 
     test('Confluence content interactions work', async ({ page }) => {
-      const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+      const article = page.locator('[data-testid="content-body"]').first();
 
       // Test expand/collapse sections if present
       const expandSections = article.locator('.expand-macro, [data-node-type="expand"], .ak-editor-expand');
@@ -304,7 +306,7 @@ test.describe('Interactive Elements Testing', () => {
       // Start with Jira if available
       if (seed?.jira?.issueUrl) {
         await page.goto(seed.jira.issueUrl);
-        await page.waitForLoadState('networkidle');
+        await waitForAppReady(page, 'jira');
 
         // Look for Confluence links in issue
         const confluenceLinks = page.locator('a[href*="confluence"], a[href*="/wiki/"]');
@@ -322,7 +324,8 @@ test.describe('Interactive Elements Testing', () => {
       // Check Confluence for Jira links
       if (seed?.confluence?.pageUrl) {
         await page.goto(seed.confluence.pageUrl);
-        await page.waitForLoadState('networkidle');
+        await waitForAppReady(page, 'confluence');
+        await waitForContentReady(page);
 
         // Look for Jira links in page
         const jiraLinks = page.locator('a[href*="browse/"], a[href*="jira"]');
@@ -342,7 +345,7 @@ test.describe('Interactive Elements Testing', () => {
       // Test Jira search
       if (seed?.jira?.issueUrl) {
         await page.goto(seed.jira.issueUrl);
-        await page.waitForLoadState('networkidle');
+        await waitForAppReady(page, 'jira');
 
         const jiraSearch = page.locator('[data-testid="search"], #quickSearchInput, .quick-search');
 
@@ -365,7 +368,8 @@ test.describe('Interactive Elements Testing', () => {
       // Test Confluence search
       if (seed?.confluence?.pageUrl) {
         await page.goto(seed.confluence.pageUrl);
-        await page.waitForLoadState('networkidle');
+        await waitForAppReady(page, 'confluence');
+        await waitForContentReady(page);
 
         const confluenceSearch = page.locator('[data-testid="search"], #quick-search, .quick-search');
 

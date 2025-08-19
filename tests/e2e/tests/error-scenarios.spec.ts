@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import seed from '../.artifacts/seed.json' with { type: 'json' };
+import { waitForAppReady, waitForContentReady } from '../utils/wait';
 
 test.describe('Error Scenarios and Edge Cases', () => {
   test.describe('Network and Connectivity Issues', () => {
@@ -19,7 +20,7 @@ test.describe('Error Scenarios and Edge Cases', () => {
       expect(loadTime).toBeLessThan(60000);
 
       // Content should still be accessible
-      const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+      const article = page.locator('[data-testid="content-body"]').first();
       await expect(article).toBeVisible({ timeout: 10000 });
     });
 
@@ -36,10 +37,11 @@ test.describe('Error Scenarios and Edge Cases', () => {
       });
 
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
 
       // Main content should still be accessible despite missing resources
-      const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+      const article = page.locator('[data-testid="content-body"]').first();
       await expect(article).toBeVisible();
       await expect(article).toContainText('Formatting Elements Being Tested');
     });
@@ -50,7 +52,8 @@ test.describe('Error Scenarios and Edge Cases', () => {
       if (!seed?.confluence?.pageUrl) test.skip(true, 'No Confluence page URL in seed.json');
 
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
 
       const images = page.locator('img');
       if (await images.count() > 0) {
@@ -79,9 +82,10 @@ test.describe('Error Scenarios and Edge Cases', () => {
       if (!seed?.confluence?.pageUrl) test.skip(true, 'No Confluence page URL in seed.json');
 
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
 
-      const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+      const article = page.locator('[data-testid="content-body"]').first();
 
       // Check for proper scrolling behavior
       const articleHeight = await article.boundingBox();
@@ -103,7 +107,8 @@ test.describe('Error Scenarios and Edge Cases', () => {
       if (!seed?.confluence?.pageUrl) test.skip(true, 'No Confluence page URL in seed.json');
 
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
 
       const tables = page.locator('table');
       if (await tables.count() > 0) {
@@ -148,7 +153,7 @@ test.describe('Error Scenarios and Edge Cases', () => {
       await page.waitForLoadState('domcontentloaded');
 
       // Basic content should still be readable
-      const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+      const article = page.locator('[data-testid="content-body"]').first();
       await expect(article).toBeVisible();
       await expect(article).toContainText('Formatting Elements');
 
@@ -161,10 +166,11 @@ test.describe('Error Scenarios and Edge Cases', () => {
       // Test very small mobile viewport
       await page.setViewportSize({ width: 320, height: 568 });
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
 
       // Content should still be accessible
-      const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+      const article = page.locator('[data-testid="content-body"]').first();
       await expect(article).toBeVisible();
 
       // Tables should be scrollable or responsive
@@ -193,7 +199,8 @@ test.describe('Error Scenarios and Edge Cases', () => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
 
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
 
       // Images should handle high DPI appropriately
       const images = page.locator('img');
@@ -224,7 +231,7 @@ test.describe('Error Scenarios and Edge Cases', () => {
       if (!seed?.jira?.issueUrl) test.skip(true, 'No Jira issue URL in seed.json');
 
       await page.goto(seed.jira.issueUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'jira');
 
       // Check for permission-restricted actions
       const editButton = page.locator('[data-testid="edit-issue"], .edit-issue, #edit-issue');
@@ -263,7 +270,7 @@ test.describe('Error Scenarios and Edge Cases', () => {
       await page.goto(seed.confluence.pageUrl);
 
       // Should either redirect to login or show appropriate message
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
 
       const currentUrl = page.url();
       const hasLoginForm = await page.locator('input[name*="password"], input[type="password"], .login-form').count() > 0;
@@ -286,7 +293,7 @@ test.describe('Error Scenarios and Edge Cases', () => {
       await page.waitForLoadState('networkidle', { timeout: 30000 });
 
       // Check that all major elements are loaded
-      const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+      const article = page.locator('[data-testid="content-body"]').first();
       await expect(article).toBeVisible({ timeout: 10000 });
 
       // Measure performance
@@ -310,7 +317,8 @@ test.describe('Error Scenarios and Edge Cases', () => {
       if (!seed?.confluence?.pageUrl) test.skip(true, 'No Confluence page URL in seed.json');
 
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
 
       // Simulate memory-intensive operations
       const memoryBefore = await page.evaluate(() => (performance as any).memory?.usedJSHeapSize || 0);
@@ -332,7 +340,7 @@ test.describe('Error Scenarios and Edge Cases', () => {
       }
 
       // Page should still be responsive
-      const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+      const article = page.locator('[data-testid="content-body"]').first();
       await expect(article).toBeVisible();
     });
   });
@@ -342,7 +350,8 @@ test.describe('Error Scenarios and Edge Cases', () => {
       if (!seed?.confluence?.pageUrl) test.skip(true, 'No Confluence page URL in seed.json');
 
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
 
       // Find expandable sections
       const expandSections = page.locator('.expand-macro, [data-node-type="expand"], .ak-editor-expand');
@@ -370,7 +379,8 @@ test.describe('Error Scenarios and Edge Cases', () => {
       if (!seed?.confluence?.pageUrl) test.skip(true, 'No Confluence page URL in seed.json');
 
       await page.goto(seed.confluence.pageUrl);
-      await page.waitForLoadState('networkidle');
+      await waitForAppReady(page, 'confluence');
+      await waitForContentReady(page);
 
       // Test keyboard navigation through interactive elements
       await page.keyboard.press('Tab');
@@ -390,7 +400,7 @@ test.describe('Error Scenarios and Edge Cases', () => {
       await page.keyboard.press('Escape');
 
       // Should not break page functionality
-      const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+      const article = page.locator('[data-testid="content-body"]').first();
       await expect(article).toBeVisible();
     });
   });

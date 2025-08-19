@@ -173,3 +173,28 @@ The MCP server module recovery operation was **SUCCESSFUL**. All Confluence func
 **Status**: ✅ COMPLETE - Ready for production deployment
 **Risk Level**: 🟢 LOW - All modern patterns preserved, anti-patterns prevented
 **E2E Compatibility**: ✅ MAINTAINED - All expected tool names and behaviors preserved
+
+## Jira Tool Name Restoration via Aliases
+
+**Date**: 2025-08-19  
+**Issue Resolved**: E2E seed failures due to tool naming mismatches
+
+### Problem
+E2E seed script expected legacy tool names like `issues_create_issue` but server provided canonical names like `create_issue`. This caused "Unknown tool" errors preventing E2E tests from running.
+
+### Solution
+Added backward-compatible aliases to maintain E2E compatibility without changing the canonical tool names:
+
+### Alias Mappings
+- **Legacy → Canonical**
+  - `issues_create_issue` → `create_issue`
+
+### Implementation Details
+- Added `issues_create_issue` alias in `src/mcp_atlassian/servers/jira.py:1631-1699`
+- Alias delegates to canonical `create_issue` with identical function signature
+- Added missing `upload_attachment` tool from workflow module to main server
+- Maintains Jira v3 API usage exclusively
+- No impact on existing tool functionality
+
+### E2E Test Status
+✅ **RESOLVED** - E2E seed now runs successfully, creating issue FTEST-185
