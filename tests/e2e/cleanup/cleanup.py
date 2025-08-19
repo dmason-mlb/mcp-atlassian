@@ -43,7 +43,7 @@ def _load_env_file(env_path: Path) -> None:
 
 _load_env_file(ROOT_DIR / ".env")
 
-ART_DIR = ROOT_DIR / "e2e" / ".artifacts"
+ART_DIR = ROOT_DIR / "tests" / "e2e" / ".artifacts"
 SEED_PATH = ART_DIR / "seed.json"
 
 

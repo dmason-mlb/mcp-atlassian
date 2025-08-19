@@ -45,7 +45,7 @@ def _load_env_file(env_path: Path) -> None:
 # Load project root .env so running from e2e/ works
 _load_env_file(ROOT_DIR / ".env")
 
-ART_DIR = ROOT_DIR / "e2e" / ".artifacts"
+ART_DIR = ROOT_DIR / "tests" / "e2e" / ".artifacts"
 ART_DIR.mkdir(parents=True, exist_ok=True)
 SEED_PATH = ART_DIR / "seed.json"
 

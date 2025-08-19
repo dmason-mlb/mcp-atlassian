@@ -144,23 +144,16 @@ async def create_seed_data():
                 },
             }
 
-            # Write to both locations
+            # Write to tests/e2e/.artifacts
             root_dir = Path(__file__).resolve().parent
-            art_dir = root_dir / "e2e" / ".artifacts"
-            art_dir.mkdir(parents=True, exist_ok=True)
-            seed_path = art_dir / "seed.json"
-
-            # Also write to tests/e2e/.artifacts for current directory
             test_art_dir = root_dir / "tests" / "e2e" / ".artifacts"
             test_art_dir.mkdir(parents=True, exist_ok=True)
             test_seed_path = test_art_dir / "seed.json"
 
             seed_content = json.dumps(result, indent=2)
-            seed_path.write_text(seed_content)
             test_seed_path.write_text(seed_content)
 
-            print(f"Seed complete: {seed_path}")
-            print(f"Also written to: {test_seed_path}")
+            print(f"Seed complete: {test_seed_path}")
             print(f"Result: {result}")
 
             return result
