@@ -19,51 +19,35 @@ REAL_ISSUE_CREATE_RESPONSE = {
             {
                 "type": "paragraph",
                 "content": [
-                    {
-                        "type": "text",
-                        "text": "Test issue for capturing API responses"
-                    }
-                ]
+                    {"type": "text", "text": "Test issue for capturing API responses"}
+                ],
             }
-        ]
+        ],
     },
-    "status": {
-        "name": "To Do",
-        "category": "To Do",
-        "color": "blue-gray"
-    },
-    "issue_type": {
-        "name": "Task"
-    },
-    "priority": {
-        "name": "None"
-    },
+    "status": {"name": "To Do", "category": "To Do", "color": "blue-gray"},
+    "issue_type": {"name": "Task"},
+    "priority": {"name": "None"},
     "project": {
         "key": "FTEST",
         "name": "Frameworks Testing",
         "category": "Client Engineering",
-        "avatar_url": "https://baseball.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/25819"
+        "avatar_url": "https://baseball.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/25819",
     },
-    "worklog": {
-        "startAt": 0,
-        "maxResults": 20,
-        "total": 0,
-        "worklogs": []
-    },
+    "worklog": {"startAt": 0, "maxResults": 20, "total": 0, "worklogs": []},
     "assignee": {
         "display_name": "Douglas Mason",
         "name": "Douglas Mason",
         "email": "douglas.mason@mlb.com",
-        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
     },
     "reporter": {
         "display_name": "Douglas Mason",
         "name": "Douglas Mason",
         "email": "douglas.mason@mlb.com",
-        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
     },
     "created": "2025-08-18T01:57:45.698-0400",
-    "updated": "2025-08-18T01:57:45.782-0400"
+    "updated": "2025-08-18T01:57:45.782-0400",
 }
 
 REAL_ISSUE_GET_RESPONSE = {
@@ -77,28 +61,19 @@ REAL_ISSUE_GET_RESPONSE = {
             {
                 "type": "paragraph",
                 "content": [
-                    {
-                        "type": "text",
-                        "text": "Test issue for capturing API responses"
-                    }
-                ]
+                    {"type": "text", "text": "Test issue for capturing API responses"}
+                ],
             }
-        ]
+        ],
     },
-    "status": {
-        "name": "To Do",
-        "category": "To Do",
-        "color": "blue-gray"
-    },
-    "priority": {
-        "name": "None"
-    },
+    "status": {"name": "To Do", "category": "To Do", "color": "blue-gray"},
+    "priority": {"name": "None"},
     "assignee": {
         "display_name": "Douglas Mason",
         "name": "Douglas Mason",
         "email": "douglas.mason@mlb.com",
-        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
-    }
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
+    },
 }
 
 REAL_ISSUE_UPDATE_RESPONSE = {
@@ -113,58 +88,42 @@ REAL_ISSUE_UPDATE_RESPONSE = {
             {
                 "type": "paragraph",
                 "content": [
-                    {
-                        "type": "text",
-                        "text": "Test issue for capturing API responses"
-                    }
-                ]
+                    {"type": "text", "text": "Test issue for capturing API responses"}
+                ],
             }
-        ]
+        ],
     },
-    "status": {
-        "name": "To Do",
-        "category": "To Do",
-        "color": "blue-gray"
-    },
-    "issue_type": {
-        "name": "Task"
-    },
-    "priority": {
-        "name": "None"
-    },
+    "status": {"name": "To Do", "category": "To Do", "color": "blue-gray"},
+    "issue_type": {"name": "Task"},
+    "priority": {"name": "None"},
     "project": {
         "key": "FTEST",
         "name": "Frameworks Testing",
         "category": "Client Engineering",
-        "avatar_url": "https://baseball.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/25819"
+        "avatar_url": "https://baseball.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/25819",
     },
-    "worklog": {
-        "startAt": 0,
-        "maxResults": 20,
-        "total": 0,
-        "worklogs": []
-    },
+    "worklog": {"startAt": 0, "maxResults": 20, "total": 0, "worklogs": []},
     "assignee": {
         "display_name": "Douglas Mason",
         "name": "Douglas Mason",
         "email": "douglas.mason@mlb.com",
-        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
     },
     "reporter": {
         "display_name": "Douglas Mason",
         "name": "Douglas Mason",
         "email": "douglas.mason@mlb.com",
-        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
     },
     "created": "2025-08-18T01:57:45.698-0400",
-    "updated": "2025-08-18T01:57:46.861-0400"
+    "updated": "2025-08-18T01:57:46.861-0400",
 }
 
 REAL_ISSUE_COMMENT_RESPONSE = {
     "id": "3238025",
     "body": "{'type': 'doc', 'version': 1, 'content': [{'type': 'paragraph', 'content': [{'type': 'text', 'text': 'Test comment for response capture'}]}]}",
     "created": "2025-08-18 01:57:47.434000-04:00",
-    "author": "Douglas Mason"
+    "author": "Douglas Mason",
 }
 
 REAL_ISSUE_TRANSITIONS = [
@@ -182,15 +141,15 @@ REAL_ISSUE_TRANSITIONS = [
                 "id": 2,
                 "key": "new",
                 "colorName": "blue-gray",
-                "name": "To Do"
-            }
+                "name": "To Do",
+            },
         },
         "hasScreen": False,
         "isGlobal": True,
         "isInitial": False,
         "isAvailable": True,
         "isConditional": False,
-        "isLooped": False
+        "isLooped": False,
     },
     {
         "id": "41",
@@ -206,15 +165,15 @@ REAL_ISSUE_TRANSITIONS = [
                 "id": 3,
                 "key": "done",
                 "colorName": "green",
-                "name": "Done"
-            }
+                "name": "Done",
+            },
         },
         "hasScreen": False,
         "isGlobal": True,
         "isInitial": False,
         "isAvailable": True,
         "isConditional": False,
-        "isLooped": False
+        "isLooped": False,
     },
     {
         "id": "2",
@@ -230,16 +189,16 @@ REAL_ISSUE_TRANSITIONS = [
                 "id": 4,
                 "key": "indeterminate",
                 "colorName": "yellow",
-                "name": "In Progress"
-            }
+                "name": "In Progress",
+            },
         },
         "hasScreen": False,
         "isGlobal": False,
         "isInitial": False,
         "isAvailable": True,
         "isConditional": False,
-        "isLooped": False
-    }
+        "isLooped": False,
+    },
 ]
 
 # Search Operations
@@ -261,34 +220,28 @@ REAL_SEARCH_RESPONSE = {
                         "content": [
                             {
                                 "type": "text",
-                                "text": "Test issue for capturing API responses"
+                                "text": "Test issue for capturing API responses",
                             }
-                        ]
+                        ],
                     }
-                ]
+                ],
             },
-            "status": {
-                "name": "To Do",
-                "category": "To Do",
-                "color": "blue-gray"
-            },
-            "priority": {
-                "name": "None"
-            },
+            "status": {"name": "To Do", "category": "To Do", "color": "blue-gray"},
+            "priority": {"name": "None"},
             "assignee": {
                 "display_name": "Douglas Mason",
                 "name": "Douglas Mason",
                 "email": "douglas.mason@mlb.com",
-                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
             },
             "reporter": {
                 "display_name": "Douglas Mason",
                 "name": "Douglas Mason",
                 "email": "douglas.mason@mlb.com",
-                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
             },
             "created": "2025-08-18T01:57:45.698-0400",
-            "updated": "2025-08-18T01:57:47.434-0400"
+            "updated": "2025-08-18T01:57:47.434-0400",
         },
         {
             "id": "1166229",
@@ -303,34 +256,28 @@ REAL_SEARCH_RESPONSE = {
                         "content": [
                             {
                                 "type": "text",
-                                "text": "Test issue for capturing API responses"
+                                "text": "Test issue for capturing API responses",
                             }
-                        ]
+                        ],
                     }
-                ]
+                ],
             },
-            "status": {
-                "name": "To Do",
-                "category": "To Do",
-                "color": "blue-gray"
-            },
-            "priority": {
-                "name": "None"
-            },
+            "status": {"name": "To Do", "category": "To Do", "color": "blue-gray"},
+            "priority": {"name": "None"},
             "assignee": {
                 "display_name": "Douglas Mason",
                 "name": "Douglas Mason",
                 "email": "douglas.mason@mlb.com",
-                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
             },
             "reporter": {
                 "display_name": "Douglas Mason",
                 "name": "Douglas Mason",
                 "email": "douglas.mason@mlb.com",
-                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
             },
             "created": "2025-08-18T01:52:20.695-0400",
-            "updated": "2025-08-18T01:52:22.548-0400"
+            "updated": "2025-08-18T01:52:22.548-0400",
         },
         {
             "id": "1166228",
@@ -345,36 +292,30 @@ REAL_SEARCH_RESPONSE = {
                         "content": [
                             {
                                 "type": "text",
-                                "text": "Test issue for capturing API responses"
+                                "text": "Test issue for capturing API responses",
                             }
-                        ]
+                        ],
                     }
-                ]
+                ],
             },
-            "status": {
-                "name": "To Do",
-                "category": "To Do",
-                "color": "blue-gray"
-            },
-            "priority": {
-                "name": "None"
-            },
+            "status": {"name": "To Do", "category": "To Do", "color": "blue-gray"},
+            "priority": {"name": "None"},
             "assignee": {
                 "display_name": "Douglas Mason",
                 "name": "Douglas Mason",
                 "email": "douglas.mason@mlb.com",
-                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
             },
             "reporter": {
                 "display_name": "Douglas Mason",
                 "name": "Douglas Mason",
                 "email": "douglas.mason@mlb.com",
-                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+                "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
             },
             "created": "2025-08-18T01:51:05.529-0400",
-            "updated": "2025-08-18T01:51:07.441-0400"
-        }
-    ]
+            "updated": "2025-08-18T01:51:07.441-0400",
+        },
+    ],
 }
 
 REAL_FIELDS_RESPONSE = [
@@ -386,13 +327,8 @@ REAL_FIELDS_RESPONSE = [
         "orderable": True,
         "navigable": True,
         "searchable": True,
-        "clauseNames": [
-            "priority"
-        ],
-        "schema": {
-            "type": "priority",
-            "system": "priority"
-        }
+        "clauseNames": ["priority"],
+        "schema": {"type": "priority", "system": "priority"},
     },
     {
         "id": "customfield_21831",
@@ -406,13 +342,13 @@ REAL_FIELDS_RESPONSE = [
         "clauseNames": [
             "Business Priority EP",
             "Business Priority EP[Dropdown]",
-            "cf[21831]"
+            "cf[21831]",
         ],
         "schema": {
             "type": "option",
             "custom": "com.atlassian.jira.plugin.system.customfieldtypes:select",
-            "customId": 21831
-        }
+            "customId": 21831,
+        },
     },
     {
         "id": "customfield_10000",
@@ -426,13 +362,13 @@ REAL_FIELDS_RESPONSE = [
         "clauseNames": [
             "Business Priority",
             "Business Priority[Dropdown]",
-            "cf[10000]"
+            "cf[10000]",
         ],
         "schema": {
             "type": "option",
             "custom": "com.atlassian.jira.plugin.system.customfieldtypes:select",
-            "customId": 10000
-        }
+            "customId": 10000,
+        },
     },
     {
         "id": "customfield_14680",
@@ -443,16 +379,12 @@ REAL_FIELDS_RESPONSE = [
         "orderable": True,
         "navigable": True,
         "searchable": True,
-        "clauseNames": [
-            "cf[14680]",
-            "Priority Points",
-            "Priority Points[Number]"
-        ],
+        "clauseNames": ["cf[14680]", "Priority Points", "Priority Points[Number]"],
         "schema": {
             "type": "number",
             "custom": "com.atlassian.jira.plugin.system.customfieldtypes:float",
-            "customId": 14680
-        }
+            "customId": 14680,
+        },
     },
     {
         "id": "customfield_10011",
@@ -466,14 +398,14 @@ REAL_FIELDS_RESPONSE = [
         "clauseNames": [
             "cf[10011]",
             "Prioritization Notes:",
-            "Prioritization Notes:[Paragraph]"
+            "Prioritization Notes:[Paragraph]",
         ],
         "schema": {
             "type": "string",
             "custom": "com.atlassian.jira.plugin.system.customfieldtypes:textarea",
-            "customId": 10011
-        }
-    }
+            "customId": 10011,
+        },
+    },
 ]
 
 # User Operations
@@ -481,7 +413,7 @@ REAL_USER_PROFILE = {
     "display_name": "Douglas Mason",
     "name": "Douglas Mason",
     "email": "douglas.mason@mlb.com",
-    "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+    "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48",
 }
 
 # Project Operations

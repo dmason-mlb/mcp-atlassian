@@ -106,15 +106,17 @@ class ConfluenceV2Client(BaseRESTClient):
         body: dict[str, Any],
         status: str = "current",
         parent_id: str | None = None,
+        representation: str = "storage",
     ) -> dict[str, Any]:
         """Create a new page.
 
         Args:
             space_id: Space ID
             title: Page title
-            body: Page body in ADF format
+            body: Page body in ADF format or wiki markup
             status: Page status
             parent_id: Parent page ID
+            representation: Content representation ("storage", "atlas_doc_format")
 
         Returns:
             Created page data
@@ -124,7 +126,7 @@ class ConfluenceV2Client(BaseRESTClient):
             "status": status,
             "title": title,
             "body": {
-                "representation": "storage",
+                "representation": representation,
                 "value": body,
             },
         }
@@ -142,17 +144,19 @@ class ConfluenceV2Client(BaseRESTClient):
         status: str | None = None,
         parent_id: str | None = None,
         version_message: str | None = None,
+        representation: str = "storage",
     ) -> dict[str, Any]:
         """Update an existing page.
 
         Args:
             page_id: Page ID
             title: New title
-            body: New body in ADF format
+            body: New body in ADF format or wiki markup
             version_number: Current version number
             status: New status
             parent_id: New parent ID
             version_message: Version message
+            representation: Content representation ("storage", "atlas_doc_format")
 
         Returns:
             Updated page data
@@ -160,7 +164,7 @@ class ConfluenceV2Client(BaseRESTClient):
         data = {
             "title": title,
             "body": {
-                "representation": "storage",
+                "representation": representation,
                 "value": body,
             },
             "version": {
@@ -344,13 +348,15 @@ class ConfluenceV2Client(BaseRESTClient):
         page_id: str,
         body: dict[str, Any],
         inline_position: dict[str, Any] | None = None,
+        representation: str = "storage",
     ) -> dict[str, Any]:
         """Create a comment on a page.
 
         Args:
             page_id: Page ID
-            body: Comment body in ADF format
+            body: Comment body in ADF format or wiki markup
             inline_position: Inline comment position
+            representation: Content representation ("storage", "atlas_doc_format")
 
         Returns:
             Created comment data
@@ -358,7 +364,7 @@ class ConfluenceV2Client(BaseRESTClient):
         data = {
             "pageId": page_id,
             "body": {
-                "representation": "storage",
+                "representation": representation,
                 "value": body,
             },
         }
@@ -390,21 +396,23 @@ class ConfluenceV2Client(BaseRESTClient):
         body: dict[str, Any],
         version_number: int,
         version_message: str | None = None,
+        representation: str = "storage",
     ) -> dict[str, Any]:
         """Update a comment.
 
         Args:
             comment_id: Comment ID
-            body: New body in ADF format
+            body: New body in ADF format or wiki markup
             version_number: Current version number
             version_message: Version message
+            representation: Content representation ("storage", "atlas_doc_format")
 
         Returns:
             Updated comment data
         """
         data = {
             "body": {
-                "representation": "storage",
+                "representation": representation,
                 "value": body,
             },
             "version": {

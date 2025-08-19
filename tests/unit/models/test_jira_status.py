@@ -1,6 +1,5 @@
 """Tests for the JiraStatus and JiraStatusCategory models."""
 
-
 from src.mcp_atlassian.models.constants import JIRA_DEFAULT_ID, UNKNOWN
 from src.mcp_atlassian.models.jira import JiraStatus, JiraStatusCategory
 

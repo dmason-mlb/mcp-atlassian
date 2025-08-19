@@ -53,10 +53,10 @@ test.describe('Jira Issue Content Validation', () => {
   test('Jira issue metadata is displayed correctly', async ({ page }) => {
     // Validate issue key is displayed
     await expect(page.locator('[data-testid="issue-header"], .issue-header')).toContainText(/[A-Z]+-\d+/);
-    
+
     // Validate title is displayed
     await expect(page.locator('h1, [data-testid="issue-title"]')).toContainText('Visual Render Validation');
-    
+
     // Validate status is displayed
     await expect(page.locator('[data-testid="status"], .status')).toBeVisible();
   });
@@ -64,13 +64,13 @@ test.describe('Jira Issue Content Validation', () => {
   test('Jira comments section loads and displays properly', async ({ page }) => {
     // Navigate to comments section
     const commentsSection = page.locator('[data-testid="issue-comments"], #activitymodule, .activity-container');
-    
+
     if (await commentsSection.isVisible()) {
       // Validate comment content if present
       const comments = commentsSection.locator('.comment, [data-testid="comment"]');
       if (await comments.count() > 0) {
         await expect(comments.first()).toContainText('E2E seed comment');
-        
+
         // Validate comment formatting
         await expect(comments.first().locator('code')).toContainText('code');
         await expect(comments.first().locator('strong, b')).toContainText('text');
@@ -80,11 +80,11 @@ test.describe('Jira Issue Content Validation', () => {
 
   test('Jira attachments display correctly', async ({ page }) => {
     const attachmentsSection = page.locator('[data-testid="attachments"], .attachment-container, .issue-attachments');
-    
+
     if (await attachmentsSection.isVisible()) {
       // Check for text attachment
       await expect(attachmentsSection).toContainText('test-attachment.txt');
-      
+
       // Check for image attachment if present
       const imageAttachment = attachmentsSection.locator('img, [data-testid="attachment-image"]');
       if (await imageAttachment.count() > 0) {

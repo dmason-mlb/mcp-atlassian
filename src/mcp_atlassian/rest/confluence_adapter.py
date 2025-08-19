@@ -5,6 +5,7 @@ from typing import Any
 
 from requests import Session
 
+from ..formatting.router import FormatRouter
 from .confluence_v2 import ConfluenceV2Client
 
 logger = logging.getLogger(__name__)
@@ -22,20 +23,34 @@ class ConfluenceAdapter:
         session: Session | None = None,
         cloud: bool = True,
         verify_ssl: bool = True,
+        enable_adf: bool | None = None,
+        adf_validation_level: str | None = None,
     ):
         """Initialize Confluence adapter.
 
         Args:
             url: Confluence URL
             username: Username for basic auth
-            password: Password/API token for basic auth
+            password: Password for basic auth
             token: Personal access token
-            session: Pre-configured session (for OAuth)
+            session: Existing session
             cloud: Whether this is a cloud instance
             verify_ssl: Whether to verify SSL
+            enable_adf: Whether to enable ADF format (None = auto-detect)
+            adf_validation_level: ADF validation level (None = environment default)
         """
-        self.url = url.rstrip("/")
+        self.url = url
         self.cloud = cloud
+        self.enable_adf = enable_adf
+
+        # Initialize FormatRouter for deployment detection and format conversion
+        self.format_router = FormatRouter(adf_validation_level=adf_validation_level)
+
+        # Determine effective ADF usage
+        self.should_use_adf = self._determine_adf_usage()
+
+        # Store original URL for client initialization
+        original_url = url.rstrip("/")
         self._session = session or Session()
 
         # Determine auth type and create client
@@ -46,7 +61,7 @@ class ConfluenceAdapter:
         ):
             # OAuth session
             self.client = ConfluenceV2Client(
-                base_url=url,
+                base_url=original_url,
                 auth_type="oauth",
                 oauth_session=session,
                 verify_ssl=verify_ssl,
@@ -54,7 +69,7 @@ class ConfluenceAdapter:
         elif token:
             # PAT auth
             self.client = ConfluenceV2Client(
-                base_url=url,
+                base_url=original_url,
                 auth_type="pat",
                 token=token,
                 verify_ssl=verify_ssl,
@@ -62,7 +77,7 @@ class ConfluenceAdapter:
         else:
             # Basic auth
             self.client = ConfluenceV2Client(
-                base_url=url,
+                base_url=original_url,
                 auth_type="basic",
                 username=username,
                 password=password,
@@ -71,6 +86,33 @@ class ConfluenceAdapter:
 
         # Store session reference for compatibility
         self._session = self.client.session
+
+    def _determine_adf_usage(self) -> bool:
+        """Determine whether to use ADF format based on configuration and deployment type.
+
+        Returns:
+            True if ADF should be used, False for storage/wiki markup
+        """
+        # Explicit configuration overrides auto-detection
+        if self.enable_adf is not None:
+            return self.enable_adf
+
+        # Use FormatRouter to determine deployment type and format
+        try:
+            result = self.format_router.detect_deployment_type(self.url)
+            return result.name == "CLOUD"
+        except Exception as e:
+            logger.warning(f"Failed to determine deployment type for {self.url}: {e}")
+            # Fall back to the cloud parameter
+            return self.cloud
+
+    def _get_representation(self) -> str:
+        """Get the representation format to use for API calls.
+
+        Returns:
+            "atlas_doc_format" for ADF, "storage" for wiki markup
+        """
+        return "atlas_doc_format" if self.should_use_adf else "storage"
 
     def get(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
         """Generic GET request method for API endpoints.
@@ -170,7 +212,7 @@ class ConfluenceAdapter:
         body: str | dict[str, Any],
         parent_id: int | None = None,
         type: str = "page",
-        representation: str = "storage",
+        representation: str | None = None,
         editor: str | None = None,
         full_width: bool = False,
     ) -> dict[str, Any]:
@@ -183,51 +225,69 @@ class ConfluenceAdapter:
 
         space_id = space_data[0]["id"]
 
-        # Handle body format based on representation parameter
-        if representation == "atlas_doc_format":
-            # When representation is atlas_doc_format, the body should already be ADF
-            # Don't wrap it again
+        # Determine representation format based on FormatRouter or explicit override
+        effective_representation = representation or self._get_representation()
+
+        # Handle body format based on effective representation
+        if effective_representation == "atlas_doc_format":
+            # ADF format
             if isinstance(body, dict):
                 # Already ADF format, use as-is
                 body_adf = body
             else:
-                # String content with atlas_doc_format representation shouldn't happen
-                # but if it does, log a warning and try to use it as-is
-                logger.warning(
-                    f"Received string body with atlas_doc_format representation: {body[:100]}"
-                )
-                body_adf = body
-        elif isinstance(body, str):
-            # Legacy wiki markup - convert to ADF if cloud
-            if self.cloud:
-                # For now, wrap in a basic ADF structure
-                body_adf = {
-                    "type": "doc",
-                    "version": 1,
-                    "content": [
-                        {
-                            "type": "paragraph",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": body,
-                                }
-                            ],
-                        }
-                    ],
-                }
-            else:
-                # Server/DC - keep as string
-                body_adf = body
+                # String content - convert to ADF using FormatRouter
+                try:
+                    conversion_result = self.format_router.convert_markdown(
+                        str(body), self.url
+                    )
+                    body_adf = conversion_result["content"]
+
+                    # Log validation feedback if available
+                    if hasattr(self.format_router, "adf_generator") and hasattr(
+                        self.format_router.adf_generator, "validator"
+                    ):
+                        validator = self.format_router.adf_generator.validator
+                        is_valid, errors = validator.validate(body_adf)
+                        if not is_valid and errors:
+                            if validator.validation_level == "error":
+                                logger.error(
+                                    f"ADF validation errors: {'; '.join(errors)}"
+                                )
+                            elif validator.validation_level == "warn":
+                                logger.warning(
+                                    f"ADF validation warnings: {'; '.join(errors)}"
+                                )
+
+                except Exception as e:
+                    logger.warning(
+                        f"ADF conversion failed, falling back to simple structure: {e}"
+                    )
+                    # Fallback to basic ADF structure
+                    body_adf = {
+                        "type": "doc",
+                        "version": 1,
+                        "content": [
+                            {
+                                "type": "paragraph",
+                                "content": [{"type": "text", "text": str(body)}],
+                            }
+                        ],
+                    }
         else:
-            # Already ADF (dict format)
-            body_adf = body
+            # Storage format - string content that needs format-specific handling
+            if isinstance(body, str):
+                # For storage format, keep string as-is for wiki markup
+                body_adf = body
+            else:
+                # Already ADF (dict format) - should not happen with storage format but handle gracefully
+                body_adf = body
 
         return self.client.create_page(
             space_id=space_id,
             title=title,
             body=body_adf,
             parent_id=str(parent_id) if parent_id else None,
+            representation=effective_representation,
         )
 
     def update_page(
@@ -237,7 +297,7 @@ class ConfluenceAdapter:
         body: str | dict[str, Any],
         parent_id: int | None = None,
         type: str = "page",
-        representation: str = "storage",
+        representation: str | None = None,
         minor_edit: bool = False,
         full_width: bool = False,
     ) -> dict[str, Any]:
@@ -246,45 +306,62 @@ class ConfluenceAdapter:
         page = self.get_page_by_id(str(page_id))
         current_version = page.get("version", {}).get("number", 0)
 
-        # Handle body format based on representation parameter
-        if representation == "atlas_doc_format":
-            # When representation is atlas_doc_format, the body should already be ADF
-            # Don't wrap it again
+        # Determine representation format based on FormatRouter or explicit override
+        effective_representation = representation or self._get_representation()
+
+        # Handle body format based on effective representation
+        if effective_representation == "atlas_doc_format":
+            # ADF format
             if isinstance(body, dict):
                 # Already ADF format, use as-is
                 body_adf = body
             else:
-                # String content with atlas_doc_format representation shouldn't happen
-                # but if it does, log a warning and try to use it as-is
-                logger.warning(
-                    f"Received string body with atlas_doc_format representation: {body[:100]}"
-                )
-                body_adf = body
-        elif isinstance(body, str):
-            # Legacy wiki markup - convert to ADF if cloud
-            if self.cloud:
-                # For now, wrap in a basic ADF structure
-                body_adf = {
-                    "type": "doc",
-                    "version": 1,
-                    "content": [
-                        {
-                            "type": "paragraph",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": body,
-                                }
-                            ],
-                        }
-                    ],
-                }
-            else:
-                # Server/DC - keep as string
-                body_adf = body
+                # String content - convert to ADF using FormatRouter
+                try:
+                    conversion_result = self.format_router.convert_markdown(
+                        str(body), self.url
+                    )
+                    body_adf = conversion_result["content"]
+
+                    # Log validation feedback if available
+                    if hasattr(self.format_router, "adf_generator") and hasattr(
+                        self.format_router.adf_generator, "validator"
+                    ):
+                        validator = self.format_router.adf_generator.validator
+                        is_valid, errors = validator.validate(body_adf)
+                        if not is_valid and errors:
+                            if validator.validation_level == "error":
+                                logger.error(
+                                    f"ADF validation errors: {'; '.join(errors)}"
+                                )
+                            elif validator.validation_level == "warn":
+                                logger.warning(
+                                    f"ADF validation warnings: {'; '.join(errors)}"
+                                )
+
+                except Exception as e:
+                    logger.warning(
+                        f"ADF conversion failed, falling back to simple structure: {e}"
+                    )
+                    # Fallback to basic ADF structure
+                    body_adf = {
+                        "type": "doc",
+                        "version": 1,
+                        "content": [
+                            {
+                                "type": "paragraph",
+                                "content": [{"type": "text", "text": str(body)}],
+                            }
+                        ],
+                    }
         else:
-            # Already ADF (dict format)
-            body_adf = body
+            # Storage format - string content that needs format-specific handling
+            if isinstance(body, str):
+                # For storage format, keep string as-is for wiki markup
+                body_adf = body
+            else:
+                # Already ADF (dict format) - should not happen with storage format but handle gracefully
+                body_adf = body
 
         return self.client.update_page(
             page_id=str(page_id),
@@ -292,6 +369,7 @@ class ConfluenceAdapter:
             body=body_adf,
             version_number=current_version,
             parent_id=str(parent_id) if parent_id else None,
+            representation=effective_representation,
         )
 
     def get_page_ancestors(self, page_id: str) -> list[dict[str, Any]]:

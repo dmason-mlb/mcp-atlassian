@@ -4,15 +4,14 @@ This script runs actual API calls and saves the responses to use as fixtures
 for mock tests, ensuring mocks accurately reflect real API behavior.
 """
 
-import asyncio
 import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
-from mcp_atlassian.jira.config import JiraConfig
 from mcp_atlassian.jira import JiraFetcher
+from mcp_atlassian.jira.config import JiraConfig
 
 
 class RealResponseCapture:
@@ -31,7 +30,7 @@ class RealResponseCapture:
 
         # Save to file for future reference
         file_path = self.fixture_dir / f"{name}.json"
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             json.dump(response, f, indent=2, default=str)
         print(f"  💾 Saved: {file_path}")
 
@@ -46,10 +45,10 @@ class RealResponseCapture:
             project_key="FTEST",
             summary=f"Response Capture Test - {timestamp}",
             issue_type="Task",
-            description="Test issue for capturing API responses"
+            description="Test issue for capturing API responses",
         )
 
-        if hasattr(create_response, 'to_simplified_dict'):
+        if hasattr(create_response, "to_simplified_dict"):
             create_dict = create_response.to_simplified_dict()
         else:
             create_dict = create_response
@@ -62,53 +61,61 @@ class RealResponseCapture:
         print(f"  Getting issue {issue_key}...")
         get_response = self.client.get_issue(
             issue_key=issue_key,
-            fields=["summary", "status", "assignee", "description", "issuetype", "priority"],
-            comment_limit=5
+            fields=[
+                "summary",
+                "status",
+                "assignee",
+                "description",
+                "issuetype",
+                "priority",
+            ],
+            comment_limit=5,
         )
 
-        if hasattr(get_response, 'to_simplified_dict'):
+        if hasattr(get_response, "to_simplified_dict"):
             get_dict = get_response.to_simplified_dict()
         else:
             get_dict = get_response
 
         self.save_response("issue_get", get_dict)
-        print(f"  ✅ Retrieved issue")
+        print("  ✅ Retrieved issue")
 
         # Update the issue
         print(f"  Updating issue {issue_key}...")
         update_response = self.client.update_issue(
             issue_key=issue_key,
-            fields={"summary": f"UPDATED - {create_dict.get('fields', {}).get('summary', '')}"}
+            fields={
+                "summary": f"UPDATED - {create_dict.get('fields', {}).get('summary', '')}"
+            },
         )
 
-        if hasattr(update_response, 'to_simplified_dict'):
+        if hasattr(update_response, "to_simplified_dict"):
             update_dict = update_response.to_simplified_dict()
         else:
             update_dict = {"success": True, "issue_key": issue_key}
 
         self.save_response("issue_update", update_dict)
-        print(f"  ✅ Updated issue")
+        print("  ✅ Updated issue")
 
         # Add a comment
         print(f"  Adding comment to {issue_key}...")
         comment_response = self.client.add_comment(
-            issue_key=issue_key,
-            comment="Test comment for response capture"
+            issue_key=issue_key, comment="Test comment for response capture"
         )
 
-        if hasattr(comment_response, '__dict__'):
+        if hasattr(comment_response, "__dict__"):
             comment_dict = comment_response.__dict__
         else:
             comment_dict = comment_response
 
         self.save_response("issue_comment", comment_dict)
-        print(f"  ✅ Added comment")
+        print("  ✅ Added comment")
 
         # Get transitions
         print(f"  Getting transitions for {issue_key}...")
         transitions = self.client.get_transitions(issue_key)
         self.save_response("issue_transitions", transitions)
-        print(f"  ✅ Got transitions")
+        print("  ✅ Got transitions")
 
         return issue_key
 
@@ -119,11 +126,10 @@ class RealResponseCapture:
         # Search issues
         print("  Searching issues...")
         search_response = self.client.search_issues(
-            jql="project = FTEST ORDER BY created DESC",
-            limit=3
+            jql="project = FTEST ORDER BY created DESC", limit=3
         )
 
-        if hasattr(search_response, 'to_simplified_dict'):
+        if hasattr(search_response, "to_simplified_dict"):
             search_dict = search_response.to_simplified_dict()
         else:
             search_dict = search_response
@@ -148,13 +154,13 @@ class RealResponseCapture:
             try:
                 user_response = self.client.get_user_profile(email)
 
-                if hasattr(user_response, 'to_simplified_dict'):
+                if hasattr(user_response, "to_simplified_dict"):
                     user_dict = user_response.to_simplified_dict()
                 else:
                     user_dict = user_response
 
                 self.save_response("user_profile", user_dict)
-                print(f"  ✅ Got user profile")
+                print("  ✅ Got user profile")
             except Exception as e:
                 print(f"  ⚠️ Could not get user profile: {e}")
 
@@ -169,7 +175,7 @@ class RealResponseCapture:
         # Convert to list of dicts
         project_list = []
         for p in projects[:5]:  # Limit to 5 for fixture
-            if hasattr(p, 'to_simplified_dict'):
+            if hasattr(p, "to_simplified_dict"):
                 project_list.append(p.to_simplified_dict())
             else:
                 project_list.append(p)
@@ -193,7 +199,7 @@ class RealResponseCapture:
 
         board_list = []
         for b in boards:
-            if hasattr(b, 'to_simplified_dict'):
+            if hasattr(b, "to_simplified_dict"):
                 board_list.append(b.to_simplified_dict())
             else:
                 board_list.append(b)
@@ -207,13 +213,12 @@ class RealResponseCapture:
             if board_id:
                 print(f"  Getting sprints for board {board_id}...")
                 sprints = self.client.get_all_sprints_from_board_model(
-                    board_id=str(board_id),
-                    limit=3
+                    board_id=str(board_id), limit=3
                 )
 
                 sprint_list = []
                 for s in sprints:
-                    if hasattr(s, 'to_simplified_dict'):
+                    if hasattr(s, "to_simplified_dict"):
                         sprint_list.append(s.to_simplified_dict())
                     else:
                         sprint_list.append(s)
@@ -269,17 +274,19 @@ REAL_BOARD_SPRINTS = {sprints}
             get=json.dumps(self.responses.get("issue_get", {}), indent=4),
             update=json.dumps(self.responses.get("issue_update", {}), indent=4),
             comment=json.dumps(self.responses.get("issue_comment", {}), indent=4),
-            transitions=json.dumps(self.responses.get("issue_transitions", []), indent=4),
+            transitions=json.dumps(
+                self.responses.get("issue_transitions", []), indent=4
+            ),
             search=json.dumps(self.responses.get("search_issues", {}), indent=4),
             fields=json.dumps(self.responses.get("search_fields", []), indent=4),
             user=json.dumps(self.responses.get("user_profile", {}), indent=4),
             projects=json.dumps(self.responses.get("projects_list", []), indent=4),
             versions=json.dumps(self.responses.get("project_versions", []), indent=4),
             boards=json.dumps(self.responses.get("agile_boards", []), indent=4),
-            sprints=json.dumps(self.responses.get("board_sprints", []), indent=4)
+            sprints=json.dumps(self.responses.get("board_sprints", []), indent=4),
         )
 
-        with open(fixture_file, 'w') as f:
+        with open(fixture_file, "w") as f:
             f.write(content)
 
         print(f"  💾 Generated: {fixture_file}")
@@ -309,6 +316,7 @@ REAL_BOARD_SPRINTS = {sprints}
         except Exception as e:
             print(f"\n❌ Error during capture: {e}")
             import traceback
+
             traceback.print_exc()
             return None
 

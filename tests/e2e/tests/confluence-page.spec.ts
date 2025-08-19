@@ -60,11 +60,11 @@ test.describe('Confluence Page Content Validation', () => {
   test('Confluence page metadata is displayed correctly', async ({ page }) => {
     // Validate page title
     await expect(page.locator('h1, [data-testid="page-title"], .page-title')).toContainText('Visual Render Validation');
-    
+
     // Validate breadcrumbs are present
     const breadcrumbs = page.locator('[data-testid="breadcrumbs"], .breadcrumbs, nav');
     await expect(breadcrumbs).toBeVisible();
-    
+
     // Validate space information
     await expect(breadcrumbs).toContainText(/\w+/); // Should contain space name
   });
@@ -72,7 +72,7 @@ test.describe('Confluence Page Content Validation', () => {
   test('Confluence page labels display correctly', async ({ page }) => {
     // Check for labels section
     const labelsSection = page.locator('[data-testid="labels"], .labels, .page-metadata');
-    
+
     if (await labelsSection.isVisible()) {
       // Should contain our e2e label
       await expect(labelsSection).toContainText(/mcp-e2e-\d+/);
@@ -83,7 +83,7 @@ test.describe('Confluence Page Content Validation', () => {
     // Test page actions menu
     const pageActions = page.locator('[data-testid="page-actions"], .page-toolbar, #page-toolbar');
     await expect(pageActions).toBeVisible();
-    
+
     // Test edit button exists (user may not have permissions)
     const editButton = page.locator('[data-testid="edit-page"], .edit-link, #editPageLink');
     if (await editButton.isVisible()) {
@@ -93,26 +93,26 @@ test.describe('Confluence Page Content Validation', () => {
 
   test('Confluence content structure accessibility', async ({ page }) => {
     const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
-    
+
     // Check heading hierarchy
     const h1 = article.locator('h1');
     const h2 = article.locator('h2');
-    
+
     if (await h1.count() > 0) {
       await expect(h1.first()).toBeVisible();
     }
-    
+
     if (await h2.count() > 0) {
       await expect(h2.first()).toBeVisible();
     }
-    
+
     // Check for proper list structure
     const lists = article.locator('ul, ol');
     for (let i = 0; i < await lists.count(); i++) {
       const list = lists.nth(i);
       await expect(list.locator('li')).toHaveCountGreaterThan(0);
     }
-    
+
     // Check for table accessibility
     const tables = article.locator('table');
     for (let i = 0; i < await tables.count(); i++) {

@@ -2,14 +2,11 @@
 
 import asyncio
 import json
-import threading
 from concurrent.futures import ThreadPoolExecutor
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
-import httpx
 import pytest
-from fastmcp import Context
 from mcp.types import Tool as MCPTool
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -41,12 +38,17 @@ class TestMainLifespan:
         mock_confluence_config = Mock(spec=ConfluenceConfig)
         mock_confluence_config.is_auth_configured.return_value = True
 
-        with patch("mcp_atlassian.servers.main.get_available_services") as mock_services, \
-             patch("mcp_atlassian.servers.main.JiraConfig.from_env") as mock_jira_from_env, \
-             patch("mcp_atlassian.servers.main.ConfluenceConfig.from_env") as mock_conf_from_env, \
-             patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only, \
-             patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools:
-
+        with (
+            patch("mcp_atlassian.servers.main.get_available_services") as mock_services,
+            patch(
+                "mcp_atlassian.servers.main.JiraConfig.from_env"
+            ) as mock_jira_from_env,
+            patch(
+                "mcp_atlassian.servers.main.ConfluenceConfig.from_env"
+            ) as mock_conf_from_env,
+            patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only,
+            patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools,
+        ):
             mock_services.return_value = {"jira": True, "confluence": True}
             mock_jira_from_env.return_value = mock_jira_config
             mock_conf_from_env.return_value = mock_confluence_config
@@ -71,11 +73,14 @@ class TestMainLifespan:
         mock_jira_config = Mock(spec=JiraConfig)
         mock_jira_config.is_auth_configured.return_value = False
 
-        with patch("mcp_atlassian.servers.main.get_available_services") as mock_services, \
-             patch("mcp_atlassian.servers.main.JiraConfig.from_env") as mock_jira_from_env, \
-             patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only, \
-             patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools:
-
+        with (
+            patch("mcp_atlassian.servers.main.get_available_services") as mock_services,
+            patch(
+                "mcp_atlassian.servers.main.JiraConfig.from_env"
+            ) as mock_jira_from_env,
+            patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only,
+            patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools,
+        ):
             mock_services.return_value = {"jira": True, "confluence": False}
             mock_jira_from_env.return_value = mock_jira_config
             mock_read_only.return_value = False
@@ -93,11 +98,14 @@ class TestMainLifespan:
     async def test_lifespan_handles_config_load_exception(self):
         """Test that lifespan handles exceptions during config loading gracefully."""
         # Arrange
-        with patch("mcp_atlassian.servers.main.get_available_services") as mock_services, \
-             patch("mcp_atlassian.servers.main.JiraConfig.from_env") as mock_jira_from_env, \
-             patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only, \
-             patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools:
-
+        with (
+            patch("mcp_atlassian.servers.main.get_available_services") as mock_services,
+            patch(
+                "mcp_atlassian.servers.main.JiraConfig.from_env"
+            ) as mock_jira_from_env,
+            patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only,
+            patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools,
+        ):
             mock_services.return_value = {"jira": True, "confluence": False}
             mock_jira_from_env.side_effect = ValueError("Missing JIRA_URL")
             mock_read_only.return_value = True
@@ -115,11 +123,12 @@ class TestMainLifespan:
     async def test_lifespan_cleanup_on_exception(self):
         """Test that lifespan performs cleanup even when an exception occurs."""
         # Arrange
-        with patch("mcp_atlassian.servers.main.get_available_services") as mock_services, \
-             patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only, \
-             patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools, \
-             patch("mcp_atlassian.servers.main.logger") as mock_logger:
-
+        with (
+            patch("mcp_atlassian.servers.main.get_available_services") as mock_services,
+            patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only,
+            patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools,
+            patch("mcp_atlassian.servers.main.logger") as mock_logger,
+        ):
             mock_services.return_value = {}
             mock_read_only.return_value = False
             mock_enabled_tools.return_value = None
@@ -130,8 +139,12 @@ class TestMainLifespan:
                 pass
 
             # Verify cleanup logging
-            mock_logger.info.assert_any_call("Main Atlassian MCP server lifespan shutting down...")
-            mock_logger.info.assert_any_call("Main Atlassian MCP server lifespan shutdown complete.")
+            mock_logger.info.assert_any_call(
+                "Main Atlassian MCP server lifespan shutting down..."
+            )
+            mock_logger.info.assert_any_call(
+                "Main Atlassian MCP server lifespan shutdown complete."
+            )
 
 
 class TestAtlassianMCP:
@@ -144,7 +157,7 @@ class TestAtlassianMCP:
             full_jira_config=Mock(spec=JiraConfig),
             full_confluence_config=Mock(spec=ConfluenceConfig),
             read_only=False,
-            enabled_tools=["get_issue", "search", "create_issue"]
+            enabled_tools=["get_issue", "search", "create_issue"],
         )
 
     @pytest.fixture
@@ -153,7 +166,9 @@ class TestAtlassianMCP:
         return AtlassianMCP(name="TestMCP", description="Test MCP Server")
 
     @pytest.mark.anyio
-    async def test_tool_filtering_excludes_write_tools_in_read_only_mode(self, atlassian_mcp, mock_app_context):
+    async def test_tool_filtering_excludes_write_tools_in_read_only_mode(
+        self, atlassian_mcp, mock_app_context
+    ):
         """Test that write tools are excluded when in read-only mode."""
         # Arrange
         mock_app_context.read_only = True
@@ -161,28 +176,27 @@ class TestAtlassianMCP:
         mock_tool_write = Mock()
         mock_tool_write.tags = {"jira", "write"}
         mock_tool_write.to_mcp_tool.return_value = MCPTool(
-            name="create_issue",
-            description="Create issue",
-            inputSchema={}
+            name="create_issue", description="Create issue", inputSchema={}
         )
 
         mock_tool_read = Mock()
         mock_tool_read.tags = {"jira", "read"}
         mock_tool_read.to_mcp_tool.return_value = MCPTool(
-            name="get_issue",
-            description="Get issue",
-            inputSchema={}
+            name="get_issue", description="Get issue", inputSchema={}
         )
 
-        with patch.object(atlassian_mcp, "get_tools") as mock_get_tools, \
-             patch.object(atlassian_mcp, "_mcp_server") as mock_server:
-
+        with (
+            patch.object(atlassian_mcp, "get_tools") as mock_get_tools,
+            patch.object(atlassian_mcp, "_mcp_server") as mock_server,
+        ):
             mock_get_tools.return_value = {
                 "create_issue": mock_tool_write,
-                "get_issue": mock_tool_read
+                "get_issue": mock_tool_read,
             }
 
-            mock_server.request_context.lifespan_context = {"app_lifespan_context": mock_app_context}
+            mock_server.request_context.lifespan_context = {
+                "app_lifespan_context": mock_app_context
+            }
 
             # Act
             tools = await atlassian_mcp._mcp_list_tools()
@@ -193,7 +207,9 @@ class TestAtlassianMCP:
             assert "create_issue" not in tool_names
 
     @pytest.mark.anyio
-    async def test_tool_filtering_respects_enabled_tools_list(self, atlassian_mcp, mock_app_context):
+    async def test_tool_filtering_respects_enabled_tools_list(
+        self, atlassian_mcp, mock_app_context
+    ):
         """Test that only enabled tools are included when filter is set."""
         # Arrange
         mock_app_context.enabled_tools = ["get_issue"]
@@ -201,29 +217,30 @@ class TestAtlassianMCP:
         mock_tool1 = Mock()
         mock_tool1.tags = {"jira", "read"}
         mock_tool1.to_mcp_tool.return_value = MCPTool(
-            name="get_issue",
-            description="Get issue",
-            inputSchema={}
+            name="get_issue", description="Get issue", inputSchema={}
         )
 
         mock_tool2 = Mock()
         mock_tool2.tags = {"jira", "read"}
         mock_tool2.to_mcp_tool.return_value = MCPTool(
-            name="search",
-            description="Search",
-            inputSchema={}
+            name="search", description="Search", inputSchema={}
         )
 
-        with patch.object(atlassian_mcp, "get_tools") as mock_get_tools, \
-             patch.object(atlassian_mcp, "_mcp_server") as mock_server, \
-             patch("mcp_atlassian.servers.main.should_include_tool") as mock_should_include:
-
+        with (
+            patch.object(atlassian_mcp, "get_tools") as mock_get_tools,
+            patch.object(atlassian_mcp, "_mcp_server") as mock_server,
+            patch(
+                "mcp_atlassian.servers.main.should_include_tool"
+            ) as mock_should_include,
+        ):
             mock_get_tools.return_value = {
                 "get_issue": mock_tool1,
-                "search": mock_tool2
+                "search": mock_tool2,
             }
 
-            mock_server.request_context.lifespan_context = {"app_lifespan_context": mock_app_context}
+            mock_server.request_context.lifespan_context = {
+                "app_lifespan_context": mock_app_context
+            }
             mock_should_include.side_effect = lambda name, _: name == "get_issue"
 
             # Act
@@ -234,7 +251,9 @@ class TestAtlassianMCP:
             assert tools[0].name == "get_issue"
 
     @pytest.mark.anyio
-    async def test_tool_filtering_excludes_jira_tools_without_config(self, atlassian_mcp, mock_app_context):
+    async def test_tool_filtering_excludes_jira_tools_without_config(
+        self, atlassian_mcp, mock_app_context
+    ):
         """Test that Jira tools are excluded when Jira config is not available."""
         # Arrange
         mock_app_context.full_jira_config = None
@@ -242,11 +261,14 @@ class TestAtlassianMCP:
         mock_tool = Mock()
         mock_tool.tags = {"jira", "read"}
 
-        with patch.object(atlassian_mcp, "get_tools") as mock_get_tools, \
-             patch.object(atlassian_mcp, "_mcp_server") as mock_server:
-
+        with (
+            patch.object(atlassian_mcp, "get_tools") as mock_get_tools,
+            patch.object(atlassian_mcp, "_mcp_server") as mock_server,
+        ):
             mock_get_tools.return_value = {"get_issue": mock_tool}
-            mock_server.request_context.lifespan_context = {"app_lifespan_context": mock_app_context}
+            mock_server.request_context.lifespan_context = {
+                "app_lifespan_context": mock_app_context
+            }
 
             # Act
             tools = await atlassian_mcp._mcp_list_tools()
@@ -297,12 +319,14 @@ class TestUserTokenMiddleware:
         return call_next
 
     @pytest.mark.anyio
-    async def test_middleware_extracts_bearer_token(self, middleware, mock_request, mock_call_next):
+    async def test_middleware_extracts_bearer_token(
+        self, middleware, mock_request, mock_call_next
+    ):
         """Test successful Bearer token extraction and storage in request state."""
         # Arrange
         mock_request.headers = {
             "Authorization": "Bearer test-token-123",
-            "X-Atlassian-Cloud-Id": "cloud-id-456"
+            "X-Atlassian-Cloud-Id": "cloud-id-456",
         }
 
         # Act
@@ -316,12 +340,12 @@ class TestUserTokenMiddleware:
         mock_call_next.assert_called_once_with(mock_request)
 
     @pytest.mark.anyio
-    async def test_middleware_handles_pat_token(self, middleware, mock_request, mock_call_next):
+    async def test_middleware_handles_pat_token(
+        self, middleware, mock_request, mock_call_next
+    ):
         """Test that PAT tokens are extracted correctly."""
         # Arrange
-        mock_request.headers = {
-            "Authorization": "PAT personal-access-token-789"
-        }
+        mock_request.headers = {"Authorization": "PAT personal-access-token-789"}
 
         # Act
         result = await middleware.dispatch(mock_request, mock_call_next)
@@ -333,7 +357,9 @@ class TestUserTokenMiddleware:
         assert mock_request.state.user_atlassian_auth_type == "pat"
 
     @pytest.mark.anyio
-    async def test_middleware_skips_non_mcp_paths(self, middleware, mock_request, mock_call_next):
+    async def test_middleware_skips_non_mcp_paths(
+        self, middleware, mock_request, mock_call_next
+    ):
         """Test that middleware skips processing for non-MCP paths."""
         # Arrange
         mock_request.url.path = "/healthz"
@@ -347,7 +373,9 @@ class TestUserTokenMiddleware:
         mock_call_next.assert_called_once_with(mock_request)
 
     @pytest.mark.anyio
-    async def test_middleware_handles_missing_auth_header(self, middleware, mock_request, mock_call_next):
+    async def test_middleware_handles_missing_auth_header(
+        self, middleware, mock_request, mock_call_next
+    ):
         """Test that middleware handles missing Authorization header gracefully."""
         # Arrange
         mock_request.headers = {}
@@ -360,7 +388,9 @@ class TestUserTokenMiddleware:
         mock_call_next.assert_called_once_with(mock_request)
 
     @pytest.mark.anyio
-    async def test_middleware_handles_invalid_auth_scheme(self, middleware, mock_request, mock_call_next):
+    async def test_middleware_handles_invalid_auth_scheme(
+        self, middleware, mock_request, mock_call_next
+    ):
         """Test that middleware logs warning for invalid auth schemes."""
         # Arrange
         mock_request.headers = {"Authorization": "InvalidScheme token123"}
@@ -438,10 +468,11 @@ class TestErrorHandling:
     async def test_lifespan_handles_no_services_available(self):
         """Test that lifespan handles scenario when no services are available."""
         # Arrange
-        with patch("mcp_atlassian.servers.main.get_available_services") as mock_services, \
-             patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only, \
-             patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools:
-
+        with (
+            patch("mcp_atlassian.servers.main.get_available_services") as mock_services,
+            patch("mcp_atlassian.servers.main.is_read_only_mode") as mock_read_only,
+            patch("mcp_atlassian.servers.main.get_enabled_tools") as mock_enabled_tools,
+        ):
             mock_services.return_value = {}
             mock_read_only.return_value = False
             mock_enabled_tools.return_value = None
@@ -455,7 +486,9 @@ class TestErrorHandling:
                 assert app_context.full_confluence_config is None
 
     @pytest.mark.anyio
-    async def test_middleware_handles_empty_token(self, middleware, mock_request, mock_call_next):
+    async def test_middleware_handles_empty_token(
+        self, middleware, mock_request, mock_call_next
+    ):
         """Test that middleware handles empty token values gracefully."""
         # Arrange
         mock_request.headers = {"Authorization": "Bearer "}
@@ -487,7 +520,11 @@ class TestConcurrency:
 
             call_next = AsyncMock(return_value=JSONResponse({"ok": True}))
             await middleware.dispatch(request, call_next)
-            return request.state.user_atlassian_token if hasattr(request.state, "user_atlassian_token") else None
+            return (
+                request.state.user_atlassian_token
+                if hasattr(request.state, "user_atlassian_token")
+                else None
+            )
 
         # Act
         tasks = [process_request(f"token_{i}") for i in range(5)]

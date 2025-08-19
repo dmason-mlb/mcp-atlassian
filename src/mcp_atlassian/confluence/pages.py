@@ -49,16 +49,13 @@ class PagesMixin(ConfluenceClient):
         """
         try:
             # Always use v2 API
-            if not hasattr(self, '_v2_adapter_instance'):
+            if not hasattr(self, "_v2_adapter_instance"):
                 # Create v2 adapter for all auth types
                 self._v2_adapter_instance = ConfluenceV2Adapter(
-                    session=self.confluence._session,
-                    base_url=self.config.url
+                    session=self.confluence._session, base_url=self.config.url
                 )
 
-            logger.debug(
-                f"Using v2 API to get page '{page_id}'"
-            )
+            logger.debug(f"Using v2 API to get page '{page_id}'")
             page = self._v2_adapter_instance.get_page(
                 page_id=page_id,
                 expand="body.storage,version,space,children.attachment",
@@ -311,6 +308,7 @@ class PagesMixin(ConfluenceClient):
                     # Convert ADF to storage format for v2 API
                     # v2 API doesn't support atlas_doc_format, only storage/wiki
                     from ..formatting.adf_to_storage import adf_to_storage
+
                     final_body = adf_to_storage(converted_body)
                     representation = "storage"
                 else:
@@ -323,16 +321,13 @@ class PagesMixin(ConfluenceClient):
                 representation = content_representation or "storage"
 
             # Always use v2 API
-            if not hasattr(self, '_v2_adapter_instance'):
+            if not hasattr(self, "_v2_adapter_instance"):
                 # Create v2 adapter for all auth types
                 self._v2_adapter_instance = ConfluenceV2Adapter(
-                    session=self.confluence._session,
-                    base_url=self.config.url
+                    session=self.confluence._session, base_url=self.config.url
                 )
 
-            logger.debug(
-                f"Using v2 API to create page '{title}' in space {space_id}"
-            )
+            logger.debug(f"Using v2 API to create page '{title}' in space {space_id}")
             result = self._v2_adapter_instance.create_page(
                 space_id=space_id,
                 title=title,
@@ -348,9 +343,7 @@ class PagesMixin(ConfluenceClient):
 
             return self.get_page_content(page_id)
         except Exception as e:
-            logger.error(
-                f"Error creating page '{title}' in space {space_id}: {str(e)}"
-            )
+            logger.error(f"Error creating page '{title}' in space {space_id}: {str(e)}")
             raise Exception(
                 f"Failed to create page '{title}' in space {space_id}: {str(e)}"
             ) from e
@@ -399,6 +392,7 @@ class PagesMixin(ConfluenceClient):
                     # Convert ADF to storage format for v2 API
                     # v2 API doesn't support atlas_doc_format, only storage/wiki
                     from ..formatting.adf_to_storage import adf_to_storage
+
                     final_body = adf_to_storage(converted_body)
                     representation = "storage"
                 else:
@@ -413,16 +407,13 @@ class PagesMixin(ConfluenceClient):
             logger.debug(f"Updating page {page_id} with title '{title}'")
 
             # Always use v2 API
-            if not hasattr(self, '_v2_adapter_instance'):
+            if not hasattr(self, "_v2_adapter_instance"):
                 # Create v2 adapter for all auth types
                 self._v2_adapter_instance = ConfluenceV2Adapter(
-                    session=self.confluence._session,
-                    base_url=self.config.url
+                    session=self.confluence._session, base_url=self.config.url
                 )
 
-            logger.debug(
-                f"Using v2 API to update page '{page_id}'"
-            )
+            logger.debug(f"Using v2 API to update page '{page_id}'")
             response = self._v2_adapter_instance.update_page(
                 page_id=page_id,
                 title=title,
@@ -530,16 +521,13 @@ class PagesMixin(ConfluenceClient):
             logger.debug(f"Deleting page {page_id}")
 
             # Always use v2 API
-            if not hasattr(self, '_v2_adapter_instance'):
+            if not hasattr(self, "_v2_adapter_instance"):
                 # Create v2 adapter for all auth types
                 self._v2_adapter_instance = ConfluenceV2Adapter(
-                    session=self.confluence._session,
-                    base_url=self.config.url
+                    session=self.confluence._session, base_url=self.config.url
                 )
 
-            logger.debug(
-                f"Using v2 API to delete page '{page_id}'"
-            )
+            logger.debug(f"Using v2 API to delete page '{page_id}'")
             return self._v2_adapter_instance.delete_page(page_id=page_id)
 
         except Exception as e:

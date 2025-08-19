@@ -174,7 +174,7 @@ When adding new MCP tools to either service:
 ### Plugin Development (ADF)
 For extending ADF conversion capabilities:
 1. Create new plugins in `src/mcp_atlassian/formatting/` following the plugin architecture
-2. Register plugins in the `ASTBasedADFGenerator` 
+2. Register plugins in the `ASTBasedADFGenerator`
 3. Test with both unit tests and `debug_confluence_formats.py` script
 4. Validate against real Confluence instances for ADF compliance
 

@@ -8,7 +8,6 @@ import asyncio
 import json
 import os
 from datetime import datetime
-from typing import Any, Dict
 
 import pytest
 from fastmcp import Context
@@ -16,7 +15,7 @@ from fastmcp import Context
 # Only run these tests if explicitly enabled
 pytestmark = pytest.mark.skipif(
     os.getenv("RUN_INTEGRATION_TESTS") != "true",
-    reason="Integration tests require RUN_INTEGRATION_TESTS=true"
+    reason="Integration tests require RUN_INTEGRATION_TESTS=true",
 )
 
 
@@ -26,9 +25,9 @@ class TestRealJiraIntegration:
     @pytest.fixture
     async def real_context(self):
         """Create a real context with actual JIRA configuration."""
-        from mcp_atlassian.servers.main import create_app_context
-        from mcp_atlassian.jira.config import JiraConfig
         from mcp_atlassian.confluence.config import ConfluenceConfig
+        from mcp_atlassian.jira.config import JiraConfig
+        from mcp_atlassian.servers.main import create_app_context
 
         # Load real configuration from environment
         jira_config = JiraConfig()
@@ -36,6 +35,7 @@ class TestRealJiraIntegration:
 
         # Create the app with real configs
         from fastmcp import FastMCP
+
         app = FastMCP(name="Test MCP")
 
         # Create app context
@@ -43,11 +43,12 @@ class TestRealJiraIntegration:
             jira_config=jira_config,
             confluence_config=confluence_config,
             read_only=False,
-            enabled_tools=None
+            enabled_tools=None,
         )
 
         # Create mock request context with real app context
         from unittest.mock import MagicMock
+
         mock_fastmcp = MagicMock()
         mock_request_context = MagicMock()
         mock_request_context.lifespan_context = {"app_lifespan_context": app_context}
@@ -72,7 +73,7 @@ class TestRealJiraIntegration:
             project_key="FTEST",
             summary=summary,
             issue_type="Task",
-            description=description
+            description=description,
         )
 
         # Parse the result
@@ -90,14 +91,18 @@ class TestRealJiraIntegration:
         assert retrieved["key"] == issue_key
         assert retrieved["fields"]["summary"] == summary
         assert "description" in retrieved["fields"]
-        print(f"✅ Successfully retrieved issue with correct data")
+        print("✅ Successfully retrieved issue with correct data")
 
         return issue_key
 
     @pytest.mark.anyio
     async def test_update_real_issue(self, real_context):
         """Test updating a real issue in FTEST project."""
-        from mcp_atlassian.servers.jira.issues import create_issue, update_issue, get_issue
+        from mcp_atlassian.servers.jira.issues import (
+            create_issue,
+            get_issue,
+            update_issue,
+        )
 
         # First create an issue
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -108,7 +113,7 @@ class TestRealJiraIntegration:
             project_key="FTEST",
             summary=summary,
             issue_type="Task",
-            description="Original description"
+            description="Original description",
         )
 
         created = json.loads(create_result)
@@ -123,40 +128,38 @@ class TestRealJiraIntegration:
         update_result = await update_issue(
             real_context,
             issue_key=issue_key,
-            fields={
-                "summary": new_summary,
-                "description": new_description
-            }
+            fields={"summary": new_summary, "description": new_description},
         )
 
         updated = json.loads(update_result)
         assert "success" in updated or "message" in updated
-        print(f"✅ Successfully updated issue")
+        print("✅ Successfully updated issue")
 
         # Verify the update
-        print(f"🔄 Verifying update...")
+        print("🔄 Verifying update...")
         get_result = await get_issue(real_context, issue_key)
         retrieved = json.loads(get_result)
 
         assert retrieved["fields"]["summary"] == new_summary
-        print(f"✅ Update verified - summary changed correctly")
+        print("✅ Update verified - summary changed correctly")
 
         return issue_key
 
     @pytest.mark.anyio
     async def test_add_comment_to_real_issue(self, real_context):
         """Test adding a comment to a real issue."""
-        from mcp_atlassian.servers.jira.issues import create_issue, add_comment, get_issue
+        from mcp_atlassian.servers.jira.issues import (
+            add_comment,
+            create_issue,
+            get_issue,
+        )
 
         # Create an issue
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         summary = f"Comment Test Issue - {timestamp}"
 
         create_result = await create_issue(
-            real_context,
-            project_key="FTEST",
-            summary=summary,
-            issue_type="Task"
+            real_context, project_key="FTEST", summary=summary, issue_type="Task"
         )
 
         created = json.loads(create_result)
@@ -168,22 +171,16 @@ class TestRealJiraIntegration:
         print(f"🔄 Adding comment to {issue_key}")
 
         comment_result = await add_comment(
-            real_context,
-            issue_key=issue_key,
-            comment=comment_text
+            real_context, issue_key=issue_key, comment=comment_text
         )
 
         comment_response = json.loads(comment_result)
         assert "id" in comment_response or "self" in comment_response
-        print(f"✅ Successfully added comment")
+        print("✅ Successfully added comment")
 
         # Verify the comment exists
-        print(f"🔄 Verifying comment...")
-        get_result = await get_issue(
-            real_context,
-            issue_key,
-            comment_limit=10
-        )
+        print("🔄 Verifying comment...")
+        get_result = await get_issue(real_context, issue_key, comment_limit=10)
         retrieved = json.loads(get_result)
 
         # Check if comments exist
@@ -193,7 +190,7 @@ class TestRealJiraIntegration:
             # Verify our comment is there
             found = any(comment_text in c.get("body", "") for c in comments)
             assert found, "Our comment was not found"
-            print(f"✅ Comment verified in issue")
+            print("✅ Comment verified in issue")
 
         return issue_key
 
@@ -206,11 +203,7 @@ class TestRealJiraIntegration:
         jql = "project = FTEST AND created >= -7d ORDER BY created DESC"
         print(f"\n🔄 Searching with JQL: {jql}")
 
-        search_result = await search(
-            real_context,
-            jql=jql,
-            limit=5
-        )
+        search_result = await search(real_context, jql=jql, limit=5)
 
         results = json.loads(search_result)
         assert "issues" in results
@@ -233,10 +226,7 @@ class TestRealJiraIntegration:
         summary = f"Transition Test Issue - {timestamp}"
 
         create_result = await create_issue(
-            real_context,
-            project_key="FTEST",
-            summary=summary,
-            issue_type="Task"
+            real_context, project_key="FTEST", summary=summary, issue_type="Task"
         )
 
         created = json.loads(create_result)
@@ -248,7 +238,7 @@ class TestRealJiraIntegration:
         transitions_result = await get_transitions(real_context, issue_key)
         transitions = json.loads(transitions_result)
 
-        print(f"Available transitions:")
+        print("Available transitions:")
         for t in transitions:
             print(f"  - {t['id']}: {t['name']}")
 
@@ -261,11 +251,11 @@ class TestRealJiraIntegration:
                 real_context,
                 issue_key=issue_key,
                 transition_id=transition["id"],
-                comment="Automated transition by integration test"
+                comment="Automated transition by integration test",
             )
 
             result = json.loads(transition_result)
-            print(f"✅ Successfully transitioned issue")
+            print("✅ Successfully transitioned issue")
         else:
             print("⚠️ No transitions available for this issue")
 
@@ -277,7 +267,7 @@ class TestRealJiraIntegration:
         from mcp_atlassian.servers.jira.management import get_user_profile
 
         # Try to get current user profile
-        print(f"\n🔄 Getting current user profile")
+        print("\n🔄 Getting current user profile")
 
         try:
             # First try with 'currentUser()' or email from environment
@@ -287,7 +277,7 @@ class TestRealJiraIntegration:
                 profile = json.loads(profile_result)
 
                 if "error" not in profile:
-                    print(f"✅ Found user profile:")
+                    print("✅ Found user profile:")
                     print(f"  - Display Name: {profile.get('displayName', 'N/A')}")
                     print(f"  - Email: {profile.get('emailAddress', 'N/A')}")
                     print(f"  - Account ID: {profile.get('accountId', 'N/A')}")
@@ -311,28 +301,26 @@ class TestRealJiraIntegration:
                 "project_key": "FTEST",
                 "summary": f"Batch Test Issue 1 - {timestamp}",
                 "issue_type": "Task",
-                "description": "First batch issue"
+                "description": "First batch issue",
             },
             {
                 "project_key": "FTEST",
                 "summary": f"Batch Test Issue 2 - {timestamp}",
                 "issue_type": "Task",
-                "description": "Second batch issue"
+                "description": "Second batch issue",
             },
             {
                 "project_key": "FTEST",
                 "summary": f"Batch Test Issue 3 - {timestamp}",
                 "issue_type": "Task",
-                "description": "Third batch issue"
-            }
+                "description": "Third batch issue",
+            },
         ]
 
         print(f"\n🔄 Creating {len(issues_data)} issues in batch")
 
         batch_result = await batch_create_issues(
-            real_context,
-            issues=json.dumps(issues_data),
-            validate_only=False
+            real_context, issues=json.dumps(issues_data), validate_only=False
         )
 
         results = json.loads(batch_result)
@@ -343,9 +331,9 @@ class TestRealJiraIntegration:
             if result.get("success"):
                 key = result.get("issue", {}).get("key")
                 created_keys.append(key)
-                print(f"✅ Created issue {i+1}: {key}")
+                print(f"✅ Created issue {i + 1}: {key}")
             else:
-                print(f"❌ Failed to create issue {i+1}: {result.get('error')}")
+                print(f"❌ Failed to create issue {i + 1}: {result.get('error')}")
 
         assert len(created_keys) > 0, "No issues were created"
         print(f"✅ Successfully created {len(created_keys)} issues in batch")
@@ -360,11 +348,13 @@ if __name__ == "__main__":
         test = TestRealJiraIntegration()
 
         # Create real context
-        from mcp_atlassian.servers.main import create_app_context
-        from mcp_atlassian.jira.config import JiraConfig
-        from mcp_atlassian.confluence.config import ConfluenceConfig
-        from fastmcp import FastMCP
         from unittest.mock import MagicMock
+
+        from fastmcp import FastMCP
+
+        from mcp_atlassian.confluence.config import ConfluenceConfig
+        from mcp_atlassian.jira.config import JiraConfig
+        from mcp_atlassian.servers.main import create_app_context
 
         jira_config = JiraConfig()
         confluence_config = ConfluenceConfig()
@@ -374,7 +364,7 @@ if __name__ == "__main__":
             jira_config=jira_config,
             confluence_config=confluence_config,
             read_only=False,
-            enabled_tools=None
+            enabled_tools=None,
         )
 
         mock_fastmcp = MagicMock()
@@ -420,7 +410,7 @@ if __name__ == "__main__":
 
         try:
             profile = await test.test_get_user_profile(context)
-            print(f"\n✅ User profile test passed")
+            print("\n✅ User profile test passed")
         except Exception as e:
             print(f"\n❌ User profile test failed: {e}")
 

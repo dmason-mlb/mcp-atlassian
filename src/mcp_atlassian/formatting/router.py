@@ -51,17 +51,35 @@ class FormatRouter:
     - Efficient ADF generator initialization with caching
     """
 
-    def __init__(self, cache_ttl: int = 3600, cache_size: int = 100) -> None:
+    def __init__(
+        self,
+        cache_ttl: int = 3600,
+        cache_size: int = 100,
+        adf_validation_level: str | None = None,
+    ) -> None:
         """
         Initialize the format router with performance optimizations.
 
         Args:
             cache_ttl: Cache time-to-live in seconds for deployment type detection (default: 1 hour)
             cache_size: Maximum number of deployment detection results to cache (default: 100)
+            adf_validation_level: ADF validation level (off, warn, error). None = use environment default
         """
         self.deployment_cache: TTLCache = TTLCache(maxsize=cache_size, ttl=cache_ttl)
         self.cache_lock = threading.Lock()
+
+        # Initialize ADF generator
         self.adf_generator = ASTBasedADFGenerator()
+
+        # Update validation level if specified
+        if adf_validation_level:
+            from .adf_validator import ADFValidator
+
+            self.adf_generator.validator = ADFValidator(
+                validation_level=adf_validation_level
+            )
+            # Also update the renderer's validator
+            self.adf_generator.renderer.validator = self.adf_generator.validator
 
         # Compile regex patterns for better performance
         self._cloud_patterns = [
@@ -111,8 +129,12 @@ class FormatRouter:
         logger.info(f"[DEBUG]   base_url: '{base_url}'")
         logger.info(f"[DEBUG]   force_format: {force_format}")
         logger.info(f"[DEBUG]   user_id: '{user_id}'")
-        logger.info(f"[DEBUG]   markdown_text length: {len(markdown_text) if markdown_text is not None else 0}")
-        logger.debug(f"[DEBUG]   markdown_text preview: {(markdown_text or '')[:200]}...")
+        logger.info(
+            f"[DEBUG]   markdown_text length: {len(markdown_text) if markdown_text is not None else 0}"
+        )
+        logger.debug(
+            f"[DEBUG]   markdown_text preview: {(markdown_text or '')[:200]}..."
+        )
 
         try:
             # Determine format type
@@ -205,7 +227,7 @@ class FormatRouter:
         """
         start_time = time.time()
         self.metrics["detections_total"] = self.metrics["detections_total"] + 1
-        
+
         # Initialize cache_key to avoid UnboundLocalError in finally block
         cache_key = ""
 

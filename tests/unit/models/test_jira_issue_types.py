@@ -1,6 +1,5 @@
 """Tests for the JiraIssueType and JiraPriority models."""
 
-
 from src.mcp_atlassian.models.constants import EMPTY_STRING
 from src.mcp_atlassian.models.jira import JiraIssueType, JiraPriority
 

@@ -1,6 +1,5 @@
 """Tests for Jira transition and link models."""
 
-
 from src.mcp_atlassian.models.constants import EMPTY_STRING, JIRA_DEFAULT_ID, UNKNOWN
 from src.mcp_atlassian.models.jira import (
     JiraIssueLink,

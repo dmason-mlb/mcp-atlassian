@@ -1,6 +1,5 @@
 """Tests for JiraSearchResult and JiraProject models."""
 
-
 from src.mcp_atlassian.models.constants import EMPTY_STRING, JIRA_DEFAULT_ID, UNKNOWN
 from src.mcp_atlassian.models.jira import JiraProject, JiraSearchResult
 

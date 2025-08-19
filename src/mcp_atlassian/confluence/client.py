@@ -56,6 +56,8 @@ class ConfluenceClient:
                 session=session,
                 cloud=True,  # OAuth is only for Cloud
                 verify_ssl=self.config.ssl_verify,
+                enable_adf=self.config.enable_adf,
+                adf_validation_level=self.config.adf_validation_level,
             )
         elif self.config.auth_type == "pat":
             logger.debug(
@@ -68,6 +70,8 @@ class ConfluenceClient:
                 token=self.config.personal_token,
                 cloud=self.config.is_cloud,
                 verify_ssl=self.config.ssl_verify,
+                enable_adf=self.config.enable_adf,
+                adf_validation_level=self.config.adf_validation_level,
             )
         else:  # basic auth
             logger.debug(
@@ -82,6 +86,8 @@ class ConfluenceClient:
                 password=self.config.api_token,  # API token is used as password
                 cloud=self.config.is_cloud,
                 verify_ssl=self.config.ssl_verify,
+                enable_adf=self.config.enable_adf,
+                adf_validation_level=self.config.adf_validation_level,
             )
             logger.debug(
                 f"Confluence client initialized. "

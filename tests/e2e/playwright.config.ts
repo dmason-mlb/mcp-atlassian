@@ -7,7 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
   reporter: [
-    ['list'], 
+    ['list'],
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['junit', { outputFile: 'test-results/junit.xml' }]
   ],
@@ -79,10 +79,10 @@ export default defineConfig({
 
   // Output directories
   outputDir: 'test-results/',
-  
+
   // Global test timeout
   timeout: 30 * 1000,
-  
+
   // Expect timeout for assertions
   expect: {
     timeout: 5 * 1000,

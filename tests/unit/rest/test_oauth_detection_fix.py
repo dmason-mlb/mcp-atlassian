@@ -20,7 +20,7 @@ class TestOAuthDetectionFix:
             url="https://test.atlassian.net",
             session=session,
             username="testuser",
-            password="testpass"
+            password="testpass",
         )
 
         # Should create basic auth client since no Authorization header
@@ -50,7 +50,7 @@ class TestOAuthDetectionFix:
             url="https://test.atlassian.net",
             session=session,
             username="testuser",
-            password="testpass"
+            password="testpass",
         )
 
         # Should fallback to basic auth when no headers attribute

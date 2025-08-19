@@ -35,7 +35,7 @@ console.log('5. The browser will close and save your authentication state');
 console.log('');
 
 try {
-  const browser = await chromium.launch({ 
+  const browser = await chromium.launch({
     headless: false,
     args: ['--start-maximized']
   });
@@ -67,10 +67,10 @@ try {
   // Verify the storage state was created and has content
   const storageState = JSON.parse(fs.readFileSync('storageState.json', 'utf8'));
   const hasCookies = storageState.cookies && storageState.cookies.length > 0;
-  
+
   console.log(`✅ Authentication state saved to storageState.json`);
   console.log(`🍪 Cookies saved: ${hasCookies ? storageState.cookies.length : 0}`);
-  
+
   if (!hasCookies) {
     console.log('⚠️  Warning: No cookies were saved. You may need to try the login again.');
   }

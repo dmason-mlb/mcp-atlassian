@@ -5,20 +5,18 @@ to ensure our mock tests accurately reflect real JIRA API behavior.
 """
 
 import json
-from unittest.mock import Mock, MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from fastmcp import Context
 
-from mcp_atlassian.jira import JiraFetcher
-from mcp_atlassian.models.jira.issue import JiraIssue
 from mcp_atlassian.servers.context import MainAppContext
 from tests.fixtures.jira_real_responses import (
+    REAL_ISSUE_COMMENT_RESPONSE,
     REAL_ISSUE_CREATE_RESPONSE,
     REAL_ISSUE_GET_RESPONSE,
-    REAL_ISSUE_UPDATE_RESPONSE,
-    REAL_ISSUE_COMMENT_RESPONSE,
     REAL_ISSUE_TRANSITIONS,
+    REAL_ISSUE_UPDATE_RESPONSE,
     REAL_SEARCH_RESPONSE,
     REAL_USER_PROFILE,
 )
@@ -69,7 +67,9 @@ class TestJiraIssueOperationsWithRealFixtures:
 
         # For update_issue, return a different mock issue with update response
         mock_updated_issue = Mock()
-        mock_updated_issue.to_simplified_dict = Mock(return_value=REAL_ISSUE_UPDATE_RESPONSE)
+        mock_updated_issue.to_simplified_dict = Mock(
+            return_value=REAL_ISSUE_UPDATE_RESPONSE
+        )
         mock_updated_issue.key = "FTEST-120"
         mock_updated_issue.custom_fields = {}
         mock_fetcher.update_issue = Mock(return_value=mock_updated_issue)
@@ -84,6 +84,7 @@ class TestJiraIssueOperationsWithRealFixtures:
 
         # Configure user profile - needs to be a JiraUser-like object
         from mcp_atlassian.models.jira.common import JiraUser
+
         mock_user = Mock(spec=JiraUser)
         mock_user.to_simplified_dict = Mock(return_value=REAL_USER_PROFILE)
         mock_fetcher.get_user_profile = Mock(return_value=mock_user)
@@ -93,19 +94,27 @@ class TestJiraIssueOperationsWithRealFixtures:
     @staticmethod
     def create_async_mock_fetcher(mock_fetcher):
         """Create an async function that returns the mock fetcher."""
+
         async def async_return_fetcher(*args, **kwargs):
             return mock_fetcher
+
         return async_return_fetcher
 
     @pytest.mark.anyio
-    async def test_create_issue_with_real_response(self, mock_context, mock_jira_fetcher):
+    async def test_create_issue_with_real_response(
+        self, mock_context, mock_jira_fetcher
+    ):
         """Test issue creation returns real API response structure."""
         from mcp_atlassian.servers.jira.issues import create_issue
 
         # Patch where get_jira_fetcher is imported and used
-        with patch("mcp_atlassian.servers.jira.mixins.creation.get_jira_fetcher") as mock_get_fetcher:
+        with patch(
+            "mcp_atlassian.servers.jira.mixins.creation.get_jira_fetcher"
+        ) as mock_get_fetcher:
             # get_jira_fetcher is async, so we need to return a coroutine
-            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(mock_jira_fetcher)
+            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(
+                mock_jira_fetcher
+            )
 
             # Act
             result = await create_issue(
@@ -113,7 +122,7 @@ class TestJiraIssueOperationsWithRealFixtures:
                 project_key="FTEST",
                 summary="Test Issue",
                 issue_type="Task",
-                description="Test description"
+                description="Test description",
             )
             parsed = json.loads(result)
 
@@ -129,7 +138,9 @@ class TestJiraIssueOperationsWithRealFixtures:
             assert "key" in issue_data
             assert issue_data["key"].startswith("FTEST-")
             assert "url" in issue_data
-            assert issue_data["url"].startswith("https://baseball.atlassian.net/rest/api/3/issue/")
+            assert issue_data["url"].startswith(
+                "https://baseball.atlassian.net/rest/api/3/issue/"
+            )
 
             # Verify ADF format for description
             assert "description" in issue_data
@@ -161,8 +172,12 @@ class TestJiraIssueOperationsWithRealFixtures:
         """Test issue retrieval returns real API response structure."""
         from mcp_atlassian.servers.jira.issues import get_issue
 
-        with patch("mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher") as mock_get_fetcher:
-            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(mock_jira_fetcher)
+        with patch(
+            "mcp_atlassian.servers.jira.mixins.search.get_jira_fetcher"
+        ) as mock_get_fetcher:
+            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(
+                mock_jira_fetcher
+            )
 
             # Act
             result = await get_issue(mock_context, "FTEST-120")
@@ -183,18 +198,24 @@ class TestJiraIssueOperationsWithRealFixtures:
             assert parsed["status"]["color"] == "blue-gray"
 
     @pytest.mark.anyio
-    async def test_update_issue_with_real_response(self, mock_context, mock_jira_fetcher):
+    async def test_update_issue_with_real_response(
+        self, mock_context, mock_jira_fetcher
+    ):
         """Test issue update returns real API response structure."""
         from mcp_atlassian.servers.jira.issues import update_issue
 
-        with patch("mcp_atlassian.servers.jira.mixins.update.get_jira_fetcher") as mock_get_fetcher:
-            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(mock_jira_fetcher)
+        with patch(
+            "mcp_atlassian.servers.jira.mixins.update.get_jira_fetcher"
+        ) as mock_get_fetcher:
+            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(
+                mock_jira_fetcher
+            )
 
             # Act
             result = await update_issue(
                 mock_context,
                 issue_key="FTEST-120",
-                fields={"summary": "UPDATED - Test Issue"}
+                fields={"summary": "UPDATED - Test Issue"},
             )
             parsed = json.loads(result)
 
@@ -207,7 +228,9 @@ class TestJiraIssueOperationsWithRealFixtures:
 
             # Verify real response structure
             assert issue_data["summary"].startswith("UPDATED - ")
-            assert issue_data["updated"] > issue_data["created"]  # Updated timestamp is newer
+            assert (
+                issue_data["updated"] > issue_data["created"]
+            )  # Updated timestamp is newer
 
             # Verify other fields remain intact
             assert "worklog" in issue_data
@@ -215,18 +238,22 @@ class TestJiraIssueOperationsWithRealFixtures:
             assert issue_data["worklog"]["worklogs"] == []
 
     @pytest.mark.anyio
-    async def test_add_comment_with_real_response(self, mock_context, mock_jira_fetcher):
+    async def test_add_comment_with_real_response(
+        self, mock_context, mock_jira_fetcher
+    ):
         """Test adding comment returns real API response structure."""
         from mcp_atlassian.servers.jira.issues import add_comment
 
-        with patch("mcp_atlassian.servers.jira.mixins.update.get_jira_fetcher") as mock_get_fetcher:
-            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(mock_jira_fetcher)
+        with patch(
+            "mcp_atlassian.servers.jira.mixins.update.get_jira_fetcher"
+        ) as mock_get_fetcher:
+            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(
+                mock_jira_fetcher
+            )
 
             # Act
             result = await add_comment(
-                mock_context,
-                issue_key="FTEST-120",
-                comment="Test comment"
+                mock_context, issue_key="FTEST-120", comment="Test comment"
             )
             parsed = json.loads(result)
 
@@ -240,12 +267,18 @@ class TestJiraIssueOperationsWithRealFixtures:
             assert "author" in parsed
 
     @pytest.mark.anyio
-    async def test_get_transitions_with_real_response(self, mock_context, mock_jira_fetcher):
+    async def test_get_transitions_with_real_response(
+        self, mock_context, mock_jira_fetcher
+    ):
         """Test getting transitions returns real API response structure."""
         from mcp_atlassian.servers.jira.management import get_transitions
 
-        with patch("mcp_atlassian.servers.jira.management.get_jira_fetcher") as mock_get_fetcher:
-            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(mock_jira_fetcher)
+        with patch(
+            "mcp_atlassian.servers.jira.management.get_jira_fetcher"
+        ) as mock_get_fetcher:
+            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(
+                mock_jira_fetcher
+            )
 
             # Act
             result = await get_transitions(mock_context, "FTEST-120")
@@ -271,19 +304,21 @@ class TestJiraIssueOperationsWithRealFixtures:
             assert "Start Work" in transition_names
 
     @pytest.mark.anyio
-    async def test_search_issues_with_real_response(self, mock_context, mock_jira_fetcher):
+    async def test_search_issues_with_real_response(
+        self, mock_context, mock_jira_fetcher
+    ):
         """Test searching issues returns real API response structure."""
         from mcp_atlassian.servers.jira.search import search
 
-        with patch("mcp_atlassian.servers.jira.search.get_jira_fetcher") as mock_get_fetcher:
-            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(mock_jira_fetcher)
+        with patch(
+            "mcp_atlassian.servers.jira.search.get_jira_fetcher"
+        ) as mock_get_fetcher:
+            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(
+                mock_jira_fetcher
+            )
 
             # Act
-            result = await search(
-                mock_context,
-                jql="project = FTEST",
-                limit=3
-            )
+            result = await search(mock_context, jql="project = FTEST", limit=3)
             parsed = json.loads(result)
 
             # Assert - Verify real response structure
@@ -307,12 +342,18 @@ class TestJiraIssueOperationsWithRealFixtures:
                 assert "updated" in issue
 
     @pytest.mark.anyio
-    async def test_get_user_profile_with_real_response(self, mock_context, mock_jira_fetcher):
+    async def test_get_user_profile_with_real_response(
+        self, mock_context, mock_jira_fetcher
+    ):
         """Test getting user profile returns real API response structure."""
         from mcp_atlassian.servers.jira.management import get_user_profile
 
-        with patch("mcp_atlassian.servers.jira.management.get_jira_fetcher") as mock_get_fetcher:
-            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(mock_jira_fetcher)
+        with patch(
+            "mcp_atlassian.servers.jira.management.get_jira_fetcher"
+        ) as mock_get_fetcher:
+            mock_get_fetcher.side_effect = self.create_async_mock_fetcher(
+                mock_jira_fetcher
+            )
 
             # Act
             result = await get_user_profile(mock_context, "douglas.mason@mlb.com")

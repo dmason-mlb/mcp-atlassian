@@ -1,6 +1,5 @@
 """Tests for the JiraUser model."""
 
-
 from src.mcp_atlassian.models.constants import EMPTY_STRING
 from src.mcp_atlassian.models.jira import JiraUser
 

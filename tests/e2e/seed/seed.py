@@ -4,11 +4,11 @@ import os
 from pathlib import Path
 from typing import Any
 
-from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
-
+from mcp.client.streamable_http import streamablehttp_client
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
+
 
 # .env loader (use python-dotenv if available, else minimal parser)
 def _load_env_file(env_path: Path) -> None:
@@ -24,22 +24,23 @@ def _load_env_file(env_path: Path) -> None:
             pass
         for raw in env_path.read_text().splitlines():
             line = raw.strip()
-            if not line or line.strip().startswith('#'):
+            if not line or line.strip().startswith("#"):
                 continue
-            if line.startswith('export '):
-                line = line[len('export '):].lstrip()
-            if '=' in line:
-                key, val = line.split('=', 1)
+            if line.startswith("export "):
+                line = line[len("export ") :].lstrip()
+            if "=" in line:
+                key, val = line.split("=", 1)
                 key = key.strip()
                 # Drop inline comments
-                if ' #' in val:
-                    val = val.split(' #', 1)[0]
-                if ' ;' in val:
-                    val = val.split(' ;', 1)[0]
+                if " #" in val:
+                    val = val.split(" #", 1)[0]
+                if " ;" in val:
+                    val = val.split(" ;", 1)[0]
                 val = val.strip().strip('"').strip("'")
                 os.environ.setdefault(key, val)
     except Exception:
         pass
+
 
 # Load project root .env so running from e2e/ works
 _load_env_file(ROOT_DIR / ".env")
@@ -63,7 +64,7 @@ This is E2E test content for visual render validation.
 
 ## Bullet Points
 - First bullet point
-- Second bullet point  
+- Second bullet point
 - Third bullet point
 
 ## Numbered Lists
@@ -100,7 +101,11 @@ def extract_json(result: Any) -> dict:
         if isinstance(content, list) and content:
             # Prefer text blocks that contain JSON
             for item in content:
-                text = item.get("text") if isinstance(item, dict) else getattr(item, "text", None)
+                text = (
+                    item.get("text")
+                    if isinstance(item, dict)
+                    else getattr(item, "text", None)
+                )
                 if text:
                     try:
                         return json.loads(text)
@@ -152,7 +157,11 @@ async def main() -> None:
             print(f"Jira create response: {jira_create}")
             jira_obj = extract_json(jira_create)
             print(f"Extracted JSON: {jira_obj}")
-            issue_key = jira_obj.get("key") or jira_obj.get("issue_key") or jira_obj.get("issue", {}).get("key")
+            issue_key = (
+                jira_obj.get("key")
+                or jira_obj.get("issue_key")
+                or jira_obj.get("issue", {}).get("key")
+            )
 
             # Add comment
             if issue_key:
@@ -169,7 +178,9 @@ async def main() -> None:
                 try:
                     # Create a small text artifact
                     text_path = ART_DIR / "test-attachment.txt"
-                    text_path.write_text("This is an E2E attachment file. Label: " + label)
+                    text_path.write_text(
+                        "This is an E2E attachment file. Label: " + label
+                    )
                     await session.call_tool(
                         "jira_management_upload_attachment",
                         {"issue_key": issue_key, "file_path": str(text_path)},
@@ -178,7 +189,9 @@ async def main() -> None:
                     pass
 
                 # Copy provided image if it exists on this machine
-                img_src = Path("/Users/douglas.mason/Downloads/android-japanese-watch-tab.png")
+                img_src = Path(
+                    "/Users/douglas.mason/Downloads/android-japanese-watch-tab.png"
+                )
                 if img_src.exists():
                     try:
                         img_dst = ART_DIR / "test-image.png"
@@ -191,7 +204,9 @@ async def main() -> None:
                         pass
 
             # Create Confluence page
-            print(f"Creating Confluence page in space {confluence_space} with label {label}")
+            print(
+                f"Creating Confluence page in space {confluence_space} with label {label}"
+            )
             conf_create = await session.call_tool(
                 "confluence_pages_create_page",
                 {
@@ -205,10 +220,10 @@ async def main() -> None:
             conf_obj = extract_json(conf_create)
             print(f"Extracted Confluence JSON: {conf_obj}")
             page_id = (
-                conf_obj.get("page", {}).get("id") or 
-                conf_obj.get("id") or 
-                conf_obj.get("page_id") or 
-                conf_obj.get("data", {}).get("id")
+                conf_obj.get("page", {}).get("id")
+                or conf_obj.get("id")
+                or conf_obj.get("page_id")
+                or conf_obj.get("data", {}).get("id")
             )
 
             # Add label for cleanup/querying
@@ -225,12 +240,16 @@ async def main() -> None:
                 "label": label,
                 "jira": {
                     "issueKey": issue_key,
-                    "issueUrl": f"{jira_base}/browse/{issue_key}" if issue_key else None,
+                    "issueUrl": f"{jira_base}/browse/{issue_key}"
+                    if issue_key
+                    else None,
                 },
                 "confluence": {
                     "pageId": page_id,
                     # Let Confluence redirect to full title path
-                    "pageUrl": f"{confluence_base}/spaces/{confluence_space}/pages/{page_id}" if page_id else None,
+                    "pageUrl": f"{confluence_base}/spaces/{confluence_space}/pages/{page_id}"
+                    if page_id
+                    else None,
                 },
             }
 

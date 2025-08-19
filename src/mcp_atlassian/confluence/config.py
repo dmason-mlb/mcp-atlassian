@@ -45,6 +45,7 @@ class ConfluenceConfig:
     deployment_type_override: str | None = (
         None  # Override deployment detection ('cloud', 'server', 'datacenter')
     )
+    adf_validation_level: str = "warn"  # ADF validation strictness: off, warn, error
 
     @property
     def is_cloud(self) -> bool:
@@ -159,7 +160,15 @@ class ConfluenceConfig:
 
         # ADF and formatting configuration from environment
         enable_adf = None
-        if os.getenv("ATLASSIAN_ENABLE_ADF"):
+
+        # Check for CONFLUENCE_USE_ADF first (primary flag from migration plan)
+        if os.getenv("CONFLUENCE_USE_ADF"):
+            enable_adf = os.getenv("CONFLUENCE_USE_ADF", "").lower() in (
+                "true",
+                "1",
+                "yes",
+            )
+        elif os.getenv("ATLASSIAN_ENABLE_ADF"):
             enable_adf = os.getenv("ATLASSIAN_ENABLE_ADF", "").lower() in (
                 "true",
                 "1",
@@ -184,6 +193,27 @@ class ConfluenceConfig:
             "yes",
         )
         deployment_type_override = os.getenv("ATLASSIAN_DEPLOYMENT_TYPE")
+
+        # ADF validation level configuration
+        adf_validation_level = "warn"  # default
+        if os.getenv("CONFLUENCE_ADF_VALIDATION_LEVEL"):
+            adf_validation_level = os.getenv(
+                "CONFLUENCE_ADF_VALIDATION_LEVEL", "warn"
+            ).lower()
+        elif os.getenv("ATLASSIAN_ADF_VALIDATION_LEVEL"):
+            adf_validation_level = os.getenv(
+                "ATLASSIAN_ADF_VALIDATION_LEVEL", "warn"
+            ).lower()
+
+        # Validate the level
+        valid_levels = ["off", "warn", "error"]
+        if adf_validation_level not in valid_levels:
+            logger = logging.getLogger("mcp-atlassian.confluence.config")
+            logger.warning(
+                f"Invalid ADF validation level '{adf_validation_level}'. Using 'warn'. "
+                f"Valid options: {', '.join(valid_levels)}"
+            )
+            adf_validation_level = "warn"
 
         # Ensure url is not None for the dataclass
         if not url:
@@ -213,6 +243,7 @@ class ConfluenceConfig:
             enable_adf=enable_adf,
             force_wiki_markup=force_wiki_markup,
             deployment_type_override=deployment_type_override,
+            adf_validation_level=adf_validation_level,
         )
 
     def is_auth_configured(self) -> bool:

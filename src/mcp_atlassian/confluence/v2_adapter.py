@@ -99,7 +99,9 @@ class ConfluenceV2Adapter:
                 # This looks like a space key, not a numeric ID
                 logger.debug(f"Converting space key '{space_id}' to space ID")
                 actual_space_id = self._get_space_id(space_id)
-                logger.debug(f"Converted space key '{space_id}' to space ID '{actual_space_id}'")
+                logger.debug(
+                    f"Converted space key '{space_id}' to space ID '{actual_space_id}'"
+                )
 
             # Prepare request data for v2 API
             data = {
@@ -130,12 +132,13 @@ class ConfluenceV2Adapter:
             url = f"{self.base_url}/api/v2/pages"
             logger.debug(f"Creating page with v2 API at {url}")
             logger.debug(f"Request data: {data}")
-            
+
             # DEBUG: Log the exact JSON being sent
             import json as json_module
-            json_payload = json_module.dumps(data, separators=(',', ':'))
+
+            json_payload = json_module.dumps(data, separators=(",", ":"))
             logger.debug(f"[DEBUG] Exact JSON payload being sent: {json_payload}")
-            
+
             response = self.session.post(url, json=data)
             response.raise_for_status()
 
@@ -449,7 +452,9 @@ class ConfluenceV2Adapter:
             response.raise_for_status()
 
             result = response.json()
-            logger.debug(f"Successfully searched, found {len(result.get('results', []))} results")
+            logger.debug(
+                f"Successfully searched, found {len(result.get('results', []))} results"
+            )
 
             # The v1 CQL endpoint returns the expected format directly
             return result

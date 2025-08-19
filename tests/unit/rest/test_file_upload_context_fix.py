@@ -19,14 +19,14 @@ class TestFileUploadContextFix:
             base_url="https://test.atlassian.net",
             auth_type="basic",
             username="test",
-            password="test"
+            password="test",
         )
         return client
 
     @pytest.fixture
     def temp_file(self):
         """Create a temporary file for upload testing."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
             f.write("Test file content")
             temp_path = f.name
 
@@ -43,7 +43,9 @@ class TestFileUploadContextFix:
         mock_response.json.return_value = [{"id": "12345", "filename": "test.txt"}]
         mock_response.raise_for_status.return_value = None
 
-        with patch.object(jira_client.session, 'post', return_value=mock_response) as mock_post:
+        with patch.object(
+            jira_client.session, "post", return_value=mock_response
+        ) as mock_post:
             result = jira_client.add_attachment("TEST-123", temp_file)
 
             # Verify the request was made
@@ -51,20 +53,22 @@ class TestFileUploadContextFix:
             call_args = mock_post.call_args
 
             # Check that URL is correct
-            expected_url = f"{jira_client.base_url}/rest/api/3/issue/TEST-123/attachments"
+            expected_url = (
+                f"{jira_client.base_url}/rest/api/3/issue/TEST-123/attachments"
+            )
             assert call_args[0][0] == expected_url
 
             # Check that files parameter has correct structure
-            files = call_args[1]['files']
-            assert 'file' in files
-            filename, file_handle, mime_type = files['file']
+            files = call_args[1]["files"]
+            assert "file" in files
+            filename, file_handle, mime_type = files["file"]
             assert filename == os.path.basename(temp_file)
-            assert mime_type == 'text/plain'
+            assert mime_type == "text/plain"
 
             # Verify headers
-            headers = call_args[1]['headers']
-            assert headers['X-Atlassian-Token'] == 'no-check'
-            assert headers['Content-Type'] is None
+            headers = call_args[1]["headers"]
+            assert headers["X-Atlassian-Token"] == "no-check"
+            assert headers["Content-Type"] is None
 
             # Verify response
             assert result == [{"id": "12345", "filename": "test.txt"}]
@@ -92,8 +96,8 @@ class TestFileUploadContextFix:
             file_handle_refs.append(handle)
             return handle
 
-        with patch('builtins.open', side_effect=tracking_open):
-            with patch.object(jira_client.session, 'post', return_value=mock_response):
+        with patch("builtins.open", side_effect=tracking_open):
+            with patch.object(jira_client.session, "post", return_value=mock_response):
                 jira_client.add_attachment("TEST-123", temp_file)
 
         # Verify file handles were opened and are now closed
@@ -112,8 +116,10 @@ class TestFileUploadContextFix:
             return handle
 
         # Mock session.post to raise an exception
-        with patch('builtins.open', side_effect=tracking_open):
-            with patch.object(jira_client.session, 'post', side_effect=Exception("Upload failed")):
+        with patch("builtins.open", side_effect=tracking_open):
+            with patch.object(
+                jira_client.session, "post", side_effect=Exception("Upload failed")
+            ):
                 with pytest.raises(Exception, match="Upload failed"):
                     jira_client.add_attachment("TEST-123", temp_file)
 
@@ -132,7 +138,10 @@ class TestFileUploadContextFix:
         ]
 
         for filename, expected_mime in test_files:
-            with tempfile.NamedTemporaryFile(suffix=f".{filename.split('.')[-1]}" if '.' in filename else '', delete=False) as f:
+            with tempfile.NamedTemporaryFile(
+                suffix=f".{filename.split('.')[-1]}" if "." in filename else "",
+                delete=False,
+            ) as f:
                 f.write(b"test content")
                 temp_path = f.name
 
@@ -142,12 +151,14 @@ class TestFileUploadContextFix:
                 mock_response.json.return_value = [{"id": "12345"}]
                 mock_response.raise_for_status.return_value = None
 
-                with patch.object(jira_client.session, 'post', return_value=mock_response) as mock_post:
+                with patch.object(
+                    jira_client.session, "post", return_value=mock_response
+                ) as mock_post:
                     jira_client.add_attachment("TEST-123", temp_path)
 
                     # Check MIME type in files parameter
-                    files = mock_post.call_args[1]['files']
-                    _, _, mime_type = files['file']
+                    files = mock_post.call_args[1]["files"]
+                    _, _, mime_type = files["file"]
                     assert mime_type == expected_mime
 
             finally:
