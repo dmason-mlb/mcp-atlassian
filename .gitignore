@@ -76,3 +76,7 @@ playground/
 # Claude
 .claude/
 .mcp-atlassian_venv/
+
+# Log files
+*.log
+server.log

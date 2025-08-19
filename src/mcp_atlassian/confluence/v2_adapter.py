@@ -130,6 +130,12 @@ class ConfluenceV2Adapter:
             url = f"{self.base_url}/api/v2/pages"
             logger.debug(f"Creating page with v2 API at {url}")
             logger.debug(f"Request data: {data}")
+            
+            # DEBUG: Log the exact JSON being sent
+            import json as json_module
+            json_payload = json_module.dumps(data, separators=(',', ':'))
+            logger.debug(f"[DEBUG] Exact JSON payload being sent: {json_payload}")
+            
             response = self.session.post(url, json=data)
             response.raise_for_status()
 
@@ -142,8 +148,11 @@ class ConfluenceV2Adapter:
         except HTTPError as e:
             logger.error(f"HTTP error creating page '{title}': {e}")
             if e.response is not None:
+                logger.error(f"Response status: {e.response.status_code}")
+                logger.error(f"Response headers: {dict(e.response.headers)}")
                 logger.error(f"Response content: {e.response.text}")
                 logger.error(f"Request was: {data}")
+                logger.error(f"Request JSON: {json_payload}")
             raise ValueError(f"Failed to create page '{title}': {e}") from e
         except Exception as e:
             logger.error(f"Error creating page '{title}': {e}")

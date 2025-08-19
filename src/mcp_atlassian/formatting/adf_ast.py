@@ -558,6 +558,7 @@ class ADFRenderer(mistune.BaseRenderer):
 
         return {
             "type": cell_type,
+            "attrs": {},  # Required by Confluence v2 API
             "content": [{"type": "paragraph", "content": inline_content}],
         }
 
@@ -568,6 +569,7 @@ class ADFRenderer(mistune.BaseRenderer):
             "content": [
                 {
                     "type": "tableCell",
+                    "attrs": {},  # Required by Confluence v2 API
                     "content": [
                         {
                             "type": "paragraph",

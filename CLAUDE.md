@@ -29,6 +29,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **HTTP transport (SSE)**: `uv run mcp-atlassian --transport sse --port 9000`
 - **HTTP transport (streamable)**: `uv run mcp-atlassian --transport streamable-http --port 9000`
 
+### Debug Scripts (Root Directory)
+Several debug scripts are available for troubleshooting specific components:
+- **Debug ADF conversion**: `python debug_confluence_formats.py`
+- **Simple Confluence testing**: `python debug_confluence_simple.py`
+- **Page creation testing**: `python debug_page_creation.py`
+- **V2 adapter testing**: `python debug_v2_adapter.py`
+- **Test data creation**: `python create_seed_data.py`
+
 ### End-to-End Testing
 - **Install Playwright dependencies**: `cd tests/e2e && npm run prep`
 - **Seed test data**: `cd tests/e2e && npm run seed`
@@ -82,6 +90,34 @@ Supports multiple authentication methods with automatic detection:
 - **Error Resilience**: Graceful degradation when services are unavailable or misconfigured
 - **Security-first**: Credential masking in logs, secure token storage, SSL verification
 
+### Critical Architecture Patterns
+Understanding these patterns is essential for effective development:
+
+#### Service Layer Separation
+- Jira and Confluence are implemented as completely separate services with their own clients, models, and tools
+- Shared functionality lives in `utils/` and `models/base.py`
+- Cross-service operations are handled at the main server level, not within individual services
+
+#### Format Routing Architecture
+- The `FormatRouter` in `src/mcp_atlassian/formatting/router.py` handles automatic detection of Cloud vs Server/DC deployments
+- ADF conversion is used for Cloud instances, wiki markup for Server/DC
+- Performance optimization through TTL caching and compiled regex patterns
+
+#### Plugin System for ADF
+- Extensible plugin architecture allows adding new ADF node types without modifying core conversion logic
+- Plugins are categorized: block, inline, layout, media
+- Registration happens automatically through the plugin registry
+
+#### REST Client Abstraction
+- `src/mcp_atlassian/rest/` provides a clean abstraction over the underlying atlassian-python-api library
+- Adapters handle version-specific API differences (v2 vs v3 for Jira, v1 vs v2 for Confluence)
+- Authentication detection and credential management are centralized
+
+#### Tool Filtering and Middleware
+- Tools can be dynamically enabled/disabled based on authentication, read-only mode, and explicit configuration
+- Per-request authentication middleware allows multi-tenant usage
+- Tool metadata and filtering logic in `utils/tools.py` enables fine-grained access control
+
 ## Important Implementation Notes
 
 ### Code Style
@@ -96,6 +132,8 @@ Supports multiple authentication methods with automatic detection:
 - **Integration tests**: Test MCP protocol compliance and cross-service functionality
 - **Real API tests**: Optional tests requiring actual Atlassian credentials (skip by default)
 - **Fixtures**: Shared mock data in `tests/fixtures/{jira,confluence}_mocks.py`
+- **E2E tests**: Playwright-based browser automation in `tests/e2e/` with seeding scripts
+- **Coverage reports**: Available in `htmlcov/` after running coverage tests
 
 ### Configuration Management
 - Environment variables take precedence over CLI flags
@@ -108,12 +146,37 @@ Supports multiple authentication methods with automatic detection:
 - Lifespan context manages service initialization and cleanup
 - User token middleware handles per-request authentication
 - Health check endpoints for monitoring (`/healthz`)
+- Modular server architecture: separate Jira and Confluence sub-servers in `src/mcp_atlassian/servers/`
 
 ### Build and Deployment
 - Uses `uv` for dependency management and virtual environments
 - Docker-based distribution with multi-architecture support
 - Pre-commit hooks ensure code quality before commits
 - Semantic versioning with automated releases via GitHub Actions
+
+## Common Development Workflows
+
+### Debugging ADF Issues
+When working on ADF (Atlassian Document Format) conversion issues:
+1. Use `debug_confluence_formats.py` to test format detection and conversion
+2. Check deployment type detection with FormatRouter debugging commands
+3. Validate ADF output using the built-in ADFValidator
+4. Run ADF-specific tests: `uv run pytest tests/unit/formatting/ -v`
+
+### Adding New MCP Tools
+When adding new MCP tools to either service:
+1. Define the tool in the appropriate service module (`src/mcp_atlassian/jira/` or `src/mcp_atlassian/confluence/`)
+2. Add corresponding Pydantic models in `src/mcp_atlassian/models/`
+3. Update the server registration in `src/mcp_atlassian/servers/{jira,confluence}.py`
+4. Write unit tests with mock fixtures in `tests/fixtures/`
+5. Add integration tests if API behavior is complex
+
+### Plugin Development (ADF)
+For extending ADF conversion capabilities:
+1. Create new plugins in `src/mcp_atlassian/formatting/` following the plugin architecture
+2. Register plugins in the `ASTBasedADFGenerator` 
+3. Test with both unit tests and `debug_confluence_formats.py` script
+4. Validate against real Confluence instances for ADF compliance
 
 ## ADF (Atlassian Document Format) Implementation
 

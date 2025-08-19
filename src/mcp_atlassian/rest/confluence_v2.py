@@ -30,7 +30,7 @@ class ConfluenceV2Client(BaseRESTClient):
     def get_page_by_id(
         self,
         page_id: str,
-        body_format: str = "atlas_doc_format",
+        body_format: str = "storage",
         get_draft: bool = False,
         version: int | None = None,
         include: list[str] | None = None,
@@ -56,14 +56,14 @@ class ConfluenceV2Client(BaseRESTClient):
         if include:
             params["include"] = ",".join(include)
 
-        return self.get(f"/wiki/api/v2/pages/{page_id}", params=params)
+        return self.get(f"/api/v2/pages/{page_id}", params=params)
 
     def get_pages(
         self,
         space_id: str | None = None,
         status: str | None = None,
         title: str | None = None,
-        body_format: str = "atlas_doc_format",
+        body_format: str = "storage",
         cursor: str | None = None,
         limit: int = 25,
         sort: str | None = None,
@@ -97,7 +97,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if sort:
             params["sort"] = sort
 
-        return self.get("/wiki/api/v2/pages", params=params)
+        return self.get("/api/v2/pages", params=params)
 
     def create_page(
         self,
@@ -124,14 +124,14 @@ class ConfluenceV2Client(BaseRESTClient):
             "status": status,
             "title": title,
             "body": {
-                "representation": "atlas_doc_format",
+                "representation": "storage",
                 "value": body,
             },
         }
         if parent_id:
             data["parentId"] = parent_id
 
-        return self.post("/wiki/api/v2/pages", json_data=data)
+        return self.post("/api/v2/pages", json_data=data)
 
     def update_page(
         self,
@@ -160,7 +160,7 @@ class ConfluenceV2Client(BaseRESTClient):
         data = {
             "title": title,
             "body": {
-                "representation": "atlas_doc_format",
+                "representation": "storage",
                 "value": body,
             },
             "version": {
@@ -174,7 +174,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if version_message:
             data["version"]["message"] = version_message
 
-        return self.put(f"/wiki/api/v2/pages/{page_id}", json_data=data)
+        return self.put(f"/api/v2/pages/{page_id}", json_data=data)
 
     def delete_page(self, page_id: str) -> None:
         """Delete a page.
@@ -182,7 +182,7 @@ class ConfluenceV2Client(BaseRESTClient):
         Args:
             page_id: Page ID
         """
-        self.delete(f"/wiki/api/v2/pages/{page_id}")
+        self.delete(f"/api/v2/pages/{page_id}")
 
     def get_page_children(
         self,
@@ -210,7 +210,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if sort:
             params["sort"] = sort
 
-        return self.get(f"/wiki/api/v2/pages/{page_id}/children", params=params)
+        return self.get(f"/api/v2/pages/{page_id}/children", params=params)
 
     # === Space Operations ===
 
@@ -254,7 +254,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if sort:
             params["sort"] = sort
 
-        return self.get("/wiki/api/v2/spaces", params=params)
+        return self.get("/api/v2/spaces", params=params)
 
     def get_space_by_id(
         self,
@@ -274,7 +274,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if include:
             params["include"] = ",".join(include)
 
-        return self.get(f"/wiki/api/v2/spaces/{space_id}", params=params)
+        return self.get(f"/api/v2/spaces/{space_id}", params=params)
 
     # === Search Operations ===
 
@@ -304,14 +304,14 @@ class ConfluenceV2Client(BaseRESTClient):
         if cursor:
             params["cursor"] = cursor
 
-        return self.get("/wiki/api/v2/search", params=params)
+        return self.get("/api/v2/search", params=params)
 
     # === Comment Operations ===
 
     def get_comments(
         self,
         page_id: str,
-        body_format: str = "atlas_doc_format",
+        body_format: str = "storage",
         cursor: str | None = None,
         limit: int = 25,
         sort: str | None = None,
@@ -337,7 +337,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if sort:
             params["sort"] = sort
 
-        return self.get(f"/wiki/api/v2/pages/{page_id}/comments", params=params)
+        return self.get(f"/api/v2/pages/{page_id}/comments", params=params)
 
     def create_comment(
         self,
@@ -358,19 +358,19 @@ class ConfluenceV2Client(BaseRESTClient):
         data = {
             "pageId": page_id,
             "body": {
-                "representation": "atlas_doc_format",
+                "representation": "storage",
                 "value": body,
             },
         }
         if inline_position:
             data["inlinePosition"] = inline_position
 
-        return self.post("/wiki/api/v2/comments", json_data=data)
+        return self.post("/api/v2/comments", json_data=data)
 
     def get_comment(
         self,
         comment_id: str,
-        body_format: str = "atlas_doc_format",
+        body_format: str = "storage",
     ) -> dict[str, Any]:
         """Get a comment by ID.
 
@@ -382,7 +382,7 @@ class ConfluenceV2Client(BaseRESTClient):
             Comment data
         """
         params = {"body-format": body_format}
-        return self.get(f"/wiki/api/v2/comments/{comment_id}", params=params)
+        return self.get(f"/api/v2/comments/{comment_id}", params=params)
 
     def update_comment(
         self,
@@ -404,7 +404,7 @@ class ConfluenceV2Client(BaseRESTClient):
         """
         data = {
             "body": {
-                "representation": "atlas_doc_format",
+                "representation": "storage",
                 "value": body,
             },
             "version": {
@@ -414,7 +414,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if version_message:
             data["version"]["message"] = version_message
 
-        return self.put(f"/wiki/api/v2/comments/{comment_id}", json_data=data)
+        return self.put(f"/api/v2/comments/{comment_id}", json_data=data)
 
     def delete_comment(self, comment_id: str) -> None:
         """Delete a comment.
@@ -422,7 +422,7 @@ class ConfluenceV2Client(BaseRESTClient):
         Args:
             comment_id: Comment ID
         """
-        self.delete(f"/wiki/api/v2/comments/{comment_id}")
+        self.delete(f"/api/v2/comments/{comment_id}")
 
     # === Label Operations ===
 
@@ -456,7 +456,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if sort:
             params["sort"] = sort
 
-        return self.get(f"/wiki/api/v2/pages/{page_id}/labels", params=params)
+        return self.get(f"/api/v2/pages/{page_id}/labels", params=params)
 
     def add_labels(
         self,
@@ -473,7 +473,7 @@ class ConfluenceV2Client(BaseRESTClient):
             Added labels data
         """
         data = [{"name": label} for label in labels]
-        return self.post(f"/wiki/api/v2/pages/{page_id}/labels", json_data=data)
+        return self.post(f"/api/v2/pages/{page_id}/labels", json_data=data)
 
     def remove_label(
         self,
@@ -486,7 +486,7 @@ class ConfluenceV2Client(BaseRESTClient):
             page_id: Page ID
             label_name: Label name
         """
-        self.delete(f"/wiki/api/v2/pages/{page_id}/labels/{quote(label_name)}")
+        self.delete(f"/api/v2/pages/{page_id}/labels/{quote(label_name)}")
 
     # === User Operations ===
 
@@ -560,7 +560,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if filename:
             params["filename"] = filename
 
-        return self.get(f"/wiki/api/v2/pages/{page_id}/attachments", params=params)
+        return self.get(f"/api/v2/pages/{page_id}/attachments", params=params)
 
     def download_attachment(
         self,
@@ -581,7 +581,7 @@ class ConfluenceV2Client(BaseRESTClient):
             params["version"] = version
 
         response = self.get(
-            f"/wiki/api/v2/attachments/{attachment_id}/download",
+            f"/api/v2/attachments/{attachment_id}/download",
             params=params,
             raw_response=True,
         )
@@ -615,7 +615,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if sort:
             params["sort"] = sort
 
-        return self.get(f"/wiki/api/v2/pages/{page_id}/versions", params=params)
+        return self.get(f"/api/v2/pages/{page_id}/versions", params=params)
 
     def get_page_version(
         self,
@@ -631,7 +631,7 @@ class ConfluenceV2Client(BaseRESTClient):
         Returns:
             Version data
         """
-        return self.get(f"/wiki/api/v2/pages/{page_id}/versions/{version_number}")
+        return self.get(f"/api/v2/pages/{page_id}/versions/{version_number}")
 
     # === Ancestors Operations ===
 
@@ -653,7 +653,7 @@ class ConfluenceV2Client(BaseRESTClient):
         if limit is not None:
             params["limit"] = limit
 
-        result = self.get(f"/wiki/api/v2/pages/{page_id}/ancestors", params=params)
+        result = self.get(f"/api/v2/pages/{page_id}/ancestors", params=params)
         return result.get("results", [])
 
     # === Permissions Operations ===
@@ -674,7 +674,7 @@ class ConfluenceV2Client(BaseRESTClient):
         """
         data = {"operations": operations}
         result = self.post(
-            f"/wiki/api/v2/pages/{page_id}/permissions/check",
+            f"/api/v2/pages/{page_id}/permissions/check",
             json_data=data,
         )
         return result.get("hasPermission", {})

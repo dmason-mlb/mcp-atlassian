@@ -308,9 +308,11 @@ class PagesMixin(ConfluenceClient):
                     body, enable_heading_anchors=enable_heading_anchors
                 )
                 if isinstance(converted_body, dict):
-                    # ADF format for Cloud instances
-                    final_body = converted_body
-                    representation = "atlas_doc_format"
+                    # Convert ADF to storage format for v2 API
+                    # v2 API doesn't support atlas_doc_format, only storage/wiki
+                    from ..formatting.adf_to_storage import adf_to_storage
+                    final_body = adf_to_storage(converted_body)
+                    representation = "storage"
                 else:
                     # Storage format for Server/DC instances
                     final_body = converted_body
@@ -394,9 +396,11 @@ class PagesMixin(ConfluenceClient):
                     body, enable_heading_anchors=enable_heading_anchors
                 )
                 if isinstance(converted_body, dict):
-                    # ADF format for Cloud instances
-                    final_body = converted_body
-                    representation = "atlas_doc_format"
+                    # Convert ADF to storage format for v2 API
+                    # v2 API doesn't support atlas_doc_format, only storage/wiki
+                    from ..formatting.adf_to_storage import adf_to_storage
+                    final_body = adf_to_storage(converted_body)
+                    representation = "storage"
                 else:
                     # Storage format for Server/DC instances
                     final_body = converted_body

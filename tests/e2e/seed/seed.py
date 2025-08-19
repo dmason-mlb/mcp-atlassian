@@ -57,7 +57,37 @@ def required(name: str) -> str:
 
 
 def md_fixture() -> str:
-    return "Simple test content for E2E validation."
+    return """# Test Objectives
+
+This is E2E test content for visual render validation.
+
+## Bullet Points
+- First bullet point
+- Second bullet point  
+- Third bullet point
+
+## Numbered Lists
+1. One
+2. Two
+3. Three
+
+## Code Examples
+Here is some `inline code` for testing.
+
+```javascript
+console.log("Hello, world!");
+```
+
+## Tables
+| Col A | Col B |
+|-------|-------|
+| A     | B     |
+| 1     | 2     |
+
+## Blockquote
+> This is a Blockquote for testing purposes.
+
+**Bold text** and *italic text* for formatting validation."""
 
 
 def extract_json(result: Any) -> dict:
@@ -174,7 +204,12 @@ async def main() -> None:
             print(f"Confluence create response: {conf_create}")
             conf_obj = extract_json(conf_create)
             print(f"Extracted Confluence JSON: {conf_obj}")
-            page_id = conf_obj.get("id") or conf_obj.get("page_id") or conf_obj.get("data", {}).get("id")
+            page_id = (
+                conf_obj.get("page", {}).get("id") or 
+                conf_obj.get("id") or 
+                conf_obj.get("page_id") or 
+                conf_obj.get("data", {}).get("id")
+            )
 
             # Add label for cleanup/querying
             if page_id:

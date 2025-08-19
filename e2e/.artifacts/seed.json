@@ -1,11 +1,11 @@
 {
-  "label": "mcp-e2e-66014",
+  "label": "mcp-e2e-17262",
   "jira": {
-    "issueKey": "FTEST-176",
-    "issueUrl": "https://baseball.atlassian.net/browse/FTEST-176"
+    "issueKey": "FTEST-184",
+    "issueUrl": "https://baseball.atlassian.net/browse/FTEST-184"
   },
   "confluence": {
-    "pageId": null,
-    "pageUrl": null
+    "pageId": "5039259651",
+    "pageUrl": "https://baseball.atlassian.net/wiki/spaces/655361/pages/5039259651"
   }
 }

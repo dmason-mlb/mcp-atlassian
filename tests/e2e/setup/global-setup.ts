@@ -9,7 +9,7 @@ export default async function globalSetup(config: FullConfig) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const root = path.resolve(__dirname, '..');
-  const envPath = path.resolve(root, '..', '.env');
+  const envPath = path.resolve(root, '..', '..', '.env');
   if (fs.existsSync(envPath)) dotenv.config({ path: envPath });
   const atlassianUrl = process.env.ATLASSIAN_URL;
   const jiraBase = process.env.JIRA_BASE || atlassianUrl;

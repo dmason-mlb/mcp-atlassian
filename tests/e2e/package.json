@@ -6,8 +6,13 @@
   "scripts": {
     "prep": "playwright install --with-deps",
     "seed": "uv run python seed/seed.py",
-    "test": "playwright test",
-    "clean": "uv run python cleanup/cleanup.py"
+    "test": "REUSE_AUTH=true playwright test",
+    "test:chromium": "REUSE_AUTH=true playwright test --project=chromium",
+    "test:firefox": "REUSE_AUTH=true playwright test --project=firefox",
+    "test:webkit": "REUSE_AUTH=true playwright test --project=webkit",
+    "clean": "uv run python cleanup/cleanup.py",
+    "auth": "node manual-login.js",
+    "auth-setup": "node manual-login.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.46.0",
