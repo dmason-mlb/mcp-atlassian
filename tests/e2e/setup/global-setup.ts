@@ -1,10 +1,13 @@
 import { chromium, FullConfig } from '@playwright/test';
 import path from 'node:path';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 export default async function globalSetup(config: FullConfig) {
   // Load project root .env
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
   const root = path.resolve(__dirname, '..');
   const envPath = path.resolve(root, '..', '.env');
   if (fs.existsSync(envPath)) dotenv.config({ path: envPath });

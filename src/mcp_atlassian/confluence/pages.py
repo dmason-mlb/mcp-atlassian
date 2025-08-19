@@ -304,12 +304,17 @@ class PagesMixin(ConfluenceClient):
             # Determine body and representation based on content type
             if is_markdown:
                 # Convert markdown to appropriate Confluence format (ADF for Cloud, storage for Server/DC)
-                # For legacy expectations in tests, explicitly use storage conversion
-                storage_body = self.preprocessor.markdown_to_confluence_storage(
+                converted_body = self.preprocessor.markdown_to_confluence(
                     body, enable_heading_anchors=enable_heading_anchors
                 )
-                final_body = storage_body
-                representation = "storage"
+                if isinstance(converted_body, dict):
+                    # ADF format for Cloud instances
+                    final_body = converted_body
+                    representation = "atlas_doc_format"
+                else:
+                    # Storage format for Server/DC instances
+                    final_body = converted_body
+                    representation = "storage"
             else:
                 # Use body as-is with specified representation
                 final_body = body

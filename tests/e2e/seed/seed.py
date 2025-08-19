@@ -8,7 +8,7 @@ from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = Path(__file__).resolve().parents[3]
 
 # .env loader (use python-dotenv if available, else minimal parser)
 def _load_env_file(env_path: Path) -> None:
@@ -57,23 +57,7 @@ def required(name: str) -> str:
 
 
 def md_fixture() -> str:
-    return (
-        "# Formatting Elements Being Tested\n\n"
-        "## Test Objectives\n\n"
-        "- Bullet Points\n"
-        "- Numbered Lists\n\n"
-        "1. One\n2. Two\n\n"
-        "> Blockquote\n\n"
-        "`inline code`\n\n"
-        "```\n"
-        "ts code block\n"
-        "console.log('hello');\n"
-        "```\n\n"
-        "| Col A | Col B |\n"
-        "| --- | --- |\n"
-        "| A | B |\n\n"
-        "Panel: IMPORTANT\n"
-    )
+    return "Simple test content for E2E validation."
 
 
 def extract_json(result: Any) -> dict:
@@ -138,7 +122,7 @@ async def main() -> None:
             print(f"Jira create response: {jira_create}")
             jira_obj = extract_json(jira_create)
             print(f"Extracted JSON: {jira_obj}")
-            issue_key = jira_obj.get("key") or jira_obj.get("issue_key")
+            issue_key = jira_obj.get("key") or jira_obj.get("issue_key") or jira_obj.get("issue", {}).get("key")
 
             # Add comment
             if issue_key:
@@ -181,7 +165,7 @@ async def main() -> None:
             conf_create = await session.call_tool(
                 "confluence_pages_create_page",
                 {
-                    "space_key": confluence_space,
+                    "space_id": confluence_space,
                     "title": f"[E2E] Visual Render Validation {label}",
                     "content": md_fixture(),
                     "content_format": "markdown",

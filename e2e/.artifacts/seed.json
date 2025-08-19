@@ -1,8 +1,8 @@
 {
-  "label": "mcp-e2e-60164",
+  "label": "mcp-e2e-66014",
   "jira": {
-    "issueKey": null,
-    "issueUrl": null
+    "issueKey": "FTEST-176",
+    "issueUrl": "https://baseball.atlassian.net/browse/FTEST-176"
   },
   "confluence": {
     "pageId": null,

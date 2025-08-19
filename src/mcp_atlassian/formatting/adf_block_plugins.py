@@ -106,7 +106,7 @@ class PanelPlugin(BaseADFPlugin):
             errors.append("Panel must have content")
 
         # Validate content types (only certain nodes allowed in panels)
-        allowed_types = {"bulletList", "heading", "orderedList", "paragraph"}
+        allowed_types = {"bulletList", "heading", "orderedList", "paragraph", "codeBlock", "blockquote", "table"}
         for child in content:
             if child.get("type") not in allowed_types:
                 errors.append(f"Panel cannot contain {child.get('type')} nodes")

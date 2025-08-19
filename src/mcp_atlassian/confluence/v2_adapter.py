@@ -92,10 +92,18 @@ class ConfluenceV2Adapter:
             ValueError: If page creation fails
         """
         try:
+            # Check if space_id is actually a space key (starts with ~ or contains non-numeric chars)
+            # If so, convert it to the actual numeric space ID
+            actual_space_id = space_id
+            if not space_id.isdigit():
+                # This looks like a space key, not a numeric ID
+                logger.debug(f"Converting space key '{space_id}' to space ID")
+                actual_space_id = self._get_space_id(space_id)
+                logger.debug(f"Converted space key '{space_id}' to space ID '{actual_space_id}'")
 
             # Prepare request data for v2 API
             data = {
-                "spaceId": space_id,
+                "spaceId": actual_space_id,
                 "status": status,
                 "title": title,
             }

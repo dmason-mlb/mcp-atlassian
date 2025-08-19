@@ -238,6 +238,7 @@ class ExpandPlugin(BaseADFPlugin):
             "panel",
             "blockquote",
             "codeBlock",
+            "table",
         }
         for child in content:
             if child.get("type") not in allowed_types:

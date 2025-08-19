@@ -8,7 +8,7 @@ from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = Path(__file__).resolve().parents[3]
 
 def _load_env_file(env_path: Path) -> None:
     if not env_path.exists():

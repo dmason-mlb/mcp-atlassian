@@ -29,6 +29,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **HTTP transport (SSE)**: `uv run mcp-atlassian --transport sse --port 9000`
 - **HTTP transport (streamable)**: `uv run mcp-atlassian --transport streamable-http --port 9000`
 
+### End-to-End Testing
+- **Install Playwright dependencies**: `cd tests/e2e && npm run prep`
+- **Seed test data**: `cd tests/e2e && npm run seed`
+- **Run e2e tests**: `cd tests/e2e && npm run test`
+- **Clean test data**: `cd tests/e2e && npm run clean`
+
 ## Architecture Overview
 
 ### Core Structure
@@ -323,3 +329,9 @@ When Atlassian updates ADF schema:
 - Track conversion success rates through performance metrics
 - Monitor error patterns in logs for potential issues
 - Validate format detection accuracy for new deployment types
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
