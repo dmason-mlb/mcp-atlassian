@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import seed from '../.artifacts/seed.json' with { type: 'json' };
-import { waitForAppReady, waitForContentReady } from '../utils/wait';
+import { waitForAppReady, waitForContentReady, getContentRoot } from '../utils/wait';
 
 test.describe('Interactive Elements Testing', () => {
   test.describe('Jira Interactive Elements', () => {
@@ -250,7 +250,7 @@ test.describe('Interactive Elements Testing', () => {
     });
 
     test('Confluence content interactions work', async ({ page }) => {
-      const article = page.locator('[data-testid="content-body"]').first();
+      const article = await getContentRoot(page);
 
       // Test expand/collapse sections if present
       const expandSections = article.locator('.expand-macro, [data-node-type="expand"], .ak-editor-expand');
