@@ -365,6 +365,35 @@ async def download_attachments(
     return json.dumps(result, indent=2, ensure_ascii=False)
 
 
+@jira_mcp.tool(tags={"jira", "write"})
+@check_write_access
+async def upload_attachment(
+    ctx: Context,
+    issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
+    file_path: Annotated[
+        str,
+        Field(
+            description="Absolute or relative path to a file to upload as an attachment"
+        ),
+    ],
+) -> str:
+    """Upload a single attachment to a Jira issue.
+
+    Uses Jira REST API v3 attachments endpoint (multipart/form-data with X-Atlassian-Token: no-check).
+
+    Args:
+        ctx: The FastMCP context.
+        issue_key: Jira issue key.
+        file_path: Path to the local file to upload.
+
+    Returns:
+        JSON string indicating the result of the upload operation.
+    """
+    jira = await get_jira_fetcher(ctx)
+    result = jira.upload_attachment(issue_key, file_path)
+    return json.dumps(result, indent=2, ensure_ascii=False)
+
+
 @jira_mcp.tool(tags={"jira", "read"})
 async def get_agile_boards(
     ctx: Context,
@@ -1590,3 +1619,81 @@ async def batch_create_versions(
             )
             results.append({"success": False, "error": str(e), "input": v})
     return json.dumps(results, indent=2, ensure_ascii=False)
+
+
+# ============================================================================
+# LEGACY COMPATIBILITY ALIASES FOR E2E TESTS
+# These are thin wrappers that delegate to canonical tools while maintaining
+# legacy naming conventions expected by E2E tests. 
+# TODO: Remove these after E2E tests are updated to use canonical names.
+# ============================================================================
+
+@jira_mcp.tool(name="issues_create_issue", tags={"jira", "write"})
+@check_write_access
+@safe_tool_result
+async def issues_create_issue(
+    ctx: Context,
+    project_key: Annotated[
+        str,
+        Field(
+            description=(
+                "The JIRA project key (e.g. 'PROJ', 'DEV', 'SUPPORT'). "
+                "This is the prefix of issue keys in your project. "
+                "Never assume what it might be, always ask the user."
+            )
+        ),
+    ],
+    summary: Annotated[str, Field(description="Summary/title of the issue")],
+    issue_type: Annotated[
+        str,
+        Field(
+            description=(
+                "Issue type (e.g. 'Task', 'Bug', 'Story', 'Epic', 'Subtask'). "
+                "The available types depend on your project configuration. "
+                "For subtasks, use 'Subtask' (not 'Sub-task') and include parent in additional_fields."
+            ),
+        ),
+    ],
+    assignee: Annotated[
+        str | None,
+        Field(
+            description="(Optional) Assignee's user identifier (string): Email, display name, or account ID (e.g., 'user@example.com', 'John Doe', 'accountid:...')",
+            default=None,
+        ),
+    ] = None,
+    description: Annotated[
+        str | None, Field(description="Issue description", default=None)
+    ] = None,
+    components: Annotated[
+        str | None,
+        Field(
+            description="(Optional) Comma-separated list of component names to assign (e.g., 'Frontend,API')",
+            default=None,
+        ),
+    ] = None,
+    additional_fields: Annotated[
+        dict[str, Any] | str | None,
+        Field(
+            description=(
+                "(Optional) Dictionary of additional fields to set. Examples:\n"
+                "- Set priority: {'priority': {'name': 'High'}}\n"
+                "- Add labels: {'labels': ['frontend', 'urgent']}\n"
+                "- Link to parent (for any issue type): {'parent': 'PROJ-123'}\n"
+                "- Set Fix Version/s: {'fixVersions': [{'id': '10020'}]}\n"
+                "- Custom fields: {'customfield_10010': 'value'}"
+            ),
+            default=None,
+        ),
+    ] = None,
+) -> str:
+    """Legacy alias for create_issue. Delegates to canonical create_issue tool."""
+    return await create_issue(
+        ctx=ctx,
+        project_key=project_key,
+        summary=summary,
+        issue_type=issue_type,
+        assignee=assignee,
+        description=description,
+        components=components,
+        additional_fields=additional_fields,
+    )

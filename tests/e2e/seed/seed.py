@@ -166,7 +166,7 @@ async def main() -> None:
             # Add comment
             if issue_key:
                 await session.call_tool(
-                    "jira_issues_add_comment",
+                    "jira_add_comment",
                     {
                         "issue_key": issue_key,
                         "comment": "E2E seed comment with `code` and bold **text**.",
@@ -182,7 +182,7 @@ async def main() -> None:
                         "This is an E2E attachment file. Label: " + label
                     )
                     await session.call_tool(
-                        "jira_management_upload_attachment",
+                        "jira_upload_attachment",
                         {"issue_key": issue_key, "file_path": str(text_path)},
                     )
                 except Exception:
@@ -197,7 +197,7 @@ async def main() -> None:
                         img_dst = ART_DIR / "test-image.png"
                         img_dst.write_bytes(img_src.read_bytes())
                         await session.call_tool(
-                            "jira_management_upload_attachment",
+                            "jira_upload_attachment",
                             {"issue_key": issue_key, "file_path": str(img_dst)},
                         )
                     except Exception:
@@ -230,7 +230,7 @@ async def main() -> None:
             if page_id:
                 try:
                     await session.call_tool(
-                        "confluence_content_add_label",
+                        "confluence_add_label",
                         {"page_id": str(page_id), "name": label},
                     )
                 except Exception:

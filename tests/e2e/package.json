@@ -4,8 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "validate": "node validate-env.js",
     "prep": "playwright install --with-deps",
-    "seed": "uv run python seed/seed.py",
+    "start-server": "cd ../.. && uv run mcp-atlassian --transport streamable-http --port 9001",
+    "seed": "./seed-with-server.sh",
+    "seed:direct": "uv run python seed/seed.py",
     "test": "REUSE_AUTH=true playwright test",
     "test:chromium": "REUSE_AUTH=true playwright test --project=chromium",
     "test:firefox": "REUSE_AUTH=true playwright test --project=firefox",

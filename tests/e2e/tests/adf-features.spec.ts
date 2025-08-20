@@ -1,15 +1,17 @@
 import { test, expect } from '@playwright/test';
 import seed from '../.artifacts/seed.json' with { type: 'json' };
+import { waitForAppReady, waitForContentReady } from '../utils/wait';
 
 test.describe('ADF-Specific Features Validation', () => {
   test.beforeEach(async ({ page }) => {
     if (!seed?.confluence?.pageUrl) test.skip(true, 'No Confluence page URL in seed.json');
     await page.goto(seed.confluence.pageUrl);
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page, 'confluence');
+    await waitForContentReady(page);
   });
 
   test('ADF panels render correctly', async ({ page }) => {
-    const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+    const article = page.locator('[data-testid="content-body"]').first();
 
     // Look for panel elements (info, warning, error, success, note)
     const panels = article.locator('.ak-editor-panel, .confluence-information-macro, .panel, [data-panel-type]');
@@ -33,7 +35,7 @@ test.describe('ADF-Specific Features Validation', () => {
   });
 
   test('ADF status badges render correctly', async ({ page }) => {
-    const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+    const article = page.locator('[data-testid="content-body"]').first();
 
     // Look for status badge elements
     const statusBadges = article.locator('.status-macro, [data-node-type="status"], .ak-editor-status');
@@ -70,7 +72,7 @@ test.describe('ADF-Specific Features Validation', () => {
   });
 
   test('ADF mentions render correctly', async ({ page }) => {
-    const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+    const article = page.locator('[data-testid="content-body"]').first();
 
     // Look for mention elements
     const mentions = article.locator('.mention, [data-node-type="mention"], .ak-editor-mention');
@@ -98,7 +100,7 @@ test.describe('ADF-Specific Features Validation', () => {
   });
 
   test('ADF emoji render correctly', async ({ page }) => {
-    const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+    const article = page.locator('[data-testid="content-body"]').first();
 
     // Look for emoji elements
     const emojis = article.locator('.emoji, [data-node-type="emoji"], .ak-editor-emoji, img[alt*="emoji"]');
@@ -119,7 +121,7 @@ test.describe('ADF-Specific Features Validation', () => {
   });
 
   test('ADF expand/collapse sections work', async ({ page }) => {
-    const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+    const article = page.locator('[data-testid="content-body"]').first();
 
     // Look for expand/collapse elements
     const expandSections = article.locator('.expand-macro, [data-node-type="expand"], .ak-editor-expand');
@@ -157,7 +159,7 @@ test.describe('ADF-Specific Features Validation', () => {
   });
 
   test('ADF date elements render correctly', async ({ page }) => {
-    const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+    const article = page.locator('[data-testid="content-body"]').first();
 
     // Look for date elements
     const dates = article.locator('.date-macro, [data-node-type="date"], .ak-editor-date, time');
@@ -180,7 +182,7 @@ test.describe('ADF-Specific Features Validation', () => {
   });
 
   test('ADF media elements render correctly', async ({ page }) => {
-    const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+    const article = page.locator('[data-testid="content-body"]').first();
 
     // Look for media elements
     const mediaElements = article.locator('.media-single, [data-node-type="mediaSingle"], .ak-editor-media, .media-wrapper');
@@ -205,7 +207,7 @@ test.describe('ADF-Specific Features Validation', () => {
   });
 
   test('ADF table enhancements render correctly', async ({ page }) => {
-    const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+    const article = page.locator('[data-testid="content-body"]').first();
 
     const tables = article.locator('table');
 
@@ -234,7 +236,7 @@ test.describe('ADF-Specific Features Validation', () => {
   });
 
   test('ADF layout sections render correctly', async ({ page }) => {
-    const article = page.locator('article, [data-test-id="content-body"], [data-testid="content-body"], .wiki-content').first();
+    const article = page.locator('[data-testid="content-body"]').first();
 
     // Look for layout sections (columns)
     const layouts = article.locator('.ak-editor-layout, [data-node-type="layoutSection"], .layout-section');

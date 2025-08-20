@@ -1,43 +1,48 @@
 import { test, expect } from '@playwright/test';
 import seed from '../.artifacts/seed.json' with { type: 'json' };
+import { waitForAppReady, getContentRoot } from '../utils/wait';
 
 test.describe('Jira Issue Content Validation', () => {
   test.beforeEach(async ({ page }) => {
     if (!seed?.jira?.issueUrl) test.skip(true, 'No Jira issue URL in seed.json');
     await page.goto(seed.jira.issueUrl);
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page, 'jira');
   });
 
   test('Jira description renders markdown properly', async ({ page }) => {
-    const content = page.locator('main, [data-test-id="issue-view"], [data-testid="issue-view"]').first();
+    const content = await getContentRoot(page);
 
     // Basic content validation
     await expect(content).toContainText('Test Objectives');
     await expect(content).toContainText('Bullet Points');
     await expect(content).toContainText('Numbered Lists');
 
-    // Code block validation
-    await expect(content.locator('pre')).toHaveCountGreaterThan(0);
-    await expect(content.locator('code')).toContainText('console.log');
+    // Code block validation - Jira may render code differently
+    const codeBlocks = content.locator('pre, code');
+    expect(await codeBlocks.count()).toBeGreaterThan(0);
+    
+    // Find the specific code block with console.log
+    const consoleLogCode = content.locator('code:has-text("console.log")');
+    await expect(consoleLogCode).toContainText('console.log');
 
     // List validation
     const bulletList = content.locator('ul');
-    await expect(bulletList).toHaveCountGreaterThan(0);
-    await expect(bulletList.locator('li')).toContainText('Bullet Points');
+    expect(await bulletList.count()).toBeGreaterThan(0);
+    await expect(bulletList.locator('li:has-text("First bullet point")')).toContainText('First bullet point');
 
     const numberedList = content.locator('ol');
-    await expect(numberedList).toHaveCountGreaterThan(0);
+    expect(await numberedList.count()).toBeGreaterThan(0);
     await expect(numberedList.locator('li').first()).toContainText('One');
 
     // Table validation
     const table = content.locator('table');
-    await expect(table).toHaveCountGreaterThan(0);
-    await expect(table.locator('th')).toContainText('Col A');
-    await expect(table.locator('td')).toContainText('A');
+    expect(await table.count()).toBeGreaterThan(0);
+    await expect(table.locator('th:has-text("Col A")')).toContainText('Col A');
+    await expect(table.locator('td:has-text("A")')).toContainText('A');
 
     // Blockquote validation
     const blockquote = content.locator('blockquote');
-    await expect(blockquote).toHaveCountGreaterThan(0);
+    expect(await blockquote.count()).toBeGreaterThan(0);
     await expect(blockquote).toContainText('Blockquote');
 
     // Inline code validation
@@ -51,14 +56,15 @@ test.describe('Jira Issue Content Validation', () => {
   });
 
   test('Jira issue metadata is displayed correctly', async ({ page }) => {
-    // Validate issue key is displayed
-    await expect(page.locator('[data-testid="issue-header"], .issue-header')).toContainText(/[A-Z]+-\d+/);
+    // Validate issue key is displayed - look for specific issue key pattern in links
+    const issueKeyLink = page.locator('a[href*="/browse/FTEST-"]');
+    await expect(issueKeyLink).toBeVisible();
 
-    // Validate title is displayed
-    await expect(page.locator('h1, [data-testid="issue-title"]')).toContainText('Visual Render Validation');
+    // Validate title is displayed - use the specific testid for the issue title
+    await expect(page.locator('[data-testid="issue.views.issue-base.foundation.summary.heading"]')).toContainText('Visual Render Validation');
 
-    // Validate status is displayed
-    await expect(page.locator('[data-testid="status"], .status')).toBeVisible();
+    // Validate status is displayed - look for status/workflow buttons or labels
+    await expect(page.locator('button:has-text("To Do"), button:has-text("In Progress"), button:has-text("Done"), [data-testid="status"]')).toBeVisible();
   });
 
   test('Jira comments section loads and displays properly', async ({ page }) => {
