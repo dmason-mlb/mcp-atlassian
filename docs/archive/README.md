@@ -1,1 +1,0 @@
-These files represent documentation of previous efforts to resolve issues and migrate functionality. They are being stored here because they _should_ no longer be relevant, but might be helpful in resolving future issues.

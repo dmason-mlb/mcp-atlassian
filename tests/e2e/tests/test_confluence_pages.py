@@ -35,7 +35,7 @@ class TestConfluencePageCreation(MCPConfluenceTest):
         )
         
         # Validate response
-        self.assert_success_response(result, ["id", "title"])
+        self.assert_success_response(result, ["message", "page"])
         validation = validate_confluence_response(result, "create")
         assert validation.is_valid, f"Validation failed: {validation.errors}"
         
@@ -44,7 +44,7 @@ class TestConfluencePageCreation(MCPConfluenceTest):
         self.track_resource("confluence_page", page_id)
         
         # Verify page was created with correct data
-        page_data = self.extract_json(result)
+        page_data = self._extract_json(result)
         assert title in str(page_data)
     
     async def test_create_page_with_adf_content(self, mcp_client, test_config, test_data_manager):
@@ -60,7 +60,7 @@ class TestConfluencePageCreation(MCPConfluenceTest):
             enable_heading_anchors=True
         )
         
-        self.assert_success_response(result, ["id", "title"])
+        self.assert_success_response(result, ["message", "page"])
         
         # Validate ADF formatting in response
         validation = validate_confluence_response(result, "create", DeploymentType.CLOUD)
@@ -105,7 +105,7 @@ This is an info panel in wiki markup format.
             content_format="wiki"
         )
         
-        self.assert_success_response(result, ["id", "title"])
+        self.assert_success_response(result, ["message", "page"])
         page_id = self.extract_page_id(result)
         self.track_resource("confluence_page", page_id)
     
@@ -133,7 +133,7 @@ This is an info panel in wiki markup format.
             parent_id=parent_id
         )
         
-        self.assert_success_response(child_result, ["id", "title"])
+        self.assert_success_response(child_result, ["message", "page"])
         child_id = self.extract_page_id(child_result)
         self.track_resource("confluence_page", child_id)
     
@@ -175,23 +175,20 @@ This page contains various table formats for testing.
             content_format="markdown"
         )
         
-        self.assert_success_response(result, ["id", "title"])
+        self.assert_success_response(result, ["message", "page"])
         page_id = self.extract_page_id(result)
         self.track_resource("confluence_page", page_id)
     
     async def test_create_page_invalid_space(self, mcp_client, test_config):
         """Test creating page in invalid space."""
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.create_confluence_page(
-                space_id="INVALID",
-                title="Should Fail",
-                content="This should not work",
-                content_format="markdown"
-            )
+        result = await mcp_client.create_confluence_page(
+            space_id="INVALID",
+            title="Should Fail",
+            content="This should not work",
+            content_format="markdown"
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["space", "not found", "invalid"]), \
-            f"Expected space-related error, got: {error_msg}"
+        self.assert_error_response(result, r"space|not found|invalid")
 
 
 @pytest.mark.api
@@ -265,17 +262,14 @@ class TestConfluencePageUpdates(MCPConfluenceTest):
     
     async def test_update_nonexistent_page(self, mcp_client, test_config):
         """Test updating non-existent page."""
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.update_confluence_page(
-                page_id="999999999",
-                title="Should Fail",
-                content="This should not work",
-                content_format="markdown"
-            )
+        result = await mcp_client.update_confluence_page(
+            page_id="999999999",
+            title="Should Fail",
+            content="This should not work",
+            content_format="markdown"
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["not found", "does not exist", "invalid"]), \
-            f"Expected page not found error, got: {error_msg}"
+        self.assert_error_response(result, r"not found|does not exist|invalid")
 
 
 @pytest.mark.api
@@ -369,7 +363,7 @@ class TestConfluenceLabels(MCPConfluenceTest):
         self.assert_success_response(label_result)
         
         # Verify label was added
-        labels_data = self.extract_json(label_result)
+        labels_data = self._extract_json(label_result)
         assert isinstance(labels_data, (list, dict))
     
     async def test_add_multiple_labels(self, mcp_client, test_config, test_data_manager):
@@ -395,15 +389,12 @@ class TestConfluenceLabels(MCPConfluenceTest):
     
     async def test_add_label_to_nonexistent_page(self, mcp_client, test_config):
         """Test adding label to non-existent page."""
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.add_confluence_label(
-                page_id="999999999",
-                name="should-fail"
-            )
+        result = await mcp_client.add_confluence_label(
+            page_id="999999999",
+            name="should-fail"
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["not found", "does not exist", "invalid"]), \
-            f"Expected page not found error, got: {error_msg}"
+        self.assert_error_response(result, r"not found|does not exist|invalid")
 
 
 @pytest.mark.api
@@ -496,17 +487,14 @@ class TestConfluenceErrorHandling(MCPConfluenceTest):
     
     async def test_create_page_missing_title(self, mcp_client, test_config):
         """Test creating page with missing title."""
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.create_confluence_page(
-                space_id=test_config["confluence_space"],
-                title="",  # Empty title
-                content="Content without title",
-                content_format="markdown"
-            )
+        result = await mcp_client.create_confluence_page(
+            space_id=test_config["confluence_space"],
+            title="",  # Empty title
+            content="Content without title",
+            content_format="markdown"
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["title", "required", "empty"]), \
-            f"Expected title validation error, got: {error_msg}"
+        self.assert_error_response(result, r"title|required|empty")
     
     async def test_create_duplicate_title_in_space(self, mcp_client, test_config, test_data_manager):
         """Test creating pages with duplicate titles."""
@@ -524,32 +512,26 @@ class TestConfluenceErrorHandling(MCPConfluenceTest):
         self.track_resource("confluence_page", page1_id)
         
         # Try to create second page with same title
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.create_confluence_page(
-                space_id=test_config["confluence_space"],
-                title=duplicate_title,
-                content="Second page with same title",
-                content_format="markdown"
-            )
+        result2 = await mcp_client.create_confluence_page(
+            space_id=test_config["confluence_space"],
+            title=duplicate_title,
+            content="Second page with same title",
+            content_format="markdown"
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["already exists", "duplicate", "title"]), \
-            f"Expected duplicate title error, got: {error_msg}"
+        self.assert_error_response(result2, r"already exists|duplicate|title")
     
     async def test_invalid_parent_id(self, mcp_client, test_config):
         """Test creating page with invalid parent ID."""
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.create_confluence_page(
-                space_id=test_config["confluence_space"],
-                title="Child with Invalid Parent",
-                content="This should fail",
-                content_format="markdown",
-                parent_id="999999999"  # Invalid parent ID
-            )
+        result = await mcp_client.create_confluence_page(
+            space_id=test_config["confluence_space"],
+            title="Child with Invalid Parent",
+            content="This should fail",
+            content_format="markdown",
+            parent_id="999999999"  # Invalid parent ID
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["parent", "not found", "invalid"]), \
-            f"Expected parent validation error, got: {error_msg}"
+        self.assert_error_response(result, r"parent|not found|invalid")
 
 
 @pytest.mark.api

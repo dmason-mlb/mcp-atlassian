@@ -41,8 +41,10 @@ class TestDataManager:
         self.client = mcp_client
         self.config = config
         
-        # Generate unique test session identifier
-        self.test_session = f"mcp-test-{int(time.time())}-{os.getpid()}"
+        # Generate unique test session identifier with clear datestamp
+        date_str = datetime.now().strftime("%Y%m%d")
+        time_str = datetime.now().strftime("%H%M%S")
+        self.test_session = f"mcp-test-{date_str}-{time_str}-{os.getpid()}"
         self.test_label = config.get("test_label", self.test_session)
         
         # Track created resources for cleanup
@@ -608,33 +610,47 @@ This is a **test comment** added via MCP tools.
         cleanup_summary = {
             "issues_deleted": 0,
             "pages_deleted": 0,
-            "errors": []
+            "errors": [],
+            "skipped": []
         }
         
         # Clean up Jira issues
         for issue_key in self.created_issues.copy():
             try:
-                # In a real implementation, you'd call delete_issue
-                # For now, we'll just search and verify the issue exists
-                await self.client.search_jira(
-                    jql=f"key = {issue_key}",
-                    fields="key,summary",
-                    limit=1
-                )
+                # Try to delete the issue via MCP tools
+                result = await self.client.call_tool("jira_delete_issue", {
+                    "issue_key": issue_key
+                })
                 cleanup_summary["issues_deleted"] += 1
                 self.created_issues.remove(issue_key)
+                print(f"Deleted Jira issue: {issue_key}")
             except Exception as e:
-                cleanup_summary["errors"].append(f"Failed to clean up issue {issue_key}: {e}")
+                error_msg = str(e).lower()
+                if "not found" in error_msg or "does not exist" in error_msg:
+                    # Issue already deleted or doesn't exist
+                    self.created_issues.remove(issue_key)
+                    cleanup_summary["skipped"].append(f"Issue {issue_key} already deleted")
+                else:
+                    cleanup_summary["errors"].append(f"Failed to delete issue {issue_key}: {e}")
         
         # Clean up Confluence pages  
         for page_id in self.created_pages.copy():
             try:
-                # In a real implementation, you'd call delete_page
-                # For now, we'll note the page for manual cleanup
+                # Try to delete the page via MCP tools
+                result = await self.client.call_tool("confluence_pages_delete_page", {
+                    "page_id": page_id
+                })
                 cleanup_summary["pages_deleted"] += 1
                 self.created_pages.remove(page_id)
+                print(f"Deleted Confluence page: {page_id}")
             except Exception as e:
-                cleanup_summary["errors"].append(f"Failed to clean up page {page_id}: {e}")
+                error_msg = str(e).lower()
+                if "not found" in error_msg or "does not exist" in error_msg:
+                    # Page already deleted or doesn't exist
+                    self.created_pages.remove(page_id)
+                    cleanup_summary["skipped"].append(f"Page {page_id} already deleted")
+                else:
+                    cleanup_summary["errors"].append(f"Failed to delete page {page_id}: {e}")
         
         return cleanup_summary
     

@@ -385,9 +385,26 @@ class ResponseValidator:
         data = self._extract_json(response)
         
         if operation == "create":
-            required_fields = ["issue", "key"] if "issue" in data else ["key", "id"]
-            field_result = self._validate_required_fields(data, required_fields, result)
-            result.merge(field_result)
+            # Check for either flat structure (key, id) or nested structure (message, issue)
+            if "issue" in data and isinstance(data.get("issue"), dict):
+                # Nested structure: expect top-level "issue" and nested "key"
+                required_fields = ["issue"]
+                field_result = self._validate_required_fields(data, required_fields, result)
+                result.merge(field_result)
+                
+                # Check nested issue structure
+                issue_data = data.get("issue", {})
+                issue_required = ["key", "id"]
+                issue_result = ValidationResult(True, [], [], {})
+                missing_issue_fields = [f for f in issue_required if f not in issue_data]
+                if missing_issue_fields:
+                    issue_result.add_error(f"Missing required fields in issue: {missing_issue_fields}")
+                result.merge(issue_result)
+            else:
+                # Flat structure: expect key and id at top level
+                required_fields = ["key", "id"]
+                field_result = self._validate_required_fields(data, required_fields, result)
+                result.merge(field_result)
             
             # Validate issue key format
             issue_key = data.get("key") or data.get("issue", {}).get("key")
@@ -443,14 +460,36 @@ class ResponseValidator:
         data = self._extract_json(response)
         
         if operation == "create":
-            required_fields = ["id", "title"]
-            field_result = self._validate_required_fields(data, required_fields, result)
-            result.merge(field_result)
-            
-            # Validate page ID format
-            page_id = data.get("id")
-            if page_id and not str(page_id).isdigit():
-                result.add_error(f"Invalid page ID format: {page_id}")
+            # Check for either flat structure (id, title) or nested structure (message, page)
+            if "page" in data and isinstance(data.get("page"), dict):
+                # Nested structure: expect top-level "page" and nested "id", "title"
+                required_fields = ["page"]
+                field_result = self._validate_required_fields(data, required_fields, result)
+                result.merge(field_result)
+                
+                # Check nested page structure
+                page_data = data.get("page", {})
+                page_required = ["id", "title"]
+                page_result = ValidationResult(True, [], [], {})
+                missing_page_fields = [f for f in page_required if f not in page_data]
+                if missing_page_fields:
+                    page_result.add_error(f"Missing required fields in page: {missing_page_fields}")
+                result.merge(page_result)
+                
+                # Validate page ID format
+                page_id = page_data.get("id")
+                if page_id and not str(page_id).isdigit():
+                    result.add_error(f"Invalid page ID format: {page_id}")
+            else:
+                # Flat structure: expect id and title at top level
+                required_fields = ["id", "title"]
+                field_result = self._validate_required_fields(data, required_fields, result)
+                result.merge(field_result)
+                
+                # Validate page ID format
+                page_id = data.get("id")
+                if page_id and not str(page_id).isdigit():
+                    result.add_error(f"Invalid page ID format: {page_id}")
         
         # Validate page content if present
         content_paths = [

@@ -65,17 +65,25 @@ npm run clean
 | **test:parallel** | `pytest -v -n auto` | Run tests in parallel | Faster execution |
 | **clean** | `uv run python cleanup/cleanup.py` | Remove test data and artifacts | After testing, CI cleanup |
 | **auth** | `node manual-login.js` | Interactive authentication setup | Initial setup, auth refresh |
+| **auth-setup** | `node manual-login.js` | Interactive authentication setup (alias) | Alternative to auth command |
+| **test:smoke** | `pytest -v -m smoke` | Run smoke tests for basic functionality | Quick health checks |
+| **test:slow** | `pytest -v -m slow` | Run longer-running tests | Comprehensive validation |
 
 ## Test Categories
 
 ### Test Markers
-Tests are organized using pytest markers:
+Tests are organized using pytest markers defined in `pytest.ini`:
 
 - `@pytest.mark.api` - API-based MCP tool tests (fast)
 - `@pytest.mark.visual` - Browser-based visual verification tests (slower)
 - `@pytest.mark.adf` - ADF formatting and conversion tests
 - `@pytest.mark.jira` - Jira-specific functionality
 - `@pytest.mark.confluence` - Confluence-specific functionality
+- `@pytest.mark.integration` - Cross-service integration tests
+- `@pytest.mark.error_handling` - Error scenario tests
+- `@pytest.mark.performance` - Performance and bulk operation tests
+- `@pytest.mark.smoke` - Smoke tests for basic functionality
+- `@pytest.mark.slow` - Tests that take longer to run
 
 ### Test Organization
 
@@ -99,7 +107,7 @@ Tests are organized using pytest markers:
 
 2. **Browser opens automatically** - Log in to your Atlassian account
 
-3. **Wait for Jira dashboard** to fully load (important!)
+3. **Wait for dashboard** to fully load (important!)
 
 4. **Press ENTER** in the terminal when ready
 
@@ -114,11 +122,28 @@ Tests load environment variables from the **repo root `.env` file**:
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `ATLASSIAN_URL` | Your Atlassian instance base URL | `https://company.atlassian.net` |
-| `JIRA_BASE_URL` | Jira base URL (overrides ATLASSIAN_URL) | `https://company.atlassian.net` |
-| `CONFLUENCE_BASE_URL` | Confluence base URL | `https://company.atlassian.net/wiki` |
 | `JIRA_PROJECT` | Project key for test issues | `FTEST` |
 | `CONFLUENCE_SPACE` | Space ID for test pages | `655361` |
 | `MCP_URL` | MCP server URL for tests | `http://localhost:9001` |
+
+## Test Configuration
+
+The test suite is configured through `pytest.ini` with the following key settings:
+
+### Required Plugins
+- **pytest-asyncio**: Enables async test functions and fixtures
+- **pytest-playwright**: Browser automation integration
+- **pytest-xdist**: Parallel test execution support
+
+### Browser Configuration  
+- **Default browser**: Chromium (specified in pytest.ini)
+- **Asyncio mode**: Automatic async handling for all tests
+- **Visual testing**: Playwright integration with screenshot capabilities
+
+### Test Output
+- **Strict markers**: All test markers must be defined
+- **Duration tracking**: Shows 10 slowest tests after each run  
+- **Short traceback**: Concise error output for faster debugging
 
 ## Test Structure
 
@@ -177,6 +202,7 @@ npm run test:visual
 npm run test:jira
 npm run test:confluence
 npm run test:adf
+npm run test:smoke
 
 # Run single test file
 pytest -v tests/test_connectivity.py
@@ -243,10 +269,8 @@ tests/e2e/
 ├── manual-login.js              # Interactive authentication setup
 ├── seed-with-server.sh          # Automated seed with server lifecycle
 ├── storageState.json            # Saved authentication state (git-ignored)
-├── .artifacts/
-│   └── seed.json               # Generated test URLs and metadata
-├── test-results/               # Test artifacts (screenshots, videos)
-└── playwright-report/          # HTML test reports
+├── playwright-report/          # HTML test reports
+└── test-results/               # Test artifacts (screenshots, videos)
 ```
 
 ## Troubleshooting

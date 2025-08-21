@@ -9,7 +9,7 @@ import pytest
 import asyncio
 from typing import Dict, Any, List
 
-from ..tests.base_test import MCPBaseTest, MCPJiraTest, MCPConfluenceTest
+from .base_test import MCPBaseTest, MCPJiraTest, MCPConfluenceTest
 
 
 class TestJiraSearch(MCPJiraTest):
@@ -119,9 +119,17 @@ class TestJiraSearch(MCPJiraTest):
         
         self.assert_success_response(field_result)
         
-        # Extract field data
-        fields = self.extract_value(field_result, "fields") or field_result
-        if isinstance(fields, dict):
+        # Extract field data - handle both dict and list responses
+        fields = self.extract_value(field_result, "fields")
+        if fields is None:
+            # If no fields key, the result itself might be the data
+            if isinstance(field_result, list):
+                fields = field_result
+            elif isinstance(field_result, dict):
+                fields = [field_result]
+            else:
+                fields = []
+        elif isinstance(fields, dict):
             fields = [fields]
         
         assert len(fields) > 0, "Should find fields matching 'summary'"
@@ -139,9 +147,9 @@ class TestJiraSearch(MCPJiraTest):
     @pytest.mark.api
     async def test_jira_search_with_pagination(self, mcp_client, test_config):
         """Test Jira search pagination functionality."""
-        # Create multiple test issues
+        # Create more test issues to ensure proper pagination
         issue_keys = []
-        for i in range(5):
+        for i in range(8):
             issue = await self.create_test_issue(
                 mcp_client,
                 test_config,
@@ -150,8 +158,9 @@ class TestJiraSearch(MCPJiraTest):
             )
             issue_keys.append(self.extract_issue_key(issue))
         
-        # Wait for indexing
-        await asyncio.sleep(3)
+        # Wait for all issues to be searchable
+        for issue_key in issue_keys:
+            await self.wait_for_jira_issue_in_search(mcp_client, issue_key, timeout=30)
         
         # Test pagination
         page1_result = await mcp_client.jira_search(
@@ -176,11 +185,17 @@ class TestJiraSearch(MCPJiraTest):
         
         page2_issues = self.extract_value(page2_result, "issues", default=[])
         
-        # Verify no overlap between pages
+        # Verify pagination behavior
         page1_keys = {self.extract_value(issue, "key") for issue in page1_issues}
         page2_keys = {self.extract_value(issue, "key") for issue in page2_issues}
         
-        assert not (page1_keys & page2_keys), "Pages should not have overlapping issues"
+        # If both pages have results, they should not overlap
+        if page1_issues and page2_issues:
+            assert not (page1_keys & page2_keys), f"Pages should not have overlapping issues. Page1: {page1_keys}, Page2: {page2_keys}"
+        
+        # We should have created enough issues to fill both pages
+        total_found = len(page1_keys | page2_keys)
+        assert total_found >= 6, f"Should find most of our {len(issue_keys)} test issues, found {total_found}"
 
     @pytest.mark.api
     async def test_jira_advanced_search_filters(self, mcp_client, test_config):
@@ -200,8 +215,11 @@ class TestJiraSearch(MCPJiraTest):
             description="Advanced search task issue"
         )
         
-        # Wait for indexing
-        await asyncio.sleep(2)
+        # Wait for issues to be searchable
+        story_key = self.extract_issue_key(story_issue)
+        task_key = self.extract_issue_key(task_issue)
+        await self.wait_for_jira_issue_in_search(mcp_client, story_key, timeout=30)
+        await self.wait_for_jira_issue_in_search(mcp_client, task_key, timeout=30)
         
         # Test date-based search
         today_search = await mcp_client.jira_search(
@@ -289,9 +307,10 @@ class TestConfluenceSearch(MCPConfluenceTest):
             content="# CQL Test Page\n\nThis page is specifically for CQL testing with **bold** content."
         )
         page_id = self.extract_page_id(test_page)
+        page_title = self.extract_value(test_page, "title")
         
-        # Wait for indexing
-        await asyncio.sleep(3)
+        # Wait for page to be searchable  
+        await self.wait_for_confluence_page_in_search(mcp_client, page_title, timeout=30)
         
         # Test various CQL patterns
         cql_tests = [
@@ -377,9 +396,10 @@ def search_function():
             content=rich_content
         )
         page_id = self.extract_page_id(content_page)
+        page_title = self.extract_value(content_page, "title")
         
-        # Wait for indexing
-        await asyncio.sleep(3)
+        # Wait for page to be searchable
+        await self.wait_for_confluence_page_in_search(mcp_client, page_title, timeout=30)
         
         # Test searching for content within the page
         content_searches = [
@@ -416,6 +436,7 @@ def search_function():
         """Test Confluence search pagination."""
         # Create multiple test pages
         page_ids = []
+        page_titles = []
         for i in range(5):
             page = await self.create_test_page(
                 mcp_client,
@@ -424,9 +445,11 @@ def search_function():
                 content=f"# Pagination Test Page {i+1}\n\nContent for pagination testing {i+1}."
             )
             page_ids.append(self.extract_page_id(page))
+            page_titles.append(self.extract_value(page, "title"))
         
-        # Wait for indexing
-        await asyncio.sleep(4)
+        # Wait for all pages to be searchable
+        for page_title in page_titles:
+            await self.wait_for_confluence_page_in_search(mcp_client, page_title, timeout=30)
         
         # Search with limited results
         search_result = await mcp_client.confluence_search(
@@ -460,7 +483,7 @@ class TestCrossServiceSearch(MCPBaseTest):
     async def test_coordinated_search_scenario(self, mcp_client, test_config):
         """Test coordinated search across Jira and Confluence."""
         # Create related content in both services
-        project_name = "Cross-Service-Search-Test"
+        project_name = self.generate_unique_title("Cross-Service-Search-Test")
         
         # Create Jira issue
         jira_issue = await mcp_client.create_jira_issue(
@@ -490,10 +513,12 @@ Cross-service search testing between Jira and Confluence.
             content_format="markdown"
         )
         page_id = self.extract_page_id(confluence_page)
+        page_title = self.extract_value(confluence_page, "title")
         self.track_resource("confluence_page", page_id)
         
-        # Wait for indexing
-        await asyncio.sleep(3)
+        # Wait for both resources to be searchable
+        await self.wait_for_jira_issue_in_search(mcp_client, issue_key, timeout=30)
+        await self.wait_for_confluence_page_in_search(mcp_client, page_title, timeout=30)
         
         # Search in Jira
         jira_search = await mcp_client.jira_search(

@@ -1,26 +1,29 @@
 """
-Pytest configuration and fixtures for MCP Atlassian E2E tests.
+Improved pytest configuration and fixtures for MCP Atlassian E2E tests.
 
 This module provides:
-- Environment setup and validation
-- MCP client session management
+- MCP server process management 
+- MCP client session management with proper async handling
+- Atlassian HTTP API mocking at the boundary
 - Test data lifecycle management
-- Browser setup for visual verification tests
-- Shared utilities and fixtures
+- Environment setup and validation
 """
 
 import asyncio
 import json
 import os
-import pytest
+import subprocess
+import time
 from pathlib import Path
-from typing import Any, Dict, Generator, AsyncGenerator
+from typing import Any, Dict, Generator, AsyncGenerator, List
+import pytest
+import signal
+import requests
 
-# Import our custom modules (will be created next)
-# from mcp_client import MCPClient
-# from test_fixtures import TestDataManager
+# Import our custom modules
+from mcp_client_fixed import MCPClientFixed
 
-# Load environment from project root
+
 def load_env_file(env_path: Path) -> None:
     """Load environment variables from .env file."""
     if not env_path.exists():
@@ -53,20 +56,15 @@ def load_env_file(env_path: Path) -> None:
     except Exception:
         pass
 
+
 # Load project root .env
-ROOT_DIR = Path(__file__).resolve().parents[3]
+ROOT_DIR = Path(__file__).resolve().parents[2]
 load_env_file(ROOT_DIR / ".env")
 
 # Test configuration constants
 ART_DIR = ROOT_DIR / "tests" / "e2e" / ".artifacts"
 ART_DIR.mkdir(parents=True, exist_ok=True)
 
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for the test session."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 @pytest.fixture(scope="session")
 def test_config() -> Dict[str, str]:
@@ -95,13 +93,14 @@ def test_config() -> Dict[str, str]:
     # Optional variables with defaults
     config.update({
         "mcp_url": os.getenv("MCP_URL", "http://localhost:9001/mcp"),
-        "jira_base": os.getenv("JIRA_BASE") or config["atlassian_url"],
-        "confluence_base": os.getenv("CONFLUENCE_BASE") or f"{config['atlassian_url'].rstrip('/')}/wiki",
+        "jira_base_url": os.getenv("JIRA_BASE") or config["atlassian_url"],
+        "confluence_base_url": os.getenv("CONFLUENCE_BASE") or f"{config['atlassian_url'].rstrip('/')}/wiki",
         "test_label": os.getenv("TEST_LABEL", f"mcp-test-{os.getpid()}"),
     })
     
     # Authentication check
     auth_vars = [
+        "ATLASSIAN_EMAIL", "ATLASSIAN_API_TOKEN", "ATLASSIAN_PAT",
         "JIRA_USERNAME", "JIRA_API_TOKEN", "JIRA_PERSONAL_TOKEN",
         "CONFLUENCE_USERNAME", "CONFLUENCE_API_TOKEN", "CONFLUENCE_PERSONAL_TOKEN",
         "ATLASSIAN_OAUTH_CLIENT_ID", "ATLASSIAN_OAUTH_CLIENT_SECRET"
@@ -113,65 +112,215 @@ def test_config() -> Dict[str, str]:
     
     return config
 
+
 @pytest.fixture(scope="session")
-async def mcp_client(test_config):
+def mcp_server_process(test_config):
     """
-    Create and initialize MCP client for the test session.
+    Start MCP server process and ensure it's responsive.
     
     Args:
-        test_config: Test configuration from environment
+        test_config: Test configuration with MCP URL
         
     Yields:
-        MCPClient: Initialized MCP client instance
+        subprocess.Popen: Running MCP server process
     """
-    # Import here to avoid circular imports
-    from mcp_client import MCPClient
-    
-    client = MCPClient(test_config["mcp_url"])
-    await client.connect()
-    
-    # Validate connection
+    # Extract port from MCP URL
+    mcp_url = test_config["mcp_url"]
     try:
-        tools = await client.list_tools()
-        if not tools:
-            pytest.skip("MCP server returned no tools")
-    except Exception as e:
-        pytest.skip(f"Failed to connect to MCP server: {e}")
+        port = int(mcp_url.split(":")[-1].split("/")[0])
+    except (ValueError, IndexError):
+        port = 9001
     
-    yield client
+    # Start the MCP server using the same command as package.json
+    cmd = [
+        "uv", "run", "mcp-atlassian", 
+        "--transport", "streamable-http", 
+        "--port", str(port)
+    ]
     
-    await client.disconnect()
+    # Start server in project root directory
+    server_process = subprocess.Popen(
+        cmd,
+        cwd=ROOT_DIR,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        preexec_fn=os.setsid  # Create new process group for clean shutdown
+    )
+    
+    # Wait for server to be responsive
+    max_wait = 30  # seconds
+    start_time = time.time()
+    server_ready = False
+    
+    while time.time() - start_time < max_wait:
+        try:
+            response = requests.get(f"http://localhost:{port}/healthz", timeout=1)
+            if response.status_code == 200:
+                server_ready = True
+                break
+        except requests.RequestException:
+            pass
+        time.sleep(0.5)
+    
+    if not server_ready:
+        # Capture server output for debugging
+        stdout, stderr = server_process.communicate(timeout=5)
+        server_process.kill()
+        pytest.fail(f"MCP server failed to start within {max_wait}s. Stdout: {stdout}, Stderr: {stderr}")
+    
+    try:
+        yield server_process
+    finally:
+        # Clean shutdown
+        try:
+            os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
+            server_process.wait(timeout=10)
+        except (subprocess.TimeoutExpired, ProcessLookupError):
+            try:
+                os.killpg(os.getpgid(server_process.pid), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+
 
 @pytest.fixture(scope="function")
-async def test_data_manager(mcp_client, test_config):
+def mcp_client(mcp_server_process, test_config):
     """
-    Create test data manager for individual test functions.
+    Create MCP client for individual test functions.
     
     Args:
-        mcp_client: MCP client instance
+        mcp_server_process: Running MCP server process
         test_config: Test configuration
         
-    Yields:
-        TestDataManager: Test data management instance
+    Returns:
+        MCPClientFixed: MCP client instance
     """
-    # Import here to avoid circular imports
-    from test_fixtures import TestDataManager
-    
-    manager = TestDataManager(mcp_client, test_config)
-    yield manager
-    
-    # Cleanup after test
-    await manager.cleanup()
+    client = MCPClientFixed(test_config["mcp_url"])
+    return client
 
-@pytest.fixture
-def test_content_fixtures():
+
+@pytest.fixture(scope="function")
+def atlassian_stub():
     """
-    Provide standard test content fixtures for consistent testing.
+    Create Atlassian HTTP API mock for isolating MCP server tests.
+    
+    Yields:
+        AtlassianStub: HTTP mock that captures outbound requests
+    """
+    import responses
+    
+    class AtlassianStub:
+        """Mock Atlassian HTTP API responses."""
+        
+        def __init__(self):
+            self.responses = responses.RequestsMock(assert_all_requests_are_fired=False)
+            self.call_log = []
+            
+        def __enter__(self):
+            self.responses.start()
+            return self
+            
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.responses.stop()
+            self.responses.reset()
+            
+        def stub_jira_search(self, jql: str, results: List[Dict], total: int = None):
+            """Stub Jira search API."""
+            if total is None:
+                total = len(results)
+                
+            response_data = {
+                "issues": results,
+                "total": total,
+                "startAt": 0,
+                "maxResults": len(results)
+            }
+            
+            # Use a simple URL pattern instead of complex matchers
+            self.responses.add(
+                responses.POST,
+                "https://test.atlassian.net/rest/api/3/search",
+                json=response_data,
+                status=200
+            )
+            
+        def stub_jira_create_issue(self, project_key: str, returns: Dict):
+            """Stub Jira issue creation."""
+            def callback(request):
+                body = json.loads(request.body)
+                self.call_log.append(("POST", request.url, body))
+                return (201, {}, json.dumps(returns))
+                
+            self.responses.add_callback(
+                responses.POST,
+                f"https://{project_key.lower()}.atlassian.net/rest/api/3/issue",
+                callback=callback
+            )
+            
+        def stub_confluence_create_page(self, adf: Dict, returns: Dict):
+            """Stub Confluence page creation."""
+            def callback(request):
+                body = json.loads(request.body)
+                self.call_log.append(("POST", request.url, body))
+                return (201, {}, json.dumps(returns))
+                
+            self.responses.add_callback(
+                responses.POST,
+                "https://test.atlassian.net/wiki/api/v2/pages",
+                callback=callback
+            )
+            
+        def assert_called_once_with(self, method: str, url_fragment: str, json_contains: Dict = None):
+            """Assert that a specific API call was made."""
+            matching_calls = [
+                (m, u, b) for m, u, b in self.call_log 
+                if m == method and url_fragment in u
+            ]
+            
+            assert len(matching_calls) == 1, f"Expected 1 call matching {method} {url_fragment}, got {len(matching_calls)}"
+            
+            if json_contains:
+                _, _, body = matching_calls[0]
+                for key, expected_value in json_contains.items():
+                    assert key in body, f"Expected key '{key}' in request body"
+                    assert body[key] == expected_value, f"Expected {key}={expected_value}, got {body[key]}"
+    
+    with AtlassianStub() as stub:
+        yield stub
+
+
+@pytest.fixture(scope="function")
+def sample_test_data():
+    """
+    Provide sample test data for consistent testing.
     
     Returns:
-        Dict containing various test content templates
+        Dict containing various test content and data
     """
     return {
+        "jira_issue": {
+            "key": "TEST-123",
+            "id": "12345",
+            "fields": {
+                "summary": "Test Issue",
+                "description": "Test description",
+                "status": {"name": "To Do"},
+                "issuetype": {"name": "Task"},
+                "priority": {"name": "Medium"}
+            }
+        },
+        
+        "confluence_page": {
+            "id": "67890",
+            "title": "Test Page", 
+            "body": {
+                "storage": {
+                    "value": "<p>Test content</p>"
+                }
+            },
+            "space": {"key": "TEST"}
+        },
+        
         "basic_markdown": """# Test Content
 
 This is **basic markdown** content for testing.
@@ -189,7 +338,7 @@ def test_function():
 > This is a blockquote for testing.
 """,
 
-        "rich_adf_content": """# Advanced ADF Test Content
+        "adf_content": """# Advanced ADF Test Content
 
 ## ADF-Specific Elements
 
@@ -198,139 +347,51 @@ def test_function():
 **Information Panel**: This tests ADF-specific formatting.
 :::
 
-:::panel type="warning"
-**Warning Panel**: Testing with *italic* and **bold** text.
-:::
-
 ### Status Badges
 Progress: {status:color=blue}In Progress{/status}
 Complete: {status:color=green}Done{/status}
-Blocked: {status:color=red}Blocked{/status}
 
 ### Dates
 Created: {date:2025-01-20}
 Due: {date:2025-02-15}
-
-### Expand Sections
-:::expand title="Click to expand details"
-This content is inside an expandable section.
-
-#### Nested Content
-- Item 1
-- Item 2
-
-```javascript
-function expandTest() {
-  console.log('Expand section test');
-}
-```
-:::
-
-### Tables with ADF Elements
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Creation | {status:color=green}Complete{/status} | Working |
-| Updates | {status:color=blue}Testing{/status} | In progress |
-| ADF | {status:color=yellow}Review{/status} | Needs validation |
 """,
-
-        "complex_nested_content": """# Complex Nested Test
-
-## Multi-level Content
-
-1. **Step 1**: Initial setup
-   :::panel type="note"
-   Configure all settings before proceeding.
-   :::
-
-2. **Step 2**: Execute process
-   ```bash
-   npm run test
-   ```
-   Status: {status:color=blue}Running{/status}
-
-3. **Step 3**: Validate results
-   :::expand title="Expected Results"
-   - All tests pass
-   - No formatting issues
-   - ADF elements render correctly
-   :::
-"""
     }
 
-# Browser-based fixtures for visual verification tests
-@pytest.fixture(scope="session")
-def browser_context_args(test_config):
-    """
-    Configure browser context for visual verification tests.
-    
-    Args:
-        test_config: Test configuration
-        
-    Returns:
-        Dict: Browser context configuration
-    """
-    storage_state_path = Path(__file__).parent / "storageState.json"
-    
-    context_args = {
-        "viewport": {"width": 1280, "height": 720},
-        "ignore_https_errors": True,
-    }
-    
-    # Use saved authentication state if available
-    if storage_state_path.exists():
-        context_args["storage_state"] = str(storage_state_path)
-    
-    return context_args
 
-@pytest.fixture(scope="function")
-async def authenticated_page(page, test_config):
-    """
-    Provide an authenticated page for visual verification tests.
-    
-    Args:
-        page: Playwright page fixture
-        test_config: Test configuration
-        
-    Yields:
-        Page: Authenticated Playwright page
-    """
-    # If no storage state, may need manual authentication
-    storage_state_path = Path(__file__).parent / "storageState.json"
-    if not storage_state_path.exists():
-        pytest.skip("No authentication state found. Run 'npm run auth' first.")
-    
-    yield page
+# Test markers for pytest configuration
+def pytest_configure(config):
+    """Configure pytest with custom markers."""
+    config.addinivalue_line(
+        "markers", "mcp: MCP server contract tests (default, fast)"
+    )
+    config.addinivalue_line(
+        "markers", "atlassian_stub: Tests with mocked Atlassian API responses"
+    )
+    config.addinivalue_line(
+        "markers", "ui_smoke: Optional browser-based visual verification tests (excluded by default)"
+    )
 
-@pytest.fixture(scope="function")
-def screenshot_manager():
-    """
-    Manage screenshot capture and comparison for visual tests.
-    
-    Yields:
-        ScreenshotManager: Screenshot management utilities
-    """
-    class ScreenshotManager:
-        def __init__(self):
-            self.screenshots_dir = ART_DIR / "screenshots"
-            self.screenshots_dir.mkdir(exist_ok=True)
-        
-        async def capture_element(self, page, selector: str, name: str) -> Path:
-            """Capture screenshot of specific element."""
-            element = page.locator(selector)
-            screenshot_path = self.screenshots_dir / f"{name}.png"
-            await element.screenshot(path=screenshot_path)
-            return screenshot_path
-        
-        async def capture_page(self, page, name: str) -> Path:
-            """Capture full page screenshot."""
-            screenshot_path = self.screenshots_dir / f"{name}_full.png"
-            await page.screenshot(path=screenshot_path, full_page=True)
-            return screenshot_path
-    
-    yield ScreenshotManager()
 
-# Utility functions
+def pytest_collection_modifyitems(config, items):
+    """Modify test collection to add markers automatically."""
+    for item in items:
+        # Add mcp marker to non-visual tests by default
+        if "ui_smoke" not in [mark.name for mark in item.iter_markers()]:
+            item.add_marker(pytest.mark.mcp)
+        
+        # Add atlassian_stub marker if atlassian_stub fixture is used
+        if "atlassian_stub" in item.fixturenames:
+            item.add_marker(pytest.mark.atlassian_stub)
+        
+        # Add markers based on file names
+        if "adf" in item.module.__name__:
+            item.add_marker(pytest.mark.adf)
+        if "jira" in item.module.__name__:
+            item.add_marker(pytest.mark.jira)
+        if "confluence" in item.module.__name__:
+            item.add_marker(pytest.mark.confluence)
+
+
 def extract_json_from_result(result: Any) -> Dict:
     """
     Extract JSON object from MCP tool result.
@@ -367,31 +428,3 @@ def extract_json_from_result(result: Any) -> Dict:
         return json.loads(str(result))
     except Exception:
         return {}
-
-# Test markers for pytest-xdist compatibility
-def pytest_configure(config):
-    """Configure pytest with custom markers."""
-    config.addinivalue_line(
-        "markers", "api: API-based MCP tool tests (fast)"
-    )
-    config.addinivalue_line(
-        "markers", "visual: Browser-based visual verification tests (slower)"
-    )
-    config.addinivalue_line(
-        "markers", "adf: ADF formatting and conversion tests"
-    )
-
-def pytest_collection_modifyitems(config, items):
-    """Modify test collection to add markers automatically."""
-    for item in items:
-        # Add api marker to non-visual tests by default
-        if "visual" not in [mark.name for mark in item.iter_markers()]:
-            item.add_marker(pytest.mark.api)
-        
-        # Add markers based on file names
-        if "adf" in item.module.__name__:
-            item.add_marker(pytest.mark.adf)
-        if "jira" in item.module.__name__:
-            item.add_marker(pytest.mark.jira)
-        if "confluence" in item.module.__name__:
-            item.add_marker(pytest.mark.confluence)

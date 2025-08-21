@@ -8,8 +8,11 @@ for both Jira and Confluence. Uses Playwright for visual validation.
 import pytest
 from playwright.async_api import Page, expect
 
-from ..tests.base_test import MCPBaseTest
-from ..visual_validators import ADFVisualValidator
+from .base_test import MCPBaseTest
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from visual_validators import ADFVisualValidator
 
 
 class TestADFVisualFormatting(MCPBaseTest):
@@ -23,7 +26,7 @@ class TestADFVisualFormatting(MCPBaseTest):
     @pytest.mark.visual
     @pytest.mark.adf
     async def test_jira_issue_adf_description_rendering(
-        self, mcp_client, test_config, browser_context
+        self, mcp_client, test_config, context
     ):
         """Test that ADF-formatted Jira issue descriptions render correctly."""
         # Create issue with rich ADF content
@@ -90,7 +93,7 @@ Last updated: {date:2025-01-20}
         self.track_resource("jira_issue", issue_key)
         
         # Navigate to issue and validate ADF rendering
-        page = await browser_context.new_page()
+        page = await context.new_page()
         validator = ADFVisualValidator()
         
         validation_result = await validator.validate_jira_issue_description(
@@ -105,7 +108,7 @@ Last updated: {date:2025-01-20}
     @pytest.mark.visual
     @pytest.mark.adf
     async def test_confluence_page_adf_content_rendering(
-        self, mcp_client, test_config, browser_context
+        self, mcp_client, test_config, context
     ):
         """Test that ADF-formatted Confluence page content renders correctly."""
         # Create page with comprehensive ADF content
@@ -205,7 +208,7 @@ the ADF visual rendering is working correctly!
         self.track_resource("confluence_page", page_id)
         
         # Navigate to page and validate ADF rendering
-        page = await browser_context.new_page()
+        page = await context.new_page()
         validator = ADFVisualValidator()
         
         validation_result = await validator.validate_confluence_page_content(
@@ -225,7 +228,7 @@ the ADF visual rendering is working correctly!
     @pytest.mark.visual
     @pytest.mark.adf
     async def test_jira_comment_adf_formatting(
-        self, mcp_client, test_config, browser_context
+        self, mcp_client, test_config, context
     ):
         """Test ADF formatting in Jira comments."""
         # First create a test issue
@@ -270,7 +273,7 @@ npm run test:adf
         self.assert_success_response(comment_result)
         
         # Navigate and validate comment ADF rendering
-        page = await browser_context.new_page()
+        page = await context.new_page()
         validator = ADFVisualValidator()
         
         # Navigate to the issue to view the comment
@@ -301,7 +304,7 @@ npm run test:adf
     @pytest.mark.visual
     @pytest.mark.adf
     async def test_cross_platform_adf_consistency(
-        self, mcp_client, test_config, browser_context
+        self, mcp_client, test_config, context
     ):
         """Test that ADF renders consistently across Jira and Confluence."""
         # Use identical ADF content in both platforms
@@ -358,7 +361,7 @@ Test date: {date:2025-01-20}
         self.track_resource("confluence_page", page_id)
         
         # Visual validation for both platforms
-        page = await browser_context.new_page()
+        page = await context.new_page()
         validator = ADFVisualValidator()
         
         # Validate Jira rendering
@@ -384,7 +387,7 @@ Test date: {date:2025-01-20}
     @pytest.mark.visual
     @pytest.mark.adf
     async def test_adf_performance_visual_validation(
-        self, mcp_client, test_config, browser_context
+        self, mcp_client, test_config, context
     ):
         """Test ADF rendering performance with complex content."""
         # Create complex ADF content to test performance
@@ -436,7 +439,7 @@ def section_{i+1}():
         self.track_resource("confluence_page", page_id)
         
         # Validate with performance timing
-        page = await browser_context.new_page()
+        page = await context.new_page()
         validator = ADFVisualValidator()
         
         import time

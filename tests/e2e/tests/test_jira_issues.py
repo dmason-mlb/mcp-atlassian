@@ -35,7 +35,7 @@ class TestJiraIssueCreation(MCPJiraTest):
         )
         
         # Validate response
-        self.assert_success_response(result, ["key", "id"])
+        self.assert_success_response(result, ["message", "issue"])
         validation = validate_jira_response(result, "create")
         assert validation.is_valid, f"Validation failed: {validation.errors}"
         
@@ -44,7 +44,7 @@ class TestJiraIssueCreation(MCPJiraTest):
         self.track_resource("jira_issue", issue_key)
         
         # Verify issue was created with correct data
-        issue_data = self.extract_json(result)
+        issue_data = self._extract_json(result)
         assert summary in str(issue_data)
     
     async def test_create_story_with_assignee(self, mcp_client, test_config, test_data_manager):
@@ -63,12 +63,12 @@ class TestJiraIssueCreation(MCPJiraTest):
             assignee=assignee
         )
         
-        self.assert_success_response(result, ["key"])
+        self.assert_success_response(result, ["message", "issue"])
         issue_key = self.extract_issue_key(result)
         self.track_resource("jira_issue", issue_key)
         
         # Validate assignee was set (if supported)
-        issue_data = self.extract_json(result)
+        issue_data = self._extract_json(result)
         # Note: Assignee validation may vary by Jira configuration
     
     async def test_create_bug_with_priority(self, mcp_client, test_config, test_data_manager):
@@ -86,7 +86,7 @@ class TestJiraIssueCreation(MCPJiraTest):
             }
         )
         
-        self.assert_success_response(result, ["key"])
+        self.assert_success_response(result, ["message", "issue"])
         issue_key = self.extract_issue_key(result)
         self.track_resource("jira_issue", issue_key)
     
@@ -104,7 +104,7 @@ class TestJiraIssueCreation(MCPJiraTest):
             }
         )
         
-        self.assert_success_response(result, ["key"])
+        self.assert_success_response(result, ["message", "issue"])
         issue_key = self.extract_issue_key(result)
         self.track_resource("jira_issue", issue_key)
     
@@ -123,23 +123,19 @@ class TestJiraIssueCreation(MCPJiraTest):
             }
         )
         
-        self.assert_success_response(result, ["key"])
+        self.assert_success_response(result, ["message", "issue"])
         issue_key = self.extract_issue_key(result)
         self.track_resource("jira_issue", issue_key)
     
     async def test_create_issue_invalid_project(self, mcp_client, test_config):
         """Test creating issue with invalid project."""
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.create_jira_issue(
-                project_key="INVALID",
-                summary="Should Fail",
-                issue_type="Task"
-            )
+        result = await mcp_client.create_jira_issue(
+            project_key="INVALID",
+            summary="Should Fail",
+            issue_type="Task"
+        )
         
-        # Validate error response
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["project", "not found", "invalid"]), \
-            f"Expected project-related error, got: {error_msg}"
+        self.assert_error_response(result, r"project|not found|invalid")
 
 
 @pytest.mark.api
@@ -192,6 +188,7 @@ class TestJiraIssueUpdates(MCPJiraTest):
         # Update priority
         update_result = await mcp_client.update_jira_issue(
             issue_key=issue_key,
+            fields={},
             additional_fields={
                 "priority": {"name": "High"}
             }
@@ -209,6 +206,7 @@ class TestJiraIssueUpdates(MCPJiraTest):
         test_label = test_config["test_label"]
         update_result = await mcp_client.update_jira_issue(
             issue_key=issue_key,
+            fields={},
             additional_fields={
                 "labels": [test_label, "updated", "test-automation"]
             }
@@ -218,15 +216,12 @@ class TestJiraIssueUpdates(MCPJiraTest):
     
     async def test_update_nonexistent_issue(self, mcp_client, test_config):
         """Test updating non-existent issue."""
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.update_jira_issue(
-                issue_key="FAKE-99999",
-                fields={"summary": "Should Fail"}
-            )
+        result = await mcp_client.update_jira_issue(
+            issue_key="FAKE-99999",
+            fields={"summary": "Should Fail"}
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["not found", "does not exist", "invalid"]), \
-            f"Expected issue not found error, got: {error_msg}"
+        self.assert_error_response(result, r"not found|does not exist|invalid")
 
 
 @pytest.mark.api
@@ -457,29 +452,23 @@ class TestJiraErrorHandling(MCPJiraTest):
     
     async def test_create_issue_missing_required_fields(self, mcp_client, test_config):
         """Test creating issue with missing required fields."""
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.create_jira_issue(
-                project_key=test_config["jira_project"],
-                summary="",  # Empty summary
-                issue_type="Task"
-            )
+        result = await mcp_client.create_jira_issue(
+            project_key=test_config["jira_project"],
+            summary="",  # Empty summary
+            issue_type="Task"
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["summary", "required", "empty"]), \
-            f"Expected summary validation error, got: {error_msg}"
+        self.assert_error_response(result, r"summary|required|empty")
     
     async def test_invalid_issue_type(self, mcp_client, test_config):
         """Test creating issue with invalid issue type."""
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.create_jira_issue(
-                project_key=test_config["jira_project"],
-                summary="Test Invalid Type",
-                issue_type="InvalidType"
-            )
+        result = await mcp_client.create_jira_issue(
+            project_key=test_config["jira_project"],
+            summary="Test Invalid Type",
+            issue_type="InvalidType"
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["issue type", "invalid", "not valid"]), \
-            f"Expected issue type error, got: {error_msg}"
+        self.assert_error_response(result, r"issue type|invalid|not valid")
     
     async def test_update_issue_invalid_fields(self, mcp_client, test_config, test_data_manager):
         """Test updating issue with invalid field values."""
@@ -488,17 +477,15 @@ class TestJiraErrorHandling(MCPJiraTest):
         issue_key = self.extract_issue_key(create_result)
         
         # Try to update with invalid priority
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.update_jira_issue(
-                issue_key=issue_key,
-                additional_fields={
-                    "priority": {"name": "InvalidPriority"}
-                }
-            )
+        result = await mcp_client.update_jira_issue(
+            issue_key=issue_key,
+            fields={},
+            additional_fields={
+                "priority": {"name": "InvalidPriority"}
+            }
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["priority", "invalid", "not valid"]), \
-            f"Expected priority validation error, got: {error_msg}"
+        self.assert_error_response(result, r"priority|invalid|not valid")
     
     async def test_transition_invalid_transition_id(self, mcp_client, test_config, test_data_manager):
         """Test transitioning with invalid transition ID."""
@@ -507,15 +494,12 @@ class TestJiraErrorHandling(MCPJiraTest):
         issue_key = self.extract_issue_key(create_result)
         
         # Try invalid transition
-        with pytest.raises(Exception) as exc_info:
-            await mcp_client.transition_jira_issue(
-                issue_key=issue_key,
-                transition_id="99999"  # Invalid transition ID
-            )
+        result = await mcp_client.transition_jira_issue(
+            issue_key=issue_key,
+            transition_id="99999"  # Invalid transition ID
+        )
         
-        error_msg = str(exc_info.value).lower()
-        assert any(word in error_msg for word in ["transition", "invalid", "not valid"]), \
-            f"Expected transition validation error, got: {error_msg}"
+        self.assert_error_response(result, r"transition|invalid|not valid")
 
 
 @pytest.mark.api

@@ -12,7 +12,7 @@ import random
 import string
 from typing import Dict, Any
 
-from ..tests.base_test import MCPBaseTest
+from .base_test import MCPBaseTest
 
 
 class TestCrossServiceIntegration(MCPBaseTest):
