@@ -1,0 +1,34 @@
+{
+  "id": "1166230",
+  "key": "FTEST-120",
+  "summary": "Response Capture Test - 20250817_235744",
+  "description": {
+    "type": "doc",
+    "version": 1,
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Test issue for capturing API responses"
+          }
+        ]
+      }
+    ]
+  },
+  "status": {
+    "name": "To Do",
+    "category": "To Do",
+    "color": "blue-gray"
+  },
+  "priority": {
+    "name": "None"
+  },
+  "assignee": {
+    "display_name": "Douglas Mason",
+    "name": "Douglas Mason",
+    "email": "douglas.mason@mlb.com",
+    "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+  }
+}

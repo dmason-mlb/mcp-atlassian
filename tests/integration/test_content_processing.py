@@ -793,7 +793,9 @@ def shared_function():
 | Confluence | ✅    |"""
 
         # Convert to Jira format
-        jira_markup = jira_preprocessor.markdown_to_jira(shared_markdown, enable_adf=False)
+        jira_markup = jira_preprocessor.markdown_to_jira(
+            shared_markdown, enable_adf=False
+        )
 
         # Convert to Confluence format
         confluence_storage = confluence_preprocessor.markdown_to_confluence_storage(

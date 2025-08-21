@@ -1,0 +1,58 @@
+{
+  "id": "1166230",
+  "key": "FTEST-120",
+  "summary": "UPDATED - ",
+  "url": "https://baseball.atlassian.net/rest/api/3/issue/1166230",
+  "description": {
+    "type": "doc",
+    "version": 1,
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Test issue for capturing API responses"
+          }
+        ]
+      }
+    ]
+  },
+  "status": {
+    "name": "To Do",
+    "category": "To Do",
+    "color": "blue-gray"
+  },
+  "issue_type": {
+    "name": "Task"
+  },
+  "priority": {
+    "name": "None"
+  },
+  "project": {
+    "key": "FTEST",
+    "name": "Frameworks Testing",
+    "category": "Client Engineering",
+    "avatar_url": "https://baseball.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/25819"
+  },
+  "worklog": {
+    "startAt": 0,
+    "maxResults": 20,
+    "total": 0,
+    "worklogs": []
+  },
+  "assignee": {
+    "display_name": "Douglas Mason",
+    "name": "Douglas Mason",
+    "email": "douglas.mason@mlb.com",
+    "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+  },
+  "reporter": {
+    "display_name": "Douglas Mason",
+    "name": "Douglas Mason",
+    "email": "douglas.mason@mlb.com",
+    "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+  },
+  "created": "2025-08-18T01:57:45.698-0400",
+  "updated": "2025-08-18T01:57:46.861-0400"
+}

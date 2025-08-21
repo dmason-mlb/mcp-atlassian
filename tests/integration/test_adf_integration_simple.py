@@ -2,9 +2,8 @@
 
 import json
 import time
-from typing import Any
 
-from mcp_atlassian.formatting.adf import ADFGenerator
+from mcp_atlassian.formatting.adf_ast import ASTBasedADFGenerator as ADFGenerator
 from mcp_atlassian.formatting.router import FormatRouter
 
 
@@ -30,52 +29,56 @@ class TestADFIntegration:
             ("---", "rule"),
             ("[Link](http://example.com)", "paragraph"),
         ]
-        
+
         for markdown, expected_type in test_cases:
             adf_result = self.adf_generator.markdown_to_adf(markdown)
-            
+
             # Validate basic structure
             assert adf_result["type"] == "doc"
-            assert adf_result["version"] == 1 
+            assert adf_result["version"] == 1
             assert isinstance(adf_result["content"], list)
-            
+
             # Check that expected content types are present
             adf_str = json.dumps(adf_result)
-            assert expected_type in adf_str, f"Expected {expected_type} not found in ADF for: {markdown}"
+            assert expected_type in adf_str, (
+                f"Expected {expected_type} not found in ADF for: {markdown}"
+            )
 
     def test_performance_benchmark(self):
         """Test ADF conversion performance meets target (<100ms)."""
         # Generate test content
         sections = []
         for i in range(10):
-            section = f"""## Section {i+1}
+            section = f"""## Section {i + 1}
 
-This is section {i+1} with **bold**, *italic*, and `code` formatting.
+This is section {i + 1} with **bold**, *italic*, and `code` formatting.
 
-- List item 1 for section {i+1}
-- List item 2 for section {i+1}
+- List item 1 for section {i + 1}
+- List item 2 for section {i + 1}
 
 ```python
-def section_{i+1}_function():
-    return "Section {i+1} code example"
+def section_{i + 1}_function():
+    return "Section {i + 1} code example"
 ```
 
-> Blockquote for section {i+1}.
+> Blockquote for section {i + 1}.
 """
             sections.append(section)
-        
+
         large_markdown = "# Performance Test\n\n" + "\n".join(sections)
-        
+
         # Test conversion performance
         start_time = time.time()
         adf_result = self.adf_generator.markdown_to_adf(large_markdown)
         end_time = time.time()
-        
+
         conversion_time = end_time - start_time
-        
+
         # Should complete within target time (100ms per plan)
-        assert conversion_time < 0.1, f"Conversion took {conversion_time:.3f}s, should be < 0.1s"
-        
+        assert conversion_time < 0.1, (
+            f"Conversion took {conversion_time:.3f}s, should be < 0.1s"
+        )
+
         # Validate result structure
         assert adf_result["type"] == "doc"
         assert len(adf_result["content"]) >= 20  # Multiple content blocks
@@ -88,19 +91,19 @@ def section_{i+1}_function():
             "```\nUnclosed code block",
             "![Invalid image](nonexistent.jpg)",
         ]
-        
+
         for problematic_markdown in problematic_cases:
             # Should not crash and should produce valid ADF
             adf_result = self.adf_generator.markdown_to_adf(problematic_markdown)
-            
+
             assert adf_result["type"] == "doc"
             assert adf_result["version"] == 1
             assert isinstance(adf_result["content"], list)
-            
+
             # Should be JSON serializable
             adf_json = json.dumps(adf_result)
             assert len(adf_json) > 20
-            
+
             # Validate ADF structure
             assert self.adf_generator.validate_adf(adf_result) is True
 
@@ -119,20 +122,18 @@ print("Hello, ADF!")
 
         # Test Cloud deployment
         cloud_result = self.format_router.convert_markdown(
-            markdown_content, 
-            "https://test.atlassian.net"
+            markdown_content, "https://test.atlassian.net"
         )
-        
+
         assert cloud_result["format"] == "adf"
         assert cloud_result["deployment_type"] == "cloud"
         assert isinstance(cloud_result["content"], dict)
-        
+
         # Test Server deployment
         server_result = self.format_router.convert_markdown(
-            markdown_content,
-            "https://jira.company.com"
+            markdown_content, "https://jira.company.com"
         )
-        
+
         assert server_result["format"] == "wiki_markup"
         assert server_result["deployment_type"] == "server"
         assert isinstance(server_result["content"], str)
@@ -182,24 +183,26 @@ Returns user list.
 ```"""
 
         samples = [github_issue, api_docs]
-        
+
         for sample in samples:
             # Convert to ADF
             adf_result = self.adf_generator.markdown_to_adf(sample)
-            
+
             # Validate structure
             assert adf_result["type"] == "doc"
             assert adf_result["version"] == 1
             assert len(adf_result["content"]) >= 3
-            
+
             # Validate JSON serialization
             adf_json = json.dumps(adf_result)
             assert len(adf_json) > 100
-            
+
             # Validate ADF compliance
             assert self.adf_generator.validate_adf(adf_result) is True
-            
-            # Test with format router  
-            cloud_result = self.format_router.convert_markdown(sample, "https://test.atlassian.net")
+
+            # Test with format router
+            cloud_result = self.format_router.convert_markdown(
+                sample, "https://test.atlassian.net"
+            )
             assert cloud_result["format"] == "adf"
             assert cloud_result["content"] == adf_result

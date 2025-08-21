@@ -1,0 +1,74 @@
+[
+  {
+    "id": "21",
+    "name": "To Do",
+    "to": {
+      "self": "https://baseball.atlassian.net/rest/api/3/status/21000",
+      "description": "",
+      "iconUrl": "https://baseball.atlassian.net/",
+      "name": "To Do",
+      "id": "21000",
+      "statusCategory": {
+        "self": "https://baseball.atlassian.net/rest/api/3/statuscategory/2",
+        "id": 2,
+        "key": "new",
+        "colorName": "blue-gray",
+        "name": "To Do"
+      }
+    },
+    "hasScreen": false,
+    "isGlobal": true,
+    "isInitial": false,
+    "isAvailable": true,
+    "isConditional": false,
+    "isLooped": false
+  },
+  {
+    "id": "41",
+    "name": "Done",
+    "to": {
+      "self": "https://baseball.atlassian.net/rest/api/3/status/21002",
+      "description": "",
+      "iconUrl": "https://baseball.atlassian.net/",
+      "name": "Done",
+      "id": "21002",
+      "statusCategory": {
+        "self": "https://baseball.atlassian.net/rest/api/3/statuscategory/3",
+        "id": 3,
+        "key": "done",
+        "colorName": "green",
+        "name": "Done"
+      }
+    },
+    "hasScreen": false,
+    "isGlobal": true,
+    "isInitial": false,
+    "isAvailable": true,
+    "isConditional": false,
+    "isLooped": false
+  },
+  {
+    "id": "2",
+    "name": "Start Work",
+    "to": {
+      "self": "https://baseball.atlassian.net/rest/api/3/status/21001",
+      "description": "",
+      "iconUrl": "https://baseball.atlassian.net/",
+      "name": "In Progress",
+      "id": "21001",
+      "statusCategory": {
+        "self": "https://baseball.atlassian.net/rest/api/3/statuscategory/4",
+        "id": 4,
+        "key": "indeterminate",
+        "colorName": "yellow",
+        "name": "In Progress"
+      }
+    },
+    "hasScreen": false,
+    "isGlobal": false,
+    "isInitial": false,
+    "isAvailable": true,
+    "isConditional": false,
+    "isLooped": false
+  }
+]

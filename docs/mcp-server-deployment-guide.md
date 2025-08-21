@@ -1,8 +1,8 @@
 # MCP Server Deployment and Configuration Guide
 
-**Created:** July 29, 2025  
-**Version:** 1.0.0  
-**Purpose:** Comprehensive deployment and configuration guide for the MCP Atlassian server  
+**Created:** July 29, 2025
+**Version:** 1.0.0
+**Purpose:** Comprehensive deployment and configuration guide for the MCP Atlassian server
 
 ## Overview
 
@@ -356,7 +356,7 @@ curl -sSL https://install.claudecode.com | bash
    ```bash
    # Start HTTP server
    uv run mcp-atlassian --transport sse --port 9000 --env-file .env
-   
+
    # Connect via HTTP
    curl -N -H "Accept: text/event-stream" \
         http://localhost:9000/sse
@@ -366,7 +366,7 @@ curl -sSL https://install.claudecode.com | bash
    ```bash
    # Start streamable HTTP server
    uv run mcp-atlassian --transport streamable-http --port 9000 --env-file .env
-   
+
    # Connect via WebSocket or HTTP
    wscat -c ws://localhost:9000/ws
    ```
@@ -412,7 +412,7 @@ ATLASSIAN_MULTI_USER=true|false          # Default: false
 
 #### Service URLs
 ```bash
-# Instance URLs  
+# Instance URLs
 ATLASSIAN_URL=https://company.atlassian.net
 # Alternative: Set individually for Server/DC
 # JIRA_URL=https://company.atlassian.net
@@ -671,7 +671,7 @@ data:
    ```bash
    # Use environment variables or secrets management
    export ATLASSIAN_API_TOKEN=$(vault kv get -field=token secret/atlassian)
-   
+
    # Rotate tokens regularly
    # Monitor access logs
    # Use least-privilege principles
@@ -698,7 +698,7 @@ data:
    ```bash
    # Application health
    curl http://localhost:9000/healthz
-   
+
    # Detailed health with metrics
    curl http://localhost:9000/healthz/detailed
    ```
@@ -707,7 +707,7 @@ data:
    ```bash
    # Enable Prometheus metrics
    export ENABLE_PROMETHEUS_METRICS=true
-   
+
    # Metrics endpoint
    curl http://localhost:9000/metrics
    ```
@@ -717,7 +717,7 @@ data:
    # JSON logging for production
    export LOG_FORMAT=json
    export LOG_LEVEL=INFO
-   
+
    # Log aggregation
    # ELK Stack, Splunk, or CloudWatch
    ```
@@ -768,7 +768,7 @@ data:
    ```bash
    # Check credentials
    uv run mcp-atlassian --test-auth
-   
+
    # Verify URLs
    curl -u email:token https://your-domain.atlassian.net/rest/api/3/myself
    ```
@@ -777,7 +777,7 @@ data:
    ```bash
    # Test connectivity
    uv run mcp-atlassian --test-connection
-   
+
    # Check SSL/TLS
    openssl s_client -connect your-domain.atlassian.net:443
    ```
@@ -786,7 +786,7 @@ data:
    ```bash
    # Enable debug logging
    export LOG_LEVEL=DEBUG
-   
+
    # Monitor metrics
    curl http://localhost:9000/healthz/detailed
    ```

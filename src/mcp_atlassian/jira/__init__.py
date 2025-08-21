@@ -5,9 +5,6 @@ This module provides various Jira API client implementations.
 
 # flake8: noqa
 
-# Re-export the Jira class for backward compatibility
-from atlassian.jira import Jira
-
 from .client import JiraClient
 from .comments import CommentsMixin
 from .config import JiraConfig
@@ -68,4 +65,4 @@ class JiraFetcher(
     pass
 
 
-__all__ = ["JiraFetcher", "JiraConfig", "JiraClient", "Jira"]
+__all__ = ["JiraFetcher", "JiraConfig", "JiraClient"]

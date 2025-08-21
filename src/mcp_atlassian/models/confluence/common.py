@@ -27,6 +27,7 @@ class ConfluenceUser(ApiModel):
     profile_picture: str | None = None
     is_active: bool = True
     locale: str | None = None
+    username: str | None = None  # Username field for API responses
 
     @property
     def name(self) -> str:
@@ -68,6 +69,7 @@ class ConfluenceUser(ApiModel):
             profile_picture=profile_pic,
             is_active=data.get("accountStatus") == "active",
             locale=data.get("locale"),
+            username=data.get("username") or data.get("name"),  # Try both fields
         )
 
     def to_simplified_dict(self) -> dict[str, Any]:

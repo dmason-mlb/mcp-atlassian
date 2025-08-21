@@ -1,0 +1,28 @@
+{
+  "name": "mcp-atlassian-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "prep": "playwright install --with-deps && pip install -r requirements-test.txt",
+    "start-server": "cd ../.. && uv run mcp-atlassian --transport streamable-http --port 9001",
+    "seed": "./seed-with-server.sh",
+    "seed:direct": "uv run python seed/seed.py",
+    "test": "pytest -v",
+    "test:api": "pytest -v -m api",
+    "test:visual": "pytest -v -m visual --browser chromium",
+    "test:adf": "pytest -v -m adf",
+    "test:jira": "pytest -v -m jira",
+    "test:confluence": "pytest -v -m confluence",
+    "test:smoke": "pytest -v -m smoke",
+    "test:slow": "pytest -v -m slow",
+    "test:parallel": "pytest -v -n auto",
+    "clean": "uv run python cleanup/cleanup.py",
+    "auth": "node manual-login.js",
+    "auth-setup": "node manual-login.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.46.0",
+    "dotenv": "^16.4.5"
+  }
+}

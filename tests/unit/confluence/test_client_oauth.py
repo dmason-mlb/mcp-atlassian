@@ -37,7 +37,7 @@ class TestConfluenceClientOAuth:
 
         # Mock dependencies
         with (
-            patch("mcp_atlassian.confluence.client.Confluence") as mock_confluence,
+            patch("mcp_atlassian.rest.adapters.ConfluenceAdapter") as mock_confluence,
             patch(
                 "mcp_atlassian.confluence.client.configure_oauth_session"
             ) as mock_configure_oauth,
@@ -99,7 +99,7 @@ class TestConfluenceClientOAuth:
 
         # Mock dependencies
         with (
-            patch("mcp_atlassian.confluence.client.Confluence") as mock_confluence,
+            patch("mcp_atlassian.rest.adapters.ConfluenceAdapter") as mock_confluence,
             patch(
                 "mcp_atlassian.confluence.client.configure_oauth_session"
             ) as mock_configure_oauth,
@@ -330,7 +330,7 @@ class TestConfluenceClientOAuth:
             patch.object(
                 mock_standard_oauth_config, "ensure_valid_token", return_value=True
             ) as mock_ensure_valid_env,
-            patch("mcp_atlassian.confluence.client.Confluence") as mock_confluence,
+            patch("mcp_atlassian.rest.adapters.ConfluenceAdapter") as mock_confluence,
             patch(
                 "mcp_atlassian.confluence.client.configure_oauth_session",
                 return_value=True,
@@ -378,7 +378,7 @@ class TestConfluenceClientOAuth:
                 "mcp_atlassian.confluence.config.get_oauth_config_from_env",
                 return_value=mock_byo_oauth_config,
             ),
-            patch("mcp_atlassian.confluence.client.Confluence") as mock_confluence,
+            patch("mcp_atlassian.rest.adapters.ConfluenceAdapter") as mock_confluence,
             patch(
                 "mcp_atlassian.confluence.client.configure_oauth_session",
                 return_value=True,

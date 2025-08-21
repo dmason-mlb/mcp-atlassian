@@ -1,0 +1,133 @@
+{
+  "total": 74,
+  "start_at": -1,
+  "max_results": -1,
+  "issues": [
+    {
+      "id": "1166230",
+      "key": "FTEST-120",
+      "summary": "UPDATED - ",
+      "description": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Test issue for capturing API responses"
+              }
+            ]
+          }
+        ]
+      },
+      "status": {
+        "name": "To Do",
+        "category": "To Do",
+        "color": "blue-gray"
+      },
+      "priority": {
+        "name": "None"
+      },
+      "assignee": {
+        "display_name": "Douglas Mason",
+        "name": "Douglas Mason",
+        "email": "douglas.mason@mlb.com",
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+      },
+      "reporter": {
+        "display_name": "Douglas Mason",
+        "name": "Douglas Mason",
+        "email": "douglas.mason@mlb.com",
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+      },
+      "created": "2025-08-18T01:57:45.698-0400",
+      "updated": "2025-08-18T01:57:47.434-0400"
+    },
+    {
+      "id": "1166229",
+      "key": "FTEST-119",
+      "summary": "UPDATED - ",
+      "description": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Test issue for capturing API responses"
+              }
+            ]
+          }
+        ]
+      },
+      "status": {
+        "name": "To Do",
+        "category": "To Do",
+        "color": "blue-gray"
+      },
+      "priority": {
+        "name": "None"
+      },
+      "assignee": {
+        "display_name": "Douglas Mason",
+        "name": "Douglas Mason",
+        "email": "douglas.mason@mlb.com",
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+      },
+      "reporter": {
+        "display_name": "Douglas Mason",
+        "name": "Douglas Mason",
+        "email": "douglas.mason@mlb.com",
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+      },
+      "created": "2025-08-18T01:52:20.695-0400",
+      "updated": "2025-08-18T01:52:22.548-0400"
+    },
+    {
+      "id": "1166228",
+      "key": "FTEST-118",
+      "summary": "UPDATED - ",
+      "description": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Test issue for capturing API responses"
+              }
+            ]
+          }
+        ]
+      },
+      "status": {
+        "name": "To Do",
+        "category": "To Do",
+        "color": "blue-gray"
+      },
+      "priority": {
+        "name": "None"
+      },
+      "assignee": {
+        "display_name": "Douglas Mason",
+        "name": "Douglas Mason",
+        "email": "douglas.mason@mlb.com",
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+      },
+      "reporter": {
+        "display_name": "Douglas Mason",
+        "name": "Douglas Mason",
+        "email": "douglas.mason@mlb.com",
+        "avatar_url": "https://avatar-management--avatars.us-west-2.prod.public.atl-paas.net/5dfa93ea4517db0caf3738b4/f724f67d-332f-4817-a3bc-86ed1382dd7d/48"
+      },
+      "created": "2025-08-18T01:51:05.529-0400",
+      "updated": "2025-08-18T01:51:07.441-0400"
+    }
+  ]
+}

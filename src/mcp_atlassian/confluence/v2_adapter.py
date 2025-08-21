@@ -68,7 +68,7 @@ class ConfluenceV2Adapter:
 
     def create_page(
         self,
-        space_key: str,
+        space_id: str,
         title: str,
         body: str,
         parent_id: str | None = None,
@@ -78,7 +78,7 @@ class ConfluenceV2Adapter:
         """Create a page using the v2 API.
 
         Args:
-            space_key: The key of the space to create the page in
+            space_id: The ID of the space to create the page in
             title: The title of the page
             body: The content body in the specified representation
             parent_id: Optional parent page ID
@@ -92,20 +92,31 @@ class ConfluenceV2Adapter:
             ValueError: If page creation fails
         """
         try:
-            # Get space ID from space key
-            space_id = self._get_space_id(space_key)
+            # Check if space_id is actually a space key (starts with ~ or contains non-numeric chars)
+            # If so, convert it to the actual numeric space ID
+            actual_space_id = space_id
+            if not space_id.isdigit():
+                # This looks like a space key, not a numeric ID
+                logger.debug(f"Converting space key '{space_id}' to space ID")
+                actual_space_id = self._get_space_id(space_id)
+                logger.debug(
+                    f"Converted space key '{space_id}' to space ID '{actual_space_id}'"
+                )
 
             # Prepare request data for v2 API
             data = {
-                "spaceId": space_id,
+                "spaceId": actual_space_id,
                 "status": status,
                 "title": title,
             }
-            
+
             # Handle body format based on representation
             if representation == "atlas_doc_format" and isinstance(body, dict):
-                # For ADF, the body is the ADF JSON directly
-                data["body"] = body
+                # For ADF, the body should be wrapped with representation+value for v2 API
+                data["body"] = {
+                    "representation": "atlas_doc_format",
+                    "value": body,
+                }
             else:
                 # For storage/wiki, wrap in representation structure
                 data["body"] = {
@@ -119,19 +130,32 @@ class ConfluenceV2Adapter:
 
             # Make the v2 API call
             url = f"{self.base_url}/api/v2/pages"
+            logger.debug(f"Creating page with v2 API at {url}")
+            logger.debug(f"Request data: {data}")
+
+            # DEBUG: Log the exact JSON being sent
+            import json as json_module
+
+            json_payload = json_module.dumps(data, separators=(",", ":"))
+            logger.debug(f"[DEBUG] Exact JSON payload being sent: {json_payload}")
+
             response = self.session.post(url, json=data)
             response.raise_for_status()
 
             result = response.json()
             logger.debug(f"Successfully created page '{title}' with v2 API")
 
-            # Convert v2 response to v1-compatible format for consistency
-            return self._convert_v2_to_v1_format(result, space_key)
+            # Return v2 response directly (no conversion needed)
+            return result
 
         except HTTPError as e:
             logger.error(f"HTTP error creating page '{title}': {e}")
             if e.response is not None:
+                logger.error(f"Response status: {e.response.status_code}")
+                logger.error(f"Response headers: {dict(e.response.headers)}")
                 logger.error(f"Response content: {e.response.text}")
+                logger.error(f"Request was: {data}")
+                logger.error(f"Request JSON: {json_payload}")
             raise ValueError(f"Failed to create page '{title}': {e}") from e
         except Exception as e:
             logger.error(f"Error creating page '{title}': {e}")
@@ -210,11 +234,14 @@ class ConfluenceV2Adapter:
                     "number": new_version,
                 },
             }
-            
+
             # Handle body format based on representation
             if representation == "atlas_doc_format" and isinstance(body, dict):
-                # For ADF, the body is the ADF JSON directly
-                data["body"] = body
+                # For ADF, the body should be wrapped with representation+value for v2 API
+                data["body"] = {
+                    "representation": "atlas_doc_format",
+                    "value": body,
+                }
             else:
                 # For storage/wiki, wrap in representation structure
                 data["body"] = {
@@ -392,6 +419,54 @@ class ConfluenceV2Adapter:
         except Exception as e:
             logger.error(f"Error deleting page '{page_id}': {e}")
             raise ValueError(f"Failed to delete page '{page_id}': {e}") from e
+
+    def search(self, cql: str, limit: int = 10) -> dict[str, Any]:
+        """Search content using Confluence Query Language (CQL).
+
+        Note: CQL search still uses the v1 endpoint even with OAuth, as the v2 search
+        endpoint is for different types of content (databases, whiteboards, etc).
+
+        Args:
+            cql: Confluence Query Language string
+            limit: Maximum number of results to return
+
+        Returns:
+            Search results from the API response
+
+        Raises:
+            ValueError: If search fails
+        """
+        try:
+            # CQL search still uses the v1 content/search endpoint
+            # The v2 /search endpoint is for different content types
+            url = f"{self.base_url}/rest/api/content/search"
+            params = {
+                "cql": cql,
+                "limit": limit,
+            }
+
+            logger.debug(f"Searching with CQL endpoint: {url}")
+            logger.debug(f"CQL query: {cql}")
+
+            response = self.session.get(url, params=params)
+            response.raise_for_status()
+
+            result = response.json()
+            logger.debug(
+                f"Successfully searched, found {len(result.get('results', []))} results"
+            )
+
+            # The v1 CQL endpoint returns the expected format directly
+            return result
+
+        except HTTPError as e:
+            logger.error(f"HTTP error searching with CQL '{cql}': {e}")
+            if e.response is not None:
+                logger.error(f"Response content: {e.response.text}")
+            raise ValueError(f"Failed to search with CQL '{cql}': {e}") from e
+        except Exception as e:
+            logger.error(f"Error searching with CQL '{cql}': {e}")
+            raise ValueError(f"Failed to search with CQL '{cql}': {e}") from e
 
     def _convert_v2_to_v1_format(
         self, v2_response: dict[str, Any], space_key: str

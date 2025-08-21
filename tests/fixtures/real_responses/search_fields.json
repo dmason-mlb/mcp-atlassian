@@ -1,0 +1,98 @@
+[
+  {
+    "id": "priority",
+    "key": "priority",
+    "name": "Priority",
+    "custom": false,
+    "orderable": true,
+    "navigable": true,
+    "searchable": true,
+    "clauseNames": [
+      "priority"
+    ],
+    "schema": {
+      "type": "priority",
+      "system": "priority"
+    }
+  },
+  {
+    "id": "customfield_21831",
+    "key": "customfield_21831",
+    "name": "Business Priority EP",
+    "untranslatedName": "Business Priority EP",
+    "custom": true,
+    "orderable": true,
+    "navigable": true,
+    "searchable": true,
+    "clauseNames": [
+      "Business Priority EP",
+      "Business Priority EP[Dropdown]",
+      "cf[21831]"
+    ],
+    "schema": {
+      "type": "option",
+      "custom": "com.atlassian.jira.plugin.system.customfieldtypes:select",
+      "customId": 21831
+    }
+  },
+  {
+    "id": "customfield_10000",
+    "key": "customfield_10000",
+    "name": "Business Priority",
+    "untranslatedName": "Business Priority",
+    "custom": true,
+    "orderable": true,
+    "navigable": true,
+    "searchable": true,
+    "clauseNames": [
+      "Business Priority",
+      "Business Priority[Dropdown]",
+      "cf[10000]"
+    ],
+    "schema": {
+      "type": "option",
+      "custom": "com.atlassian.jira.plugin.system.customfieldtypes:select",
+      "customId": 10000
+    }
+  },
+  {
+    "id": "customfield_14680",
+    "key": "customfield_14680",
+    "name": "Priority Points",
+    "untranslatedName": "Priority Points",
+    "custom": true,
+    "orderable": true,
+    "navigable": true,
+    "searchable": true,
+    "clauseNames": [
+      "cf[14680]",
+      "Priority Points",
+      "Priority Points[Number]"
+    ],
+    "schema": {
+      "type": "number",
+      "custom": "com.atlassian.jira.plugin.system.customfieldtypes:float",
+      "customId": 14680
+    }
+  },
+  {
+    "id": "customfield_10011",
+    "key": "customfield_10011",
+    "name": "Prioritization Notes:",
+    "untranslatedName": "Prioritization Notes:",
+    "custom": true,
+    "orderable": true,
+    "navigable": true,
+    "searchable": true,
+    "clauseNames": [
+      "cf[10011]",
+      "Prioritization Notes:",
+      "Prioritization Notes:[Paragraph]"
+    ],
+    "schema": {
+      "type": "string",
+      "custom": "com.atlassian.jira.plugin.system.customfieldtypes:textarea",
+      "customId": 10011
+    }
+  }
+]

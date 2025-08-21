@@ -74,14 +74,14 @@ class CustomAlertPlugin(BaseADFPlugin):
     @property
     def name(self) -> str:
         return "alert"
-    
+
     @property
     def block_pattern(self) -> Optional[Pattern[str]]:
         return re.compile(
             r'^:::alert\s+type="(\w+)"\n(.*?)\n:::$',
             re.MULTILINE | re.DOTALL
         )
-    
+
     def render_block(self, data, render_content):
         return {
             "type": "panel",
@@ -212,7 +212,7 @@ print(f"Avg conversion time: {metrics['average_conversion_time']*1000:.2f}ms")
 
 **Symptom**: ADF validation failures
 
-**Solution**: 
+**Solution**:
 - Set validation level to WARN to see issues:
   ```python
   import os
@@ -231,7 +231,7 @@ Update your tests to account for behavioral differences:
 def test_markdown_conversion():
     generator = ASTBasedADFGenerator()
     result = generator.markdown_to_adf("**bold**")
-    
+
     # More strict structure validation
     assert result["type"] == "doc"
     assert result["version"] == 1
@@ -253,7 +253,7 @@ generator = ASTBasedADFGenerator()
 for md_file in glob.glob("docs/*.md"):
     with open(md_file) as f:
         content = f.read()
-    
+
     try:
         result = generator.markdown_to_adf(content)
         print(f"✓ {md_file}")
@@ -287,7 +287,7 @@ if json.dumps(legacy_result, sort_keys=True) != json.dumps(new_result, sort_keys
 
 If you need to temporarily rollback to the legacy parser:
 
-1. **Environment Variable**: 
+1. **Environment Variable**:
    ```bash
    export USE_LEGACY_ADF_PARSER=true
    ```
@@ -297,7 +297,7 @@ If you need to temporarily rollback to the legacy parser:
    # Force legacy parser
    from mcp_atlassian.formatting.adf import ADFGenerator
    from mcp_atlassian.formatting import router
-   
+
    # Monkey-patch (temporary!)
    router.ASTBasedADFGenerator = ADFGenerator
    ```
@@ -321,7 +321,7 @@ If you need to temporarily rollback to the legacy parser:
 
 1. **Issue**: Inline plugins inside bold/italic text not processed
    - **Workaround**: Place plugins outside formatting marks
-   
+
 2. **Issue**: Complex nested plugin blocks
    - **Workaround**: Simplify nesting or use sequential blocks
 

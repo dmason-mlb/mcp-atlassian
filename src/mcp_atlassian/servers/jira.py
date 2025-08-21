@@ -13,6 +13,7 @@ from mcp_atlassian.jira.constants import DEFAULT_READ_JIRA_FIELDS
 from mcp_atlassian.models.jira.common import JiraUser
 from mcp_atlassian.servers.dependencies import get_jira_fetcher
 from mcp_atlassian.utils.decorators import check_write_access
+from mcp_atlassian.utils.tool_helpers import safe_tool_result
 
 logger = logging.getLogger(__name__)
 
@@ -336,24 +337,9 @@ async def get_transitions(
     return json.dumps(transitions, indent=2, ensure_ascii=False)
 
 
-@jira_mcp.tool(tags={"jira", "read"})
-async def get_worklog(
-    ctx: Context,
-    issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
-) -> str:
-    """Get worklog entries for a Jira issue.
-
-    Args:
-        ctx: The FastMCP context.
-        issue_key: Jira issue key.
-
-    Returns:
-        JSON string representing the worklog entries.
-    """
-    jira = await get_jira_fetcher(ctx)
-    worklogs = jira.get_worklogs(issue_key)
-    result = {"worklogs": worklogs}
-    return json.dumps(result, indent=2, ensure_ascii=False)
+"""
+Note: Worklog tools have been removed from MCP server; get_worklog is no longer available.
+"""
 
 
 @jira_mcp.tool(tags={"jira", "read"})
@@ -376,6 +362,35 @@ async def download_attachments(
     """
     jira = await get_jira_fetcher(ctx)
     result = jira.download_issue_attachments(issue_key=issue_key, target_dir=target_dir)
+    return json.dumps(result, indent=2, ensure_ascii=False)
+
+
+@jira_mcp.tool(tags={"jira", "write"})
+@check_write_access
+async def upload_attachment(
+    ctx: Context,
+    issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
+    file_path: Annotated[
+        str,
+        Field(
+            description="Absolute or relative path to a file to upload as an attachment"
+        ),
+    ],
+) -> str:
+    """Upload a single attachment to a Jira issue.
+
+    Uses Jira REST API v3 attachments endpoint (multipart/form-data with X-Atlassian-Token: no-check).
+
+    Args:
+        ctx: The FastMCP context.
+        issue_key: Jira issue key.
+        file_path: Path to the local file to upload.
+
+    Returns:
+        JSON string indicating the result of the upload operation.
+    """
+    jira = await get_jira_fetcher(ctx)
+    result = jira.upload_attachment(issue_key, file_path)
     return json.dumps(result, indent=2, ensure_ascii=False)
 
 
@@ -609,6 +624,7 @@ async def get_link_types(ctx: Context) -> str:
 
 @jira_mcp.tool(tags={"jira", "write"})
 @check_write_access
+@safe_tool_result
 async def create_issue(
     ctx: Context,
     project_key: Annotated[
@@ -650,7 +666,7 @@ async def create_issue(
         ),
     ] = None,
     additional_fields: Annotated[
-        dict[str, Any] | None,
+        dict[str, Any] | str | None,
         Field(
             description=(
                 "(Optional) Dictionary of additional fields to set. Examples:\n"
@@ -690,10 +706,22 @@ async def create_issue(
             comp.strip() for comp in components.split(",") if comp.strip()
         ]
 
-    # Use additional_fields directly as dict
-    extra_fields = additional_fields or {}
-    if not isinstance(extra_fields, dict):
-        raise ValueError("additional_fields must be a dictionary.")
+    # Normalize additional_fields: accept dict or JSON string
+    extra_fields: dict[str, Any] = {}
+    if additional_fields is not None:
+        if isinstance(additional_fields, dict):
+            extra_fields = additional_fields
+        elif isinstance(additional_fields, str):
+            try:
+                parsed = json.loads(additional_fields)
+                if isinstance(parsed, dict):
+                    extra_fields = parsed
+                else:
+                    raise ValueError("additional_fields JSON must decode to an object")
+            except Exception as e:
+                raise ValueError(f"Invalid JSON for additional_fields: {e}") from e
+        else:
+            raise ValueError("additional_fields must be a dictionary or JSON string.")
 
     issue = jira.create_issue(
         project_key=project_key,
@@ -1005,71 +1033,9 @@ async def add_comment(
     return json.dumps(result, indent=2, ensure_ascii=False)
 
 
-@jira_mcp.tool(tags={"jira", "write"})
-@check_write_access
-async def add_worklog(
-    ctx: Context,
-    issue_key: Annotated[str, Field(description="Jira issue key (e.g., 'PROJ-123')")],
-    time_spent: Annotated[
-        str,
-        Field(
-            description=(
-                "Time spent in Jira format. Examples: "
-                "'1h 30m' (1 hour and 30 minutes), '1d' (1 day), '30m' (30 minutes), '4h' (4 hours)"
-            )
-        ),
-    ],
-    comment: Annotated[
-        str | None,
-        Field(description="(Optional) Comment for the worklog in Markdown format"),
-    ] = None,
-    started: Annotated[
-        str | None,
-        Field(
-            description=(
-                "(Optional) Start time in ISO format. If not provided, the current time will be used. "
-                "Example: '2023-08-01T12:00:00.000+0000'"
-            )
-        ),
-    ] = None,
-    # Add original_estimate and remaining_estimate as per original tool
-    original_estimate: Annotated[
-        str | None, Field(description="(Optional) New value for the original estimate")
-    ] = None,
-    remaining_estimate: Annotated[
-        str | None, Field(description="(Optional) New value for the remaining estimate")
-    ] = None,
-) -> str:
-    """Add a worklog entry to a Jira issue.
-
-    Args:
-        ctx: The FastMCP context.
-        issue_key: Jira issue key.
-        time_spent: Time spent in Jira format.
-        comment: Optional comment in Markdown.
-        started: Optional start time in ISO format.
-        original_estimate: Optional new original estimate.
-        remaining_estimate: Optional new remaining estimate.
-
-
-    Returns:
-        JSON string representing the added worklog object.
-
-    Raises:
-        ValueError: If in read-only mode or Jira client unavailable.
-    """
-    jira = await get_jira_fetcher(ctx)
-    # add_worklog returns dict
-    worklog_result = jira.add_worklog(
-        issue_key=issue_key,
-        time_spent=time_spent,
-        comment=comment,
-        started=started,
-        original_estimate=original_estimate,
-        remaining_estimate=remaining_estimate,
-    )
-    result = {"message": "Worklog added successfully", "worklog": worklog_result}
-    return json.dumps(result, indent=2, ensure_ascii=False)
+"""
+Note: Worklog tools have been removed from MCP server; add_worklog is no longer available.
+"""
 
 
 @jira_mcp.tool(tags={"jira", "write"})
@@ -1653,3 +1619,81 @@ async def batch_create_versions(
             )
             results.append({"success": False, "error": str(e), "input": v})
     return json.dumps(results, indent=2, ensure_ascii=False)
+
+
+# ============================================================================
+# LEGACY COMPATIBILITY ALIASES FOR E2E TESTS
+# These are thin wrappers that delegate to canonical tools while maintaining
+# legacy naming conventions expected by E2E tests. 
+# TODO: Remove these after E2E tests are updated to use canonical names.
+# ============================================================================
+
+@jira_mcp.tool(name="issues_create_issue", tags={"jira", "write"})
+@check_write_access
+@safe_tool_result
+async def issues_create_issue(
+    ctx: Context,
+    project_key: Annotated[
+        str,
+        Field(
+            description=(
+                "The JIRA project key (e.g. 'PROJ', 'DEV', 'SUPPORT'). "
+                "This is the prefix of issue keys in your project. "
+                "Never assume what it might be, always ask the user."
+            )
+        ),
+    ],
+    summary: Annotated[str, Field(description="Summary/title of the issue")],
+    issue_type: Annotated[
+        str,
+        Field(
+            description=(
+                "Issue type (e.g. 'Task', 'Bug', 'Story', 'Epic', 'Subtask'). "
+                "The available types depend on your project configuration. "
+                "For subtasks, use 'Subtask' (not 'Sub-task') and include parent in additional_fields."
+            ),
+        ),
+    ],
+    assignee: Annotated[
+        str | None,
+        Field(
+            description="(Optional) Assignee's user identifier (string): Email, display name, or account ID (e.g., 'user@example.com', 'John Doe', 'accountid:...')",
+            default=None,
+        ),
+    ] = None,
+    description: Annotated[
+        str | None, Field(description="Issue description", default=None)
+    ] = None,
+    components: Annotated[
+        str | None,
+        Field(
+            description="(Optional) Comma-separated list of component names to assign (e.g., 'Frontend,API')",
+            default=None,
+        ),
+    ] = None,
+    additional_fields: Annotated[
+        dict[str, Any] | str | None,
+        Field(
+            description=(
+                "(Optional) Dictionary of additional fields to set. Examples:\n"
+                "- Set priority: {'priority': {'name': 'High'}}\n"
+                "- Add labels: {'labels': ['frontend', 'urgent']}\n"
+                "- Link to parent (for any issue type): {'parent': 'PROJ-123'}\n"
+                "- Set Fix Version/s: {'fixVersions': [{'id': '10020'}]}\n"
+                "- Custom fields: {'customfield_10010': 'value'}"
+            ),
+            default=None,
+        ),
+    ] = None,
+) -> str:
+    """Legacy alias for create_issue. Delegates to canonical create_issue tool."""
+    return await create_issue(
+        ctx=ctx,
+        project_key=project_key,
+        summary=summary,
+        issue_type=issue_type,
+        assignee=assignee,
+        description=description,
+        components=components,
+        additional_fields=additional_fields,
+    )

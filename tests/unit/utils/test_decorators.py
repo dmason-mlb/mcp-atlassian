@@ -20,9 +20,11 @@ async def test_check_write_access_blocks_in_read_only():
         return x * 2
 
     ctx = DummyContext(read_only=True)
-    with pytest.raises(ValueError) as exc:
-        await dummy_tool(ctx, 3)
-    assert "read-only mode" in str(exc.value)
+    result = await dummy_tool(ctx, 3)
+    import json
+
+    data = json.loads(result)
+    assert data["read_only_mode"] is True
 
 
 @pytest.mark.asyncio

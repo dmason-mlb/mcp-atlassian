@@ -1,21 +1,35 @@
 MOCK_JIRA_ISSUE_RESPONSE = {
     "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
     "id": "12345",
-    "self": "https://example.atlassian.net/rest/api/2/issue/12345",
+    "self": "https://example.atlassian.net/rest/api/3/issue/12345",
     "key": "PROJ-123",
     "fields": {
         "summary": "Test Issue Summary",
-        "description": "This is a test issue description",
+        "description": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "This is a test issue description"
+                        }
+                    ]
+                }
+            ]
+        },
         "created": "2024-01-01T10:00:00.000+0000",
         "updated": "2024-01-02T15:30:00.000+0000",
         "status": {
-            "self": "https://example.atlassian.net/rest/api/2/status/3",
+            "self": "https://example.atlassian.net/rest/api/3/status/3",
             "description": "This issue is currently being worked on.",
             "iconUrl": "https://example.atlassian.net/images/icons/statuses/inprogress.png",
             "name": "In Progress",
             "id": "3",
             "statusCategory": {
-                "self": "https://example.atlassian.net/rest/api/2/statuscategory/4",
+                "self": "https://example.atlassian.net/rest/api/3/statuscategory/4",
                 "id": 4,
                 "key": "indeterminate",
                 "colorName": "yellow",
@@ -23,7 +37,7 @@ MOCK_JIRA_ISSUE_RESPONSE = {
             },
         },
         "issuetype": {
-            "self": "https://example.atlassian.net/rest/api/2/issuetype/10001",
+            "self": "https://example.atlassian.net/rest/api/3/issuetype/10001",
             "id": "10001",
             "description": "A task that needs to be done.",
             "iconUrl": "https://example.atlassian.net/secure/viewavatar?size=xsmall&avatarId=10318&avatarType=issuetype",
@@ -31,13 +45,13 @@ MOCK_JIRA_ISSUE_RESPONSE = {
             "subtask": False,
         },
         "priority": {
-            "self": "https://example.atlassian.net/rest/api/2/priority/3",
+            "self": "https://example.atlassian.net/rest/api/3/priority/3",
             "iconUrl": "https://example.atlassian.net/images/icons/priorities/medium.svg",
             "name": "Medium",
             "id": "3",
         },
         "assignee": {
-            "self": "https://example.atlassian.net/rest/api/2/user?accountId=123",
+            "self": "https://example.atlassian.net/rest/api/3/user?accountId=123",
             "accountId": "123",
             "emailAddress": "test@example.com",
             "avatarUrls": {
@@ -48,7 +62,7 @@ MOCK_JIRA_ISSUE_RESPONSE = {
             "timeZone": "UTC",
         },
         "reporter": {
-            "self": "https://example.atlassian.net/rest/api/2/user?accountId=456",
+            "self": "https://example.atlassian.net/rest/api/3/user?accountId=456",
             "accountId": "456",
             "displayName": "Reporter User",
             "active": True,
@@ -91,13 +105,13 @@ MOCK_JIRA_ISSUE_RESPONSE = {
             "id": "10000",
             "key": "PROJ",
             "name": "Test Project",
-            "self": "https://example.atlassian.net/rest/api/2/project/10000",
+            "self": "https://example.atlassian.net/rest/api/3/project/10000",
             "avatarUrls": {
                 "48x48": "https://example.atlassian.net/secure/projectavatar?size=large&pid=10000"
             },
         },
         "resolution": {
-            "self": "https://example.atlassian.net/rest/api/2/resolution/10000",
+            "self": "https://example.atlassian.net/rest/api/3/resolution/10000",
             "id": "10000",
             "description": "Work has been completed on this issue.",
             "name": "Fixed",
@@ -146,23 +160,23 @@ MOCK_JIRA_JQL_RESPONSE = {
         {
             "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
             "id": "12345",
-            "self": "https://example.atlassian.net/rest/api/2/issue/12345",
+            "self": "https://example.atlassian.net/rest/api/3/issue/12345",
             "key": "PROJ-123",
             "fields": {
                 "parent": {
                     "id": "12340",
                     "key": "PROJ-120",
-                    "self": "https://example.atlassian.net/rest/api/2/issue/12340",
+                    "self": "https://example.atlassian.net/rest/api/3/issue/12340",
                     "fields": {
                         "summary": "Parent Epic Summary",
                         "status": {
-                            "self": "https://example.atlassian.net/rest/api/2/status/10000",
+                            "self": "https://example.atlassian.net/rest/api/3/status/10000",
                             "description": "",
                             "iconUrl": "https://example.atlassian.net/",
                             "name": "In Progress",
                             "id": "10000",
                             "statusCategory": {
-                                "self": "https://example.atlassian.net/rest/api/2/statuscategory/4",
+                                "self": "https://example.atlassian.net/rest/api/3/statuscategory/4",
                                 "id": 4,
                                 "key": "indeterminate",
                                 "colorName": "yellow",
@@ -170,13 +184,13 @@ MOCK_JIRA_JQL_RESPONSE = {
                             },
                         },
                         "priority": {
-                            "self": "https://example.atlassian.net/rest/api/2/priority/3",
+                            "self": "https://example.atlassian.net/rest/api/3/priority/3",
                             "iconUrl": "https://example.atlassian.net/images/icons/priorities/medium.svg",
                             "name": "Medium",
                             "id": "3",
                         },
                         "issuetype": {
-                            "self": "https://example.atlassian.net/rest/api/2/issuetype/10001",
+                            "self": "https://example.atlassian.net/rest/api/3/issuetype/10001",
                             "id": "10001",
                             "description": "Epics track large pieces of work.",
                             "iconUrl": "https://example.atlassian.net/images/icons/issuetypes/epic.svg",
@@ -187,24 +201,38 @@ MOCK_JIRA_JQL_RESPONSE = {
                     },
                 },
                 "summary": "Test Issue Summary",
-                "description": "This is a test issue description",
+                "description": {
+                    "type": "doc",
+                    "version": 1,
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "This is a test issue description"
+                                }
+                            ]
+                        }
+                    ]
+                },
                 "created": "2024-01-01T10:00:00.000+0000",
                 "updated": "2024-01-02T15:30:00.000+0000",
                 "duedate": "2024-12-31",
                 "priority": {
-                    "self": "https://example.atlassian.net/rest/api/2/priority/3",
+                    "self": "https://example.atlassian.net/rest/api/3/priority/3",
                     "iconUrl": "https://example.atlassian.net/images/icons/priorities/medium.svg",
                     "name": "Medium",
                     "id": "3",
                 },
                 "status": {
-                    "self": "https://example.atlassian.net/rest/api/2/status/10000",
+                    "self": "https://example.atlassian.net/rest/api/3/status/10000",
                     "description": "",
                     "iconUrl": "https://example.atlassian.net/",
                     "name": "In Progress",
                     "id": "10000",
                     "statusCategory": {
-                        "self": "https://example.atlassian.net/rest/api/2/statuscategory/4",
+                        "self": "https://example.atlassian.net/rest/api/3/statuscategory/4",
                         "id": 4,
                         "key": "indeterminate",
                         "colorName": "yellow",
@@ -212,7 +240,7 @@ MOCK_JIRA_JQL_RESPONSE = {
                     },
                 },
                 "issuetype": {
-                    "self": "https://example.atlassian.net/rest/api/2/issuetype/10000",
+                    "self": "https://example.atlassian.net/rest/api/3/issuetype/10000",
                     "id": "10000",
                     "description": "A task that needs to be done.",
                     "iconUrl": "https://example.atlassian.net/images/icons/issuetypes/task.svg",
@@ -221,7 +249,7 @@ MOCK_JIRA_JQL_RESPONSE = {
                     "hierarchyLevel": 0,
                 },
                 "project": {
-                    "self": "https://example.atlassian.net/rest/api/2/project/10000",
+                    "self": "https://example.atlassian.net/rest/api/3/project/10000",
                     "id": "10000",
                     "key": "PROJ",
                     "name": "Test Project",
@@ -231,7 +259,7 @@ MOCK_JIRA_JQL_RESPONSE = {
                 "comment": {
                     "comments": [
                         {
-                            "self": "https://example.atlassian.net/rest/api/2/issue/12345/comment/10000",
+                            "self": "https://example.atlassian.net/rest/api/3/issue/12345/comment/10000",
                             "id": "10000",
                             "author": {"displayName": "Comment User", "active": True},
                             "body": "This is a test comment",
@@ -259,10 +287,10 @@ MOCK_JIRA_COMMENTS = {
     "total": 5,
     "comments": [
         {
-            "self": "https://example.atlassian.net/rest/api/2/issue/10001/comment/10101",
+            "self": "https://example.atlassian.net/rest/api/3/issue/10001/comment/10101",
             "id": "10101",
             "author": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-1",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-1",
                 "accountId": "account-id-1",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user1_48.png",
@@ -277,7 +305,7 @@ MOCK_JIRA_COMMENTS = {
             },
             "body": "I've analyzed this issue and found that we need to update the configuration settings.",
             "updateAuthor": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-1",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-1",
                 "accountId": "account-id-1",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user1_48.png",
@@ -461,11 +489,25 @@ MOCK_JIRA_COMMENTS_SIMPLIFIED = {
 # Create simplified versions of the mock responses
 MOCK_JIRA_ISSUE_RESPONSE_SIMPLIFIED = {
     "id": "12345",
-    "self": "https://example.atlassian.net/rest/api/2/issue/12345",
+    "self": "https://example.atlassian.net/rest/api/3/issue/12345",
     "key": "PROJ-123",
     "fields": {
         "summary": "Test Issue Summary",
-        "description": "This is a test issue description",
+        "description": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "This is a test issue description"
+                        }
+                    ]
+                }
+            ]
+        },
         "created": "2024-01-01T10:00:00.000+0000",
         "updated": "2024-01-02T15:30:00.000+0000",
         "duedate": "2024-12-31",
@@ -556,7 +598,21 @@ MOCK_JIRA_JQL_RESPONSE_SIMPLIFIED = {
                     },
                 },
                 "summary": "Test Issue Summary",
-                "description": "This is a test issue description",
+                "description": {
+                    "type": "doc",
+                    "version": 1,
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "This is a test issue description"
+                                }
+                            ]
+                        }
+                    ]
+                },
                 "created": "2024-01-01T10:00:00.000+0000",
                 "updated": "2024-01-02T15:30:00.000+0000",
                 "status": {

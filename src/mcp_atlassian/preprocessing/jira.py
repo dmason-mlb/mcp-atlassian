@@ -232,10 +232,12 @@ class JiraPreprocessor(BasePreprocessor):
 
         return output
 
-    def markdown_to_jira(self, input_text: str, enable_adf: bool = True) -> str | dict[str, Any]:
+    def markdown_to_jira(
+        self, input_text: str, enable_adf: bool = True
+    ) -> str | dict[str, Any]:
         """
         Convert Markdown syntax to appropriate Jira format (ADF or wiki markup).
-        
+
         Uses FormatRouter to automatically detect deployment type and choose format:
         - Cloud instances: Returns ADF JSON dictionary
         - Server/DC instances: Returns wiki markup string
@@ -281,7 +283,7 @@ class JiraPreprocessor(BasePreprocessor):
     def _legacy_markdown_to_wiki_markup(self, input_text: str) -> str:
         """
         Legacy method for converting Markdown to Jira wiki markup.
-        
+
         This preserves the original conversion logic for backward compatibility
         and as a fallback when ADF conversion fails.
 

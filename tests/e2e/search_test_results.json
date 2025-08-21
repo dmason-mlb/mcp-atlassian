@@ -1,0 +1,9 @@
+
+> mcp-atlassian-e2e@0.1.0 test
+> pytest -v --grep search --reporter=json
+
+ERROR: usage: pytest [options] [file_or_dir] [file_or_dir] [...]
+pytest: error: unrecognized arguments: --grep --reporter=json
+  inifile: /Users/douglas.mason/Documents/GitHub/mcp-atlassian/tests/e2e/pytest.ini
+  rootdir: /Users/douglas.mason/Documents/GitHub/mcp-atlassian/tests/e2e
+

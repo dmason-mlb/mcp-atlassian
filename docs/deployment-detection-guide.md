@@ -1,8 +1,8 @@
 # Deployment Detection and Override Guide
 
-**Created:** July 30, 2025  
-**Version:** 1.0.0  
-**Purpose:** Comprehensive guide to Atlassian deployment type detection and format override mechanisms  
+**Created:** July 30, 2025
+**Version:** 1.0.0
+**Purpose:** Comprehensive guide to Atlassian deployment type detection and format override mechanisms
 
 ## Overview
 
@@ -22,11 +22,11 @@ router = FormatRouter()
 # Cloud detection examples
 cloud_urls = [
     "https://company.atlassian.net",
-    "https://team.atlassian.com", 
+    "https://team.atlassian.com",
     "https://dev.jira-dev.com"
 ]
 
-# Server/DC detection examples  
+# Server/DC detection examples
 server_urls = [
     "https://jira.company.com",
     "https://confluence.internal.org",
@@ -46,7 +46,7 @@ for url in server_urls:
 
 #### Cloud Instance Patterns
 - `*.atlassian.net` - Primary Atlassian Cloud domains
-- `*.atlassian.com` - Alternative Cloud domains  
+- `*.atlassian.com` - Alternative Cloud domains
 - `*.jira-dev.com` - Development/staging Cloud instances
 
 #### Server/DC Instance Patterns
@@ -103,7 +103,7 @@ result = router.convert_markdown(
 assert result['format'] == 'adf'
 assert result['deployment_type'] == 'unknown'  # Detection bypassed
 
-# Force wiki markup even for Cloud instances  
+# Force wiki markup even for Cloud instances
 result = router.convert_markdown(
     markdown_text="**Bold text** with [link](http://example.com)",
     base_url="https://company.atlassian.net",    # Cloud URL
@@ -122,7 +122,7 @@ Control format selection globally via environment variables:
 # Force ADF for all instances
 export ATLASSIAN_FORCE_ADF=true
 
-# Force wiki markup for all instances  
+# Force wiki markup for all instances
 export ATLASSIAN_FORCE_WIKI_MARKUP=true
 
 # Disable ADF globally (fallback to wiki markup)
@@ -154,7 +154,7 @@ config = JiraConfig(
 from mcp_atlassian.confluence.config import ConfluenceConfig
 
 config = ConfluenceConfig(
-    base_url="https://jira.company.com", 
+    base_url="https://jira.company.com",
     deployment_type_override="cloud",   # Force Cloud detection
     enable_adf=True                     # Enable ADF
 )
@@ -195,25 +195,25 @@ For organizations with mixed Cloud and Server deployments:
 ```python
 class HybridFormatRouter(FormatRouter):
     """Custom router for hybrid Atlassian environments."""
-    
+
     def __init__(self, cloud_domains: list[str], server_domains: list[str]):
         super().__init__()
         self.cloud_domains = cloud_domains
         self.server_domains = server_domains
-    
+
     def detect_deployment_type(self, base_url: str) -> DeploymentType:
         from urllib.parse import urlparse
-        
+
         hostname = urlparse(base_url.lower()).hostname or ""
-        
+
         # Check explicit Cloud domains
         if any(domain in hostname for domain in self.cloud_domains):
             return DeploymentType.CLOUD
-            
-        # Check explicit Server domains  
+
+        # Check explicit Server domains
         if any(domain in hostname for domain in self.server_domains):
             return DeploymentType.SERVER
-            
+
         # Fallback to default detection
         return super().detect_deployment_type(base_url)
 
@@ -233,16 +233,16 @@ from datetime import datetime, timedelta
 
 class MigrationAwareRouter(FormatRouter):
     """Router that handles Cloud migration scenarios."""
-    
+
     def __init__(self, migration_domains: dict[str, datetime]):
         super().__init__()
         self.migration_domains = migration_domains  # domain -> cutover_date
-    
+
     def detect_deployment_type(self, base_url: str) -> DeploymentType:
         from urllib.parse import urlparse
-        
+
         hostname = urlparse(base_url.lower()).hostname or ""
-        
+
         # Check if domain is in migration
         for domain, cutover_date in self.migration_domains.items():
             if domain in hostname:
@@ -250,7 +250,7 @@ class MigrationAwareRouter(FormatRouter):
                     return DeploymentType.CLOUD  # Post-migration
                 else:
                     return DeploymentType.SERVER  # Pre-migration
-        
+
         # Standard detection for other domains
         return super().detect_deployment_type(base_url)
 
@@ -270,7 +270,7 @@ from mcp_atlassian.formatting.router import FormatRouter, DeploymentType
 
 class DevelopmentRouter(FormatRouter):
     """Router with development-specific overrides."""
-    
+
     def detect_deployment_type(self, base_url: str) -> DeploymentType:
         # Development environment overrides
         if os.getenv("ENVIRONMENT") == "development":
@@ -280,7 +280,7 @@ class DevelopmentRouter(FormatRouter):
                 return DeploymentType.CLOUD
             elif override == "server":
                 return DeploymentType.SERVER
-        
+
         # Production uses standard detection
         return super().detect_deployment_type(base_url)
 
@@ -303,7 +303,7 @@ from mcp_atlassian.formatting.router import FormatRouter, DeploymentType
 def test_custom_detection():
     """Test custom deployment detection logic."""
     router = FormatRouter()
-    
+
     # Test cases
     test_cases = [
         ("https://company.atlassian.net", DeploymentType.CLOUD),
@@ -311,7 +311,7 @@ def test_custom_detection():
         ("https://invalid-url", DeploymentType.UNKNOWN),
         ("", DeploymentType.UNKNOWN)
     ]
-    
+
     for url, expected in test_cases:
         result = router.detect_deployment_type(url)
         assert result == expected, f"Failed for {url}: got {result}, expected {expected}"
@@ -319,14 +319,14 @@ def test_custom_detection():
 def test_override_behavior():
     """Test format override mechanisms."""
     router = FormatRouter()
-    
+
     # Test force format override
     result = router.convert_markdown(
-        "**test**", 
+        "**test**",
         "https://company.atlassian.net",
         force_format=FormatType.WIKI_MARKUP
     )
-    
+
     assert result['format'] == 'wiki_markup'
     assert result['deployment_type'] == 'unknown'
 ```
@@ -337,15 +337,15 @@ def test_override_behavior():
 def test_real_deployment_detection():
     """Test detection against real Atlassian instances."""
     router = FormatRouter()
-    
+
     # Test with real Cloud instance
     cloud_result = router.detect_deployment_type("https://atlassian.atlassian.net")
     assert cloud_result == DeploymentType.CLOUD
-    
+
     # Test cache behavior
     cached_result = router.detect_deployment_type("https://atlassian.atlassian.net")
     assert cached_result == DeploymentType.CLOUD
-    
+
     # Verify cache hit
     metrics = router.get_performance_metrics()
     assert metrics['detections_cached'] > 0
@@ -368,7 +368,7 @@ hit_rate = metrics['detection_cache_hit_rate']
 
 if hit_rate < 50:  # <50% hit rate
     print("Consider increasing cache size or TTL")
-elif hit_rate > 95:  # >95% hit rate  
+elif hit_rate > 95:  # >95% hit rate
     print("Cache might be too large, consider reducing size")
 ```
 
@@ -400,15 +400,15 @@ assert avg_time < 0.001
    ```python
    # Debug detection logic
    router = FormatRouter()
-   
+
    # Enable debug logging
    import logging
    logging.basicConfig(level=logging.DEBUG)
-   
+
    # Test problematic URL
    result = router.detect_deployment_type("https://problematic.url.com")
    print(f"Detected: {result}")
-   
+
    # Check cache
    cache_stats = router.get_cache_stats()
    print(f"Cached deployments: {cache_stats['cached_deployments']}")
@@ -419,7 +419,7 @@ assert avg_time < 0.001
    # Clear cache and retry
    router.clear_cache()
    result = router.detect_deployment_type(url)
-   
+
    # Check if cache was the issue
    if result != previous_result:
        print("Cache corruption detected and resolved")
@@ -427,13 +427,13 @@ assert avg_time < 0.001
 
 3. **Performance Issues**
    ```python
-   # Monitor detection performance  
+   # Monitor detection performance
    metrics = router.get_performance_metrics()
-   
+
    if metrics['average_detection_time'] > 0.01:  # >10ms
        print("Detection performance degraded")
        print(f"Cache hit rate: {metrics['detection_cache_hit_rate']:.1f}%")
-       
+
        # Possible solutions:
        # - Increase cache size
        # - Clear cache corruption
@@ -450,21 +450,21 @@ import re
 def debug_url_patterns(url: str):
     """Debug which patterns match a URL."""
     router = FormatRouter()
-    
+
     # Test against Cloud patterns
     for pattern in router._cloud_patterns:
         if pattern.match(url):
             print(f"✓ Cloud pattern matched: {pattern.pattern}")
         else:
             print(f"✗ Cloud pattern failed: {pattern.pattern}")
-    
+
     # Test custom patterns
     test_patterns = [
         (r'.*\.internal\..*', "Internal domain"),
         (r'.*\.local$', "Local domain"),
         (r'^\d+\.\d+\.\d+\.\d+', "IP address")
     ]
-    
+
     for pattern_str, description in test_patterns:
         pattern = re.compile(pattern_str)
         if pattern.match(url):
@@ -478,7 +478,7 @@ debug_url_patterns("https://jira.company.internal")
 
 ### 1. Consistent Configuration
 - Use environment variables for global overrides
-- Document custom detection logic clearly  
+- Document custom detection logic clearly
 - Test detection with real instances
 
 ### 2. Performance Optimization

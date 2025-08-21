@@ -9,6 +9,8 @@ from .agile import JiraBoard, JiraSprint
 from .comment import JiraComment
 from .common import (
     JiraAttachment,
+    JiraChangelog,
+    JiraChangelogItem,
     JiraIssueType,
     JiraPriority,
     JiraResolution,
@@ -39,6 +41,8 @@ __all__ = [
     "JiraAttachment",
     "JiraResolution",
     "JiraTimetracking",
+    "JiraChangelog",
+    "JiraChangelogItem",
     # Entity-specific models
     "JiraComment",
     "JiraWorklog",

@@ -36,7 +36,24 @@ class TestConfluenceV2Adapter:
             "spaceId": "789",
             "version": {"number": 5},
             "body": {
-                "storage": {"value": "<p>Test content</p>", "representation": "storage"}
+                "atlas_doc_format": {
+                    "value": {
+                        "type": "doc",
+                        "version": 1,
+                        "content": [
+                            {
+                                "type": "paragraph",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "Test content"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "representation": "atlas_doc_format"
+                }
             },
             "_links": {"webui": "/pages/viewpage.action?pageId=123456"},
         }
@@ -55,7 +72,7 @@ class TestConfluenceV2Adapter:
         assert mock_session.get.call_count == 2
         mock_session.get.assert_any_call(
             "https://example.atlassian.net/wiki/api/v2/pages/123456",
-            params={"body-format": "storage"},
+            params={"body-format": "atlas_doc_format"},
         )
 
         # Verify the response format
@@ -65,8 +82,8 @@ class TestConfluenceV2Adapter:
         assert result["space"]["key"] == "TEST"
         assert result["space"]["id"] == "789"
         assert result["version"]["number"] == 5
-        assert result["body"]["storage"]["value"] == "<p>Test content</p>"
-        assert result["body"]["storage"]["representation"] == "storage"
+        assert result["body"]["atlas_doc_format"]["value"]["type"] == "doc"
+        assert result["body"]["atlas_doc_format"]["representation"] == "atlas_doc_format"
 
     def test_get_page_not_found(self, v2_adapter, mock_session):
         """Test page retrieval when page doesn't exist."""
@@ -130,7 +147,7 @@ class TestConfluenceV2Adapter:
         # Verify the API call doesn't include expand in params
         mock_session.get.assert_called_once_with(
             "https://example.atlassian.net/wiki/api/v2/pages/123456",
-            params={"body-format": "storage"},
+            params={"body-format": "atlas_doc_format"},
         )
 
         # Verify we still get a result
