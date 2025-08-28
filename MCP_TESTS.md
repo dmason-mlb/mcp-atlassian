@@ -6,7 +6,7 @@ This document defines a comprehensive test suite for the MCP Atlassian server to
 
 Tests use the following environment variables from `.env`:
 - `JIRA_PROJECT=FTEST` - Test project for Jira issues
-- `CONFLUENCE_SPACE=~911651470` - Test space for Confluence pages  
+- `CONFLUENCE_SPACE=~911651470` - Test space for Confluence pages
 - `ATLASSIAN_URL=https://baseball.atlassian.net` - Base Atlassian instance
 - `MCP_URL=http://localhost:9001/mcp` - MCP server endpoint
 
@@ -34,7 +34,7 @@ Test comprehensive issue creation with various formatted content:
 **Rich Formatted Issue Creation:**
 ```json
 {
-  "tool": "jira_issues_create_issue", 
+  "tool": "jira_issues_create_issue",
   "input": {
     "project_key": "FTEST",
     "summary": "MCP Test - Rich Formatting Elements",
@@ -244,7 +244,7 @@ Test comprehensive issue creation with various formatted content:
 {
   "tool": "confluence_pages_create_page",
   "input": {
-    "space_id": "~911651470", 
+    "space_id": "~911651470",
     "title": "MCP Test - Child Page",
     "content": "# Child Page Test\n\nThis is a **child page** created via MCP to test:\n\n## Hierarchy Testing\n- Parent-child relationships\n- Navigation structure\n- Content organization\n\n## Content Validation\n:::panel type=\"info\"\nThis child page validates that MCP can create proper page hierarchies in Confluence.\n:::\n\n### Test Results\n| Test | Result |\n|------|--------|\n| Child page creation | {status:color=green}Success{/status} |\n| Parent relationship | {status:color=blue}Validating{/status} |\n\n*Child of: {parent_page_title}*",
     "parent_id": "{parent_page_id}",
@@ -285,7 +285,7 @@ Test comprehensive issue creation with various formatted content:
 **Rich Comment:**
 ```json
 {
-  "tool": "confluence_content_add_comment", 
+  "tool": "confluence_content_add_comment",
   "input": {
     "page_id": "{created_page_id}",
     "content": "## Review Comment via MCP\n\n### Page Quality Assessment\n| Aspect | Rating | Notes |\n|--------|--------|-------|\n| Content Quality | {status:color=green}Excellent{/status} | Well structured |\n| Formatting | {status:color=green}Good{/status} | ADF conversion working |\n| Completeness | {status:color=yellow}Partial{/status} | Needs more examples |\n\n### Suggestions\n:::panel type=\"note\"\n**Improvement Areas**:\n1. Add more code examples\n2. Include troubleshooting section\n3. Add cross-references to related pages\n:::\n\n### Action Items\n- [ ] Review content structure\n- [ ] Add missing sections\n- [ ] Validate all links\n\n**Reviewer**: MCP Testing Bot  \n**Review Date**: {date:2025-01-21}  \n**Status**: {status:color=blue}Under Review{/status}"
@@ -366,7 +366,7 @@ Test comprehensive issue creation with various formatted content:
 
 **Jira-Confluence Linking:**
 1. Create Jira issue with Confluence reference
-2. Create Confluence page with Jira issue reference  
+2. Create Confluence page with Jira issue reference
 3. Link them via remote issue link
 4. Validate bi-directional references
 
@@ -452,7 +452,7 @@ Test comprehensive issue creation with various formatted content:
 
 ### Test Categories
 - **Unit Tests**: Individual tool functionality
-- **Integration Tests**: Cross-service scenarios  
+- **Integration Tests**: Cross-service scenarios
 - **End-to-End Tests**: Complete workflows
 - **Performance Tests**: Load and stress testing
 

@@ -1,8 +1,8 @@
 # E2E Test Failure Triage Report
 
-**Generated**: 2025-08-19  
-**Branch**: recover-confluence-server  
-**Test Environment**: Chromium on macOS  
+**Generated**: 2025-08-19
+**Branch**: recover-confluence-server
+**Test Environment**: Chromium on macOS
 
 ## Executive Summary
 
@@ -55,7 +55,7 @@ expect(await locator.count()).toBeGreaterThan(0);
 
 ### ✅ **Fixed Tests** (4/5 passing)
 - **Confluence page labels display correctly** ✅
-- **Confluence page metadata is displayed correctly** ✅  
+- **Confluence page metadata is displayed correctly** ✅
 - **Confluence page navigation elements work** ✅
 - **Confluence content structure accessibility** ✅
 
@@ -96,9 +96,9 @@ article.locator('h1, h2, h3, h4, h5, h6').filter({ hasText: 'Test Objectives' })
 
 ## Seed Data Validation
 
-**Seed Script**: ✅ Working correctly  
+**Seed Script**: ✅ Working correctly
 **Artifacts Generated**:
-- JIRA Issue: `FTEST-187` 
+- JIRA Issue: `FTEST-187`
 - Confluence Page: `5041782878`
 - Label: `mcp-e2e-34500`
 - Persistence: `.artifacts/seed.json`
@@ -128,17 +128,17 @@ article.locator('h1, h2, h3, h4, h5, h6').filter({ hasText: 'Test Objectives' })
 
 ## Architectural Validation
 
-✅ **Jira v3 API Compliance**: All API interactions use v3 endpoints  
-✅ **ADF-First Strategy**: Content rendered in Atlassian Document Format  
-✅ **No Storage/Wiki Rollback**: Maintained cloud-first approach  
-✅ **Port 9001 MCP Server**: Validated server orchestration working  
-✅ **Authentication State**: Proper `storageState.json` reuse  
+✅ **Jira v3 API Compliance**: All API interactions use v3 endpoints
+✅ **ADF-First Strategy**: Content rendered in Atlassian Document Format
+✅ **No Storage/Wiki Rollback**: Maintained cloud-first approach
+✅ **Port 9001 MCP Server**: Validated server orchestration working
+✅ **Authentication State**: Proper `storageState.json` reuse
 
 ## Conclusion
 
 The triage successfully resolved the root causes of test flakiness:
 - **Deterministic waits** replaced networkidle anti-patterns
-- **Strict-mode compliance** eliminated selector ambiguity  
+- **Strict-mode compliance** eliminated selector ambiguity
 - **Content alignment** matched seed data with assertions
 - **API modernization** fixed deprecated method usage
 

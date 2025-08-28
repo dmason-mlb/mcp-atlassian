@@ -131,7 +131,8 @@ async def create_issue(
         ),
     ] = None,
     description: Annotated[
-        str | None, Field(description="Issue description", default=None)
+        str | None,
+        Field(description="Issue description in Markdown format", default=None),
     ] = None,
     components: Annotated[
         str | None,
@@ -219,7 +220,7 @@ async def update_issue(
     fields: Annotated[
         dict[str, Any],
         Field(
-            description="Dictionary of fields to update. For 'assignee', provide a string identifier (email, name, or accountId). Example: `{'assignee': 'user@example.com', 'summary': 'New Summary'}`"
+            description="Dictionary of fields to update. For 'assignee', provide a string identifier (email, name, or accountId). For 'description' field, use Markdown format. Example: `{'assignee': 'user@example.com', 'summary': 'New Summary', 'description': '## Updated Description\\n\\nThis is **bold** text.'}`"
         ),
     ],
     attachments: Annotated[

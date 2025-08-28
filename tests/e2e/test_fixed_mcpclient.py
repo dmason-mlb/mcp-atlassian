@@ -2,8 +2,10 @@
 """
 Test the fixed MCP Client.
 """
-import pytest
+
 import asyncio
+
+import pytest
 from mcp_client_fixed import MCPClientFixed, MCPClientSession
 
 
@@ -11,7 +13,7 @@ from mcp_client_fixed import MCPClientFixed, MCPClientSession
 async def test_fixed_mcpclient_list_tools():
     """Test the fixed MCPClient list_tools method."""
     client = MCPClientFixed("http://localhost:9001/mcp")
-    
+
     try:
         async with asyncio.timeout(10):
             tools = await client.list_tools()

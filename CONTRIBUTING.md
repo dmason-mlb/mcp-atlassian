@@ -33,7 +33,7 @@ Thank you for your interest in contributing to MCP Atlassian! This Model Context
    ```bash
    # macOS/Linux
    source .venv/bin/activate
-   
+
    # Windows
    .venv\Scripts\activate.ps1
    ```
@@ -187,15 +187,15 @@ Add Google-style docstrings to all public APIs:
 ```python
 def create_issue(summary: str, issue_type: str, project_key: str) -> dict[str, Any]:
     """Create a new Jira issue.
-    
+
     Args:
         summary: The issue title/summary.
         issue_type: Issue type (Bug, Task, Story, etc.).
         project_key: Jira project key (e.g., 'PROJ').
-        
+
     Returns:
         Dictionary containing the created issue data.
-        
+
     Raises:
         ValueError: If project_key is invalid.
         JiraError: If issue creation fails.
@@ -207,7 +207,7 @@ def create_issue(summary: str, issue_type: str, project_key: str) -> dict[str, A
 1. **Fill PR Template**: Provide clear description, testing details, checklist completion
 2. **Ensure CI Passes**: All GitHub Actions workflows must pass
 3. **Code Review**: Address feedback from maintainers
-4. **Merge Requirements**: 
+4. **Merge Requirements**:
    - All quality checks passing
    - Up-to-date with main branch
    - Approved by maintainer
@@ -258,7 +258,7 @@ When reporting bugs:
 Releases use semantic versioning and are managed by maintainers:
 
 - **PATCH**: Bug fixes, documentation updates
-- **MINOR**: New features, backwards-compatible changes  
+- **MINOR**: New features, backwards-compatible changes
 - **MAJOR**: Breaking API changes
 
 Version management is automated through `uv-dynamic-versioning` based on Git tags.

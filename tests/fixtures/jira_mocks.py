@@ -12,13 +12,10 @@ MOCK_JIRA_ISSUE_RESPONSE = {
                 {
                     "type": "paragraph",
                     "content": [
-                        {
-                            "type": "text",
-                            "text": "This is a test issue description"
-                        }
-                    ]
+                        {"type": "text", "text": "This is a test issue description"}
+                    ],
                 }
-            ]
+            ],
         },
         "created": "2024-01-01T10:00:00.000+0000",
         "updated": "2024-01-02T15:30:00.000+0000",
@@ -210,11 +207,11 @@ MOCK_JIRA_JQL_RESPONSE = {
                             "content": [
                                 {
                                     "type": "text",
-                                    "text": "This is a test issue description"
+                                    "text": "This is a test issue description",
                                 }
-                            ]
+                            ],
                         }
-                    ]
+                    ],
                 },
                 "created": "2024-01-01T10:00:00.000+0000",
                 "updated": "2024-01-02T15:30:00.000+0000",
@@ -500,13 +497,10 @@ MOCK_JIRA_ISSUE_RESPONSE_SIMPLIFIED = {
                 {
                     "type": "paragraph",
                     "content": [
-                        {
-                            "type": "text",
-                            "text": "This is a test issue description"
-                        }
-                    ]
+                        {"type": "text", "text": "This is a test issue description"}
+                    ],
                 }
-            ]
+            ],
         },
         "created": "2024-01-01T10:00:00.000+0000",
         "updated": "2024-01-02T15:30:00.000+0000",
@@ -607,11 +601,11 @@ MOCK_JIRA_JQL_RESPONSE_SIMPLIFIED = {
                             "content": [
                                 {
                                     "type": "text",
-                                    "text": "This is a test issue description"
+                                    "text": "This is a test issue description",
                                 }
-                            ]
+                            ],
                         }
-                    ]
+                    ],
                 },
                 "created": "2024-01-01T10:00:00.000+0000",
                 "updated": "2024-01-02T15:30:00.000+0000",

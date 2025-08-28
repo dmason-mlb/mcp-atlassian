@@ -656,7 +656,8 @@ async def create_issue(
         ),
     ] = None,
     description: Annotated[
-        str | None, Field(description="Issue description", default=None)
+        str | None,
+        Field(description="Issue description in Markdown format", default=None),
     ] = None,
     components: Annotated[
         str | None,
@@ -891,7 +892,8 @@ async def update_issue(
         Field(
             description=(
                 "Dictionary of fields to update. For 'assignee', provide a string identifier (email, name, or accountId). "
-                "Example: `{'assignee': 'user@example.com', 'summary': 'New Summary'}`"
+                "For 'description' field, use Markdown format. "
+                "Example: `{'assignee': 'user@example.com', 'summary': 'New Summary', 'description': '## Updated Description\\n\\nThis is **bold** text.'}`"
             )
         ),
     ],
@@ -1624,9 +1626,10 @@ async def batch_create_versions(
 # ============================================================================
 # LEGACY COMPATIBILITY ALIASES FOR E2E TESTS
 # These are thin wrappers that delegate to canonical tools while maintaining
-# legacy naming conventions expected by E2E tests. 
+# legacy naming conventions expected by E2E tests.
 # TODO: Remove these after E2E tests are updated to use canonical names.
 # ============================================================================
+
 
 @jira_mcp.tool(name="issues_create_issue", tags={"jira", "write"})
 @check_write_access

@@ -600,7 +600,7 @@ Add a label to a Confluence page for categorization.
 All tools require proper authentication configuration. The server supports:
 
 - **API Token** (Cloud): Username + API token
-- **Personal Access Token** (Server/DC): PAT-based authentication  
+- **Personal Access Token** (Server/DC): PAT-based authentication
 - **OAuth 2.0** (Cloud): Standard OAuth flow with refresh tokens
 - **BYOT OAuth** (Cloud): Bring Your Own Token for external management
 - **Multi-user HTTP**: Per-request authentication via headers
@@ -621,7 +621,7 @@ All tools return consistent JSON responses with error handling:
 
 Common error types:
 - **Authentication errors**: Invalid credentials or permissions
-- **Network errors**: Connection timeouts or API unavailability  
+- **Network errors**: Connection timeouts or API unavailability
 - **Validation errors**: Invalid parameters or missing required fields
 - **Not found errors**: Non-existent issues, pages, or users
 
