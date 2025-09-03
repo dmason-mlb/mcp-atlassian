@@ -2,13 +2,15 @@
 """
 Test using the exact same pattern as the working seed.py
 """
+
 import asyncio
 import os
-import pytest
 from pathlib import Path
 
+import pytest
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
+
 
 # Load env like seed.py does
 def _load_env_file(env_path: Path) -> None:
@@ -17,6 +19,7 @@ def _load_env_file(env_path: Path) -> None:
     try:
         try:
             from dotenv import load_dotenv as _dz
+
             _dz(env_path, override=False)
             return
         except Exception:
@@ -40,6 +43,7 @@ def _load_env_file(env_path: Path) -> None:
     except Exception:
         pass
 
+
 ROOT_DIR = Path(__file__).resolve().parents[3]
 _load_env_file(ROOT_DIR / ".env")
 
@@ -48,17 +52,17 @@ _load_env_file(ROOT_DIR / ".env")
 async def test_seed_pattern_connection():
     """Test using the exact same connection pattern as seed.py"""
     mcp_url = os.getenv("MCP_URL", "http://localhost:9001/mcp")
-    
+
     # Same headers pattern as seed.py
     headers: dict[str, str] = {}
     if os.getenv("USER_OAUTH_TOKEN"):
         headers["Authorization"] = f"Bearer {os.getenv('USER_OAUTH_TOKEN')}"
     if os.getenv("USER_CLOUD_ID"):
         headers["X-Atlassian-Cloud-Id"] = os.getenv("USER_CLOUD_ID", "")
-    
+
     print(f"Connecting to: {mcp_url}")
     print(f"Headers: {headers}")
-    
+
     try:
         async with asyncio.timeout(10):
             async with streamablehttp_client(mcp_url, headers=headers) as (r, w, _):
@@ -73,17 +77,17 @@ async def test_seed_pattern_connection():
         pytest.fail(f"Seed pattern connection failed: {e}")
 
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_list_tools_call():
     """Test calling list_tools using the exact pattern from seed.py"""
     mcp_url = os.getenv("MCP_URL", "http://localhost:9001/mcp")
-    
+
     headers: dict[str, str] = {}
     if os.getenv("USER_OAUTH_TOKEN"):
         headers["Authorization"] = f"Bearer {os.getenv('USER_OAUTH_TOKEN')}"
     if os.getenv("USER_CLOUD_ID"):
         headers["X-Atlassian-Cloud-Id"] = os.getenv("USER_CLOUD_ID", "")
-    
+
     try:
         async with asyncio.timeout(10):
             async with streamablehttp_client(mcp_url, headers=headers) as (r, w, _):
@@ -91,7 +95,7 @@ async def test_list_tools_call():
                     await session.initialize()
                     # Call list_tools just like in conftest.py logic would
                     tools = await session.list_tools()
-                    tool_list = tools.tools if hasattr(tools, 'tools') else []
+                    tool_list = tools.tools if hasattr(tools, "tools") else []
                     print(f"✓ list_tools worked! Found {len(tool_list)} tools")
                     assert len(tool_list) > 0, "Should have tools available"
     except asyncio.TimeoutError:

@@ -2,8 +2,10 @@
 """
 Test to isolate MCP connection issues.
 """
-import pytest
+
 import asyncio
+
+import pytest
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
@@ -12,7 +14,7 @@ from mcp.client.streamable_http import streamablehttp_client
 async def test_mcp_streamable_http_only():
     """Test just the streamablehttp_client connection."""
     mcp_url = "http://localhost:9001/mcp"
-    
+
     try:
         # Test the timeout behavior
         async with asyncio.timeout(5):  # 5 second timeout
@@ -27,11 +29,11 @@ async def test_mcp_streamable_http_only():
         pytest.fail(f"streamablehttp_client connection failed: {e}")
 
 
-@pytest.mark.asyncio 
+@pytest.mark.asyncio
 async def test_mcp_client_session_only():
     """Test MCP ClientSession with manual timeout."""
     mcp_url = "http://localhost:9001/mcp"
-    
+
     try:
         # Test with explicit timeout
         async with asyncio.timeout(10):  # 10 second timeout

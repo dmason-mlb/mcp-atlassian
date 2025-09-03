@@ -134,7 +134,7 @@ class IssueCreationMixin:
                 attachment_results = {
                     "success": False,
                     "error": str(e),
-                    "failed": [{"filename": f, "error": str(e)} for f in attachments]
+                    "failed": [{"filename": f, "error": str(e)} for f in attachments],
                 }
 
         # Include attachment results in response if applicable

@@ -127,7 +127,7 @@ This plan describes the steps to migrate the MCP Atlassian server to use Conflue
 
 ## Tests Modernized / Recovery Complete
 
-**Date**: 2025-08-19  
+**Date**: 2025-08-19
 **Status**: ✅ **COMPLETE**
 
 ### E2E Test Restoration

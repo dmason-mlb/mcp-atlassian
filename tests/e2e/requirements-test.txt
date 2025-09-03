@@ -8,7 +8,9 @@ pytest-timeout>=2.1.0  # Test timeout handling
 # HTTP mocking for Atlassian API boundary
 responses  # Added for HTTP mocking at Atlassian boundary
 
-# MCP client dependencies  
+# Fix for nested event loop issues - REMOVED: No longer needed with proper fixture separation
+
+# MCP client dependencies
 mcp>=1.0.0
 
 # Playwright for optional visual verification tests

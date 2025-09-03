@@ -43,16 +43,11 @@ class TestConfluenceV2Adapter:
                         "content": [
                             {
                                 "type": "paragraph",
-                                "content": [
-                                    {
-                                        "type": "text",
-                                        "text": "Test content"
-                                    }
-                                ]
+                                "content": [{"type": "text", "text": "Test content"}],
                             }
-                        ]
+                        ],
                     },
-                    "representation": "atlas_doc_format"
+                    "representation": "atlas_doc_format",
                 }
             },
             "_links": {"webui": "/pages/viewpage.action?pageId=123456"},
@@ -83,7 +78,9 @@ class TestConfluenceV2Adapter:
         assert result["space"]["id"] == "789"
         assert result["version"]["number"] == 5
         assert result["body"]["atlas_doc_format"]["value"]["type"] == "doc"
-        assert result["body"]["atlas_doc_format"]["representation"] == "atlas_doc_format"
+        assert (
+            result["body"]["atlas_doc_format"]["representation"] == "atlas_doc_format"
+        )
 
     def test_get_page_not_found(self, v2_adapter, mock_session):
         """Test page retrieval when page doesn't exist."""

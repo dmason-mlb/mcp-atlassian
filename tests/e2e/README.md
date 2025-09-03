@@ -135,14 +135,14 @@ The test suite is configured through `pytest.ini` with the following key setting
 - **pytest-playwright**: Browser automation integration
 - **pytest-xdist**: Parallel test execution support
 
-### Browser Configuration  
+### Browser Configuration
 - **Default browser**: Chromium (specified in pytest.ini)
 - **Asyncio mode**: Automatic async handling for all tests
 - **Visual testing**: Playwright integration with screenshot capabilities
 
 ### Test Output
 - **Strict markers**: All test markers must be defined
-- **Duration tracking**: Shows 10 slowest tests after each run  
+- **Duration tracking**: Shows 10 slowest tests after each run
 - **Short traceback**: Concise error output for faster debugging
 
 ## Test Structure

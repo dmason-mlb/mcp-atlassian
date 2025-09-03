@@ -1,141 +1,281 @@
 # Contributing to MCP Atlassian
 
-Thank you for your interest in contributing to MCP Atlassian! This document provides guidelines and instructions for contributing to this project.
+Thank you for your interest in contributing to MCP Atlassian! This Model Context Protocol server enables AI assistants to interact with Atlassian products (Jira and Confluence) securely and contextually. We welcome contributions in the form of bug reports, feature requests, documentation improvements, code changes, and tests.
 
-## Development Setup
+## Quick Start for Contributors
 
-1. Make sure you have Python 3.10+ installed
-1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
-1. Fork the repository
-1. Clone your fork: `git clone https://github.com/YOUR-USERNAME/mcp-atlassian.git`
-1. Add the upstream remote: `git remote add upstream https://github.com/sooperset/mcp-atlassian.git`
-1. Install dependencies:
+1. **Prerequisites**: Python 3.10+, [UV package manager](https://docs.astral.sh/uv/getting-started/installation/)
+2. **Fork & Clone**: Fork this repository and clone your fork
+3. **Install Dependencies**: `uv sync --frozen --all-extras --dev`
+4. **Setup Environment**: Copy `.env.example` to `.env` with your Atlassian credentials
+5. **Install Hooks**: `pre-commit install`
+6. **Run Tests**: `uv run pytest -k "not test_real_api_validation"`
 
-    ```sh
-    uv sync
-    uv sync --frozen --all-extras --dev
-    ```
+## Development Environment Setup
 
-1. Activate the virtual environment:
+### Local Development
 
-    __macOS and Linux__:
+1. **Install UV**: Follow the [UV installation guide](https://docs.astral.sh/uv/getting-started/installation/)
 
-    ```sh
-    source .venv/bin/activate
-    ```
+2. **Fork and Clone**:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/mcp-atlassian.git
+   cd mcp-atlassian
+   git remote add upstream https://github.com/dmason-mlb/mcp-atlassian.git
+   ```
 
-    __Windows__:
+3. **Install Dependencies**:
+   ```bash
+   uv sync --frozen --all-extras --dev
+   ```
 
-    ```powershell
-    .venv\Scripts\activate.ps1
-    ```
+4. **Activate Virtual Environment**:
+   ```bash
+   # macOS/Linux
+   source .venv/bin/activate
 
-1. Set up pre-commit hooks:
+   # Windows
+   .venv\Scripts\activate.ps1
+   ```
 
-    ```sh
-    pre-commit install
-    ```
+5. **Setup Pre-commit Hooks**:
+   ```bash
+   pre-commit install
+   ```
 
-1. Set up environment variables (copy from .env.example):
+6. **Configure Environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Atlassian instance details
+   ```
 
-    ```bash
-    cp .env.example .env
-    ```
+### Docker Development
 
-## Development Setup with local VSCode devcontainer
+For containerized development:
 
-1. Clone your fork: `git clone https://github.com/YOUR-USERNAME/mcp-atlassian.git`
-1. Add the upstream remote: `git remote add upstream https://github.com/sooperset/mcp-atlassian.git`
-1. Open the project with VSCode and open with devcontainer
-1. Add this bit of config to your `.vscode/settings.json`:
+```bash
+docker build -t mcp-atlassian .
+docker run -it --env-file .env mcp-atlassian
+```
 
-    ```json
-    {
-        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-        "[python]": {
-        "editor.defaultFormatter": "charliermarsh.ruff",
-        "editor.formatOnSave": true
-        }
-    }
-    ```
+### VS Code DevContainer
 
-## Development Workflow
+1. Open project in VS Code
+2. Install "Dev Containers" extension
+3. Use "Reopen in Container" command
+4. Add to `.vscode/settings.json`:
+   ```json
+   {
+     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+     "[python]": {
+       "editor.defaultFormatter": "charliermarsh.ruff",
+       "editor.formatOnSave": true
+     }
+   }
+   ```
 
-1. Create a feature or fix branch:
+## Quality Gates & Testing
 
-    ```sh
-    git checkout -b feature/your-feature-name
-    # or
-    git checkout -b fix/issue-description
-    ```
+### Code Quality Commands
 
-1. Make your changes
+| Command | Purpose |
+|---------|---------|
+| `pre-commit run --all-files` | Run all quality checks |
+| `uv run ruff format` | Format code |
+| `uv run ruff check --fix` | Lint and auto-fix issues |
+| `uv run mypy` | Type checking |
 
-1. Ensure tests pass:
+### Testing Commands
 
-    ```sh
-    uv run pytest
+| Command | Purpose |
+|---------|---------|
+| `uv run pytest` | Run all tests |
+| `uv run pytest --cov=src/mcp_atlassian --cov-report=term-missing` | Run with coverage |
+| `uv run pytest -k "not test_real_api_validation"` | Skip API tests (CI default) |
+| `uv run pytest tests/unit/` | Unit tests only |
+| `uv run pytest tests/integration/` | Integration tests |
 
-    # With coverage
-    uv run pytest --cov=mcp_atlassian
-    ```
+### End-to-End Testing
 
-1. Run code quality checks using pre-commit:
+E2E tests use Playwright and require additional setup:
 
-    ```bash
-    pre-commit run --all-files
-    ```
+```bash
+cd tests/e2e
 
-1. Commit your changes with clear, concise commit messages referencing issues when applicable
+# Install dependencies
+npm run prep
 
-1. Submit a pull request to the main branch
+# Seed test data (requires configured .env)
+npm run seed
 
-## Code Style
+# Run E2E tests
+npm run test
 
-- Run `pre-commit run --all-files` before committing
-- Code quality tools (managed by pre-commit):
-  - `ruff` for formatting and linting (88 char line limit)
-  - `pyright` for type checking (preferred over mypy)
-  - `prettier` for YAML/JSON formatting
-  - Additional checks for trailing whitespace, file endings, YAML/TOML validity
-- Follow type annotation patterns:
-  - `type[T]` for class types
-  - Union types with pipe syntax: `str | None`
-  - Standard collection types with subscripts: `list[str]`, `dict[str, Any]`
-- Add docstrings to all public modules, functions, classes, and methods using Google-style format:
+# Run specific test categories
+npm run test:jira        # Jira-specific tests
+npm run test:confluence  # Confluence-specific tests
+npm run test:adf        # ADF format tests
+npm run test:visual     # Visual regression tests
 
-        ```python
-        def function_name(param1: str, param2: int) -> bool:
-            """Summary of function purpose.
+# Clean up test data
+npm run clean
+```
 
-            More detailed description if needed.
+## Local MCP Server Development
 
-            Args:
-                param1: Description of param1
-                param2: Description of param2
+### Running the Server
 
-            Returns:
-                Description of return value
+| Transport | Command | Use Case |
+|-----------|---------|-----------|
+| STDIO | `uv run mcp-atlassian` | IDE integration (Claude Desktop, etc.) |
+| HTTP (SSE) | `uv run mcp-atlassian --transport sse --port 9000` | Web clients |
+| HTTP (Streamable) | `uv run mcp-atlassian --transport streamable-http --port 9000` | Custom integrations |
 
-            Raises:
-                ValueError: When and why this exception is raised
-            """
-        ```
+### OAuth Setup
+
+For OAuth authentication setup:
+
+```bash
+uv run mcp-atlassian --oauth-setup -v
+```
+
+### Debug Scripts
+
+Useful debugging tools in the root directory:
+
+| Script | Purpose |
+|--------|---------|
+| `python debug_confluence_formats.py` | Test ADF conversion |
+| `python debug_confluence_simple.py` | Basic Confluence testing |
+| `python debug_page_creation.py` | Page creation testing |
+| `python debug_v2_adapter.py` | V2 adapter testing |
+| `python create_seed_data.py` | Generate test data |
+
+## Branching & Commits
+
+1. **Create Feature Branch**:
+   ```bash
+   git checkout -b feature/your-feature-name
+   # or
+   git checkout -b fix/issue-description
+   ```
+
+2. **Make Changes** following the code style guidelines below
+
+3. **Commit Changes**:
+   - Use clear, concise commit messages
+   - Reference issues when applicable: `Fixes #123`
+   - Follow the existing commit style (no strict conventional commits required)
+
+## Code Style Guidelines
+
+### Formatting & Linting
+- **Line Length**: 88 characters (Ruff default)
+- **Formatter**: Ruff (replaces Black)
+- **Linter**: Ruff with comprehensive rule set
+- **Type Checker**: MyPy (configured in `.pre-commit-config.yaml`)
+
+### Code Standards
+- **Type Annotations**: Required for all public functions
+- **Import Style**: Use `from __future__ import annotations` for forward references
+- **Union Types**: Use pipe syntax `str | None` (Python 3.10+)
+- **Collections**: Use built-in generics `list[str]`, `dict[str, Any]`
+
+### Documentation
+Add Google-style docstrings to all public APIs:
+
+```python
+def create_issue(summary: str, issue_type: str, project_key: str) -> dict[str, Any]:
+    """Create a new Jira issue.
+
+    Args:
+        summary: The issue title/summary.
+        issue_type: Issue type (Bug, Task, Story, etc.).
+        project_key: Jira project key (e.g., 'PROJ').
+
+    Returns:
+        Dictionary containing the created issue data.
+
+    Raises:
+        ValueError: If project_key is invalid.
+        JiraError: If issue creation fails.
+    """
+```
 
 ## Pull Request Process
 
-1. Fill out the PR template with a description of your changes
-2. Ensure all CI checks pass
-3. Request review from maintainers
-4. Address review feedback if requested
+1. **Fill PR Template**: Provide clear description, testing details, checklist completion
+2. **Ensure CI Passes**: All GitHub Actions workflows must pass
+3. **Code Review**: Address feedback from maintainers
+4. **Merge Requirements**:
+   - All quality checks passing
+   - Up-to-date with main branch
+   - Approved by maintainer
+
+### Required CI Checks
+- **Tests**: Python 3.10, 3.11, 3.12 matrix
+- **Linting**: Pre-commit hooks (ruff, mypy, various checks)
+- **Coverage**: Maintained or improved test coverage
+
+## Architecture Overview
+
+### Core Components
+- **MCP Server**: FastMCP-based server with tool filtering and auth middleware
+- **Service Layers**: Separate Jira and Confluence service implementations
+- **Format Router**: Automatic Cloud/Server detection with ADF/wiki markup conversion
+- **Authentication**: OAuth 2.0, API tokens, PAT, BYOT support
+- **Transport**: STDIO, SSE, HTTP with multi-tenant capabilities
+
+### Key Directories
+```
+src/mcp_atlassian/
+├── servers/           # MCP server implementations
+├── jira/             # Jira service layer
+├── confluence/       # Confluence service layer
+├── formatting/       # ADF conversion and routing
+├── models/           # Pydantic data models
+├── rest/             # REST API adapters
+└── utils/            # Shared utilities
+
+tests/
+├── unit/             # Unit tests with mocks
+├── integration/      # Integration tests
+└── e2e/              # End-to-end Playwright tests
+```
+
+## Issue Reports
+
+When reporting bugs:
+
+1. **Use Bug Report Template**: Available in GitHub Issues
+2. **Minimal Reproduction**: Provide steps to reproduce
+3. **Environment Details**: Python version, OS, Atlassian instance type
+4. **Logs**: Include relevant error messages (mask sensitive data)
+5. **Expected vs Actual**: Clear description of the problem
 
 ## Release Process
 
-Releases follow semantic versioning:
-- **MAJOR** version for incompatible API changes
-- **MINOR** version for backwards-compatible functionality additions
-- **PATCH** version for backwards-compatible bug fixes
+Releases use semantic versioning and are managed by maintainers:
+
+- **PATCH**: Bug fixes, documentation updates
+- **MINOR**: New features, backwards-compatible changes
+- **MAJOR**: Breaking API changes
+
+Version management is automated through `uv-dynamic-versioning` based on Git tags.
+
+## Security
+
+For security vulnerabilities:
+
+1. **Do NOT** open public issues for security problems
+2. **Contact maintainers directly** through GitHub Security tab or repository owner
+3. **Provide details**: Vulnerability description, impact, reproduction steps
+4. **Responsible disclosure**: Allow time for fixes before public disclosure
+
+## Attribution & License
+
+This project is licensed under the MIT License. Contributions are welcome under the same license terms. All contributors will be acknowledged in release notes and project documentation.
 
 ---
 
-Thank you for contributing to MCP Atlassian!
+**Thank you for contributing to MCP Atlassian!** Your contributions help make AI-Atlassian integration more powerful and accessible for everyone.

@@ -2,8 +2,10 @@
 """
 Test basic async functionality without any MCP dependencies.
 """
-import pytest
+
 import asyncio
+
+import pytest
 
 
 @pytest.mark.asyncio
@@ -17,11 +19,13 @@ async def test_basic_async():
 async def test_async_http():
     """Test async HTTP without MCP."""
     import aiohttp
-    
+
     async with aiohttp.ClientSession() as session:
         # Test if basic HTTP works
         try:
-            async with session.get('http://localhost:9001/healthz', timeout=2) as response:
+            async with session.get(
+                "http://localhost:9001/healthz", timeout=2
+            ) as response:
                 assert response.status == 200
                 text = await response.text()
                 assert text == "OK"

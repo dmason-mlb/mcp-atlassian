@@ -8,55 +8,51 @@ This module provides:
 - Data validation helpers
 """
 
-import asyncio
-import json
 import os
-import time
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any
 
-from mcp_client import MCPClient, MCPClientError
+from mcp_client import MCPClient
 
 
 class TestDataManager:
     """
     Manages test data lifecycle for E2E tests.
-    
+
     Provides:
     - Resource creation and tracking
     - Automatic cleanup after tests
     - Test isolation through unique labeling
     - Data validation utilities
     """
-    
-    def __init__(self, mcp_client: MCPClient, config: Dict[str, Any]):
+
+    def __init__(self, mcp_client: MCPClient, config: dict[str, Any]):
         """
         Initialize test data manager.
-        
+
         Args:
             mcp_client: MCP client instance
             config: Test configuration
         """
         self.client = mcp_client
         self.config = config
-        
+
         # Generate unique test session identifier with clear datestamp
         date_str = datetime.now().strftime("%Y%m%d")
         time_str = datetime.now().strftime("%H%M%S")
         self.test_session = f"mcp-test-{date_str}-{time_str}-{os.getpid()}"
         self.test_label = config.get("test_label", self.test_session)
-        
+
         # Track created resources for cleanup
-        self.created_issues: Set[str] = set()
-        self.created_pages: Set[str] = set()
-        self.created_comments: Dict[str, List[str]] = {}  # resource_id -> comment_ids
-        self.created_attachments: List[str] = []
-        
+        self.created_issues: set[str] = set()
+        self.created_pages: set[str] = set()
+        self.created_comments: dict[str, list[str]] = {}  # resource_id -> comment_ids
+        self.created_attachments: list[str] = []
+
         # Test data templates
         self.test_data = self._initialize_test_data()
-    
-    def _initialize_test_data(self) -> Dict[str, Any]:
+
+    def _initialize_test_data(self) -> dict[str, Any]:
         """Initialize test data templates."""
         return {
             "basic_issue": {
@@ -91,9 +87,8 @@ def test_function():
                 "issue_type": "Task",
                 "additional_fields": {
                     "labels": [self.test_label, "mcp-test", "automation"]
-                }
+                },
             },
-            
             "rich_issue": {
                 "summary": f"[{self.test_session}] Rich ADF Formatting Test",
                 "description": """# Comprehensive ADF Formatting Test
@@ -110,7 +105,7 @@ def test_function():
 :::
 
 :::panel type="success"
-**Success Panel**: 
+**Success Panel**:
 - Testing lists inside panels
 - Multiple items with formatting
 - Nested content validation
@@ -191,10 +186,14 @@ function expandTest() {
                 "issue_type": "Story",
                 "additional_fields": {
                     "priority": {"name": "High"},
-                    "labels": [self.test_label, "mcp-test", "adf-validation", "rich-formatting"]
-                }
+                    "labels": [
+                        self.test_label,
+                        "mcp-test",
+                        "adf-validation",
+                        "rich-formatting",
+                    ],
+                },
             },
-            
             "basic_page": {
                 "title": f"[{self.test_session}] Basic Test Page",
                 "content": """# MCP Testing Documentation
@@ -240,9 +239,8 @@ def test_mcp_integration():
 *Created via MCP tools for testing purposes*
 *Test Session: {test_session}*
 """.replace("{test_session}", self.test_session),
-                "content_format": "markdown"
+                "content_format": "markdown",
             },
-            
             "rich_page": {
                 "title": f"[{self.test_session}] Advanced ADF Elements Test",
                 "content": """# Advanced MCP ADF Test Page
@@ -259,7 +257,7 @@ def test_mcp_integration():
 :::
 
 :::panel type="success"
-**Success Panel**: 
+**Success Panel**:
 - Testing lists inside panels
 - Multiple items with various formatting
 - Validation of nested content structures
@@ -350,7 +348,7 @@ function validateADFElement(element: ADFNode): TestResult {
    - Authentication credentials verified
    - MCP server connectivity established
    :::
-   
+
    Progress: {status:color=green}Complete{/status}
 
 2. **Phase 2: Core Implementation**
@@ -360,7 +358,7 @@ function validateADFElement(element: ADFNode): TestResult {
    - Data management utilities
    - Validation helpers
    :::
-   
+
    Status: {status:color=blue}In Progress{/status}
    Due: {date:2025-01-30}
 
@@ -368,7 +366,7 @@ function validateADFElement(element: ADFNode): TestResult {
    :::panel type="warning"
    **Attention Required**: Complex ADF elements need thorough testing across different browsers and deployment types.
    :::
-   
+
    Timeline: {status:color=yellow}Under Review{/status}
 
 ---
@@ -381,139 +379,136 @@ function validateADFElement(element: ADFNode): TestResult {
 - **Status**: {status:color=green}Ready for Comprehensive Testing{/status}
 """.replace("{test_session}", self.test_session),
                 "content_format": "markdown",
-                "enable_heading_anchors": True
-            }
+                "enable_heading_anchors": True,
+            },
         }
-    
+
     async def create_test_issue(
         self,
         template: str = "basic_issue",
-        project_key: Optional[str] = None,
-        custom_fields: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        project_key: str | None = None,
+        custom_fields: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Create a test Jira issue.
-        
+
         Args:
             template: Template name to use
             project_key: Project key (uses config if not provided)
             custom_fields: Additional fields to override
-            
+
         Returns:
             Created issue data
         """
         if template not in self.test_data:
             raise ValueError(f"Unknown template: {template}")
-        
+
         issue_data = self.test_data[template].copy()
-        
+
         # Override project key
         if not project_key:
             project_key = self.config["jira_project"]
-        
+
         # Apply custom fields
         if custom_fields:
             issue_data.update(custom_fields)
-        
+
         # Ensure test labeling
         if "additional_fields" not in issue_data:
             issue_data["additional_fields"] = {}
         if "labels" not in issue_data["additional_fields"]:
             issue_data["additional_fields"]["labels"] = []
-        
+
         # Add test session label
         labels = issue_data["additional_fields"]["labels"]
         if self.test_label not in labels:
             labels.append(self.test_label)
-        
+
         # Create issue
         result = await self.client.create_jira_issue(
-            project_key=project_key,
-            **issue_data
+            project_key=project_key, **issue_data
         )
-        
+
         # Track for cleanup
         issue_key = self.client.extract_value(result, "key")
         if issue_key:
             self.created_issues.add(issue_key)
-        
+
         return result
-    
+
     async def create_test_page(
         self,
         template: str = "basic_page",
-        space_id: Optional[str] = None,
-        parent_id: Optional[str] = None,
-        custom_fields: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        space_id: str | None = None,
+        parent_id: str | None = None,
+        custom_fields: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Create a test Confluence page.
-        
+
         Args:
             template: Template name to use
             space_id: Space ID (uses config if not provided)
             parent_id: Parent page ID
             custom_fields: Additional fields to override
-            
+
         Returns:
             Created page data
         """
         if template not in self.test_data:
             raise ValueError(f"Unknown template: {template}")
-        
+
         page_data = self.test_data[template].copy()
-        
+
         # Override space ID
         if not space_id:
             space_id = self.config["confluence_space"]
-        
+
         # Apply custom fields
         if custom_fields:
             page_data.update(custom_fields)
-        
+
         # Create page
         result = await self.client.create_confluence_page(
-            space_id=space_id,
-            parent_id=parent_id,
-            **page_data
+            space_id=space_id, parent_id=parent_id, **page_data
         )
-        
+
         # Track for cleanup
         page_data_result = self.client.extract_json(result)
         page_id = (
-            page_data_result.get("page", {}).get("id") or
-            page_data_result.get("id") or
-            page_data_result.get("page_id") or
-            page_data_result.get("data", {}).get("id")
+            page_data_result.get("page", {}).get("id")
+            or page_data_result.get("id")
+            or page_data_result.get("page_id")
+            or page_data_result.get("data", {}).get("id")
         )
-        
+
         if page_id:
             self.created_pages.add(str(page_id))
-            
+
             # Add test label
             try:
                 await self.client.add_confluence_label(str(page_id), self.test_label)
             except Exception:
                 pass  # Label addition is optional
-        
+
         return result
-    
+
     async def add_test_comment(
         self,
         resource_type: str,
         resource_id: str,
-        content: Optional[str] = None,
-        comment_type: str = "basic"
-    ) -> Dict[str, Any]:
+        content: str | None = None,
+        comment_type: str = "basic",
+    ) -> dict[str, Any]:
         """
         Add a test comment to a resource.
-        
+
         Args:
             resource_type: Type of resource ("jira" or "confluence")
             resource_id: Resource ID (issue key or page ID)
             content: Comment content (auto-generated if not provided)
             comment_type: Type of comment ("basic" or "rich")
-            
+
         Returns:
             Comment data
         """
@@ -531,7 +526,7 @@ This comment was added via **MCP tools** for validation testing.
 
 ### Formatting Tests
 - **Bold text** validation
-- *Italic text* validation  
+- *Italic text* validation
 - `Inline code` validation
 - [Link test](https://example.com)
 
@@ -559,7 +554,7 @@ This is a **test comment** added via MCP tools.
 - Resource: {resource_id}
 
 `Automated test comment`"""
-        
+
         # Add comment based on resource type
         if resource_type.lower() == "jira":
             result = await self.client.add_jira_comment(resource_id, content)
@@ -567,26 +562,26 @@ This is a **test comment** added via MCP tools.
             result = await self.client.add_confluence_comment(resource_id, content)
         else:
             raise ValueError(f"Unknown resource type: {resource_type}")
-        
+
         # Track for cleanup (comments are usually cleaned up with parent resource)
         if resource_id not in self.created_comments:
             self.created_comments[resource_id] = []
-        
+
         comment_data = self.client.extract_json(result)
         comment_id = comment_data.get("id")
         if comment_id:
             self.created_comments[resource_id].append(str(comment_id))
-        
+
         return result
-    
+
     def get_test_url(self, resource_type: str, resource_id: str) -> str:
         """
         Get the URL for a test resource.
-        
+
         Args:
             resource_type: Type of resource ("jira" or "confluence")
             resource_id: Resource ID
-            
+
         Returns:
             Resource URL
         """
@@ -599,11 +594,11 @@ This is a **test comment** added via MCP tools.
             return f"{base_url}/spaces/{space_id}/pages/{resource_id}"
         else:
             raise ValueError(f"Unknown resource type: {resource_type}")
-    
-    async def cleanup(self) -> Dict[str, Any]:
+
+    async def cleanup(self) -> dict[str, Any]:
         """
         Clean up all created test resources.
-        
+
         Returns:
             Cleanup summary
         """
@@ -611,16 +606,16 @@ This is a **test comment** added via MCP tools.
             "issues_deleted": 0,
             "pages_deleted": 0,
             "errors": [],
-            "skipped": []
+            "skipped": [],
         }
-        
+
         # Clean up Jira issues
         for issue_key in self.created_issues.copy():
             try:
                 # Try to delete the issue via MCP tools
-                result = await self.client.call_tool("jira_delete_issue", {
-                    "issue_key": issue_key
-                })
+                result = await self.client.call_tool(
+                    "jira_delete_issue", {"issue_key": issue_key}
+                )
                 cleanup_summary["issues_deleted"] += 1
                 self.created_issues.remove(issue_key)
                 print(f"Deleted Jira issue: {issue_key}")
@@ -629,17 +624,21 @@ This is a **test comment** added via MCP tools.
                 if "not found" in error_msg or "does not exist" in error_msg:
                     # Issue already deleted or doesn't exist
                     self.created_issues.remove(issue_key)
-                    cleanup_summary["skipped"].append(f"Issue {issue_key} already deleted")
+                    cleanup_summary["skipped"].append(
+                        f"Issue {issue_key} already deleted"
+                    )
                 else:
-                    cleanup_summary["errors"].append(f"Failed to delete issue {issue_key}: {e}")
-        
-        # Clean up Confluence pages  
+                    cleanup_summary["errors"].append(
+                        f"Failed to delete issue {issue_key}: {e}"
+                    )
+
+        # Clean up Confluence pages
         for page_id in self.created_pages.copy():
             try:
                 # Try to delete the page via MCP tools
-                result = await self.client.call_tool("confluence_pages_delete_page", {
-                    "page_id": page_id
-                })
+                result = await self.client.call_tool(
+                    "confluence_pages_delete_page", {"page_id": page_id}
+                )
                 cleanup_summary["pages_deleted"] += 1
                 self.created_pages.remove(page_id)
                 print(f"Deleted Confluence page: {page_id}")
@@ -650,14 +649,16 @@ This is a **test comment** added via MCP tools.
                     self.created_pages.remove(page_id)
                     cleanup_summary["skipped"].append(f"Page {page_id} already deleted")
                 else:
-                    cleanup_summary["errors"].append(f"Failed to delete page {page_id}: {e}")
-        
+                    cleanup_summary["errors"].append(
+                        f"Failed to delete page {page_id}: {e}"
+                    )
+
         return cleanup_summary
-    
-    def get_resource_summary(self) -> Dict[str, Any]:
+
+    def get_resource_summary(self) -> dict[str, Any]:
         """
         Get summary of created resources.
-        
+
         Returns:
             Resource summary
         """
@@ -667,7 +668,7 @@ This is a **test comment** added via MCP tools.
             "created_issues": list(self.created_issues),
             "created_pages": list(self.created_pages),
             "created_comments": dict(self.created_comments),
-            "total_resources": len(self.created_issues) + len(self.created_pages)
+            "total_resources": len(self.created_issues) + len(self.created_pages),
         }
 
 
@@ -675,42 +676,35 @@ class TestContentValidator:
     """
     Validates test content and responses.
     """
-    
+
     @staticmethod
-    def validate_issue_creation(result: Dict[str, Any]) -> bool:
+    def validate_issue_creation(result: dict[str, Any]) -> bool:
         """Validate Jira issue creation result."""
-        return (
-            "key" in result and 
-            result["key"] and
-            isinstance(result["key"], str)
-        )
-    
-    @staticmethod  
-    def validate_page_creation(result: Dict[str, Any]) -> bool:
+        return "key" in result and result["key"] and isinstance(result["key"], str)
+
+    @staticmethod
+    def validate_page_creation(result: dict[str, Any]) -> bool:
         """Validate Confluence page creation result."""
         page_data = result.get("page", result)
-        return (
-            "id" in page_data and
-            page_data["id"] and
-            "title" in page_data
-        )
-    
+        return "id" in page_data and page_data["id"] and "title" in page_data
+
     @staticmethod
     def validate_adf_structure(adf_content: Any) -> bool:
         """Validate ADF structure basics."""
         if not isinstance(adf_content, dict):
             return False
-        
+
         return (
-            "type" in adf_content and
-            adf_content["type"] == "doc" and
-            "content" in adf_content and
-            isinstance(adf_content["content"], list)
+            "type" in adf_content
+            and adf_content["type"] == "doc"
+            and "content" in adf_content
+            and isinstance(adf_content["content"], list)
         )
-    
+
     @staticmethod
-    def contains_adf_element(adf_content: Dict[str, Any], element_type: str) -> bool:
+    def contains_adf_element(adf_content: dict[str, Any], element_type: str) -> bool:
         """Check if ADF content contains specific element type."""
+
         def search_content(content):
             if isinstance(content, dict):
                 if content.get("type") == element_type:
@@ -720,5 +714,5 @@ class TestContentValidator:
             elif isinstance(content, list):
                 return any(search_content(item) for item in content)
             return False
-        
+
         return search_content(adf_content)
