@@ -1,0 +1,78 @@
+{
+  "create": {
+    "required": [
+      "space_id",
+      "title",
+      "body"
+    ],
+    "fields": {
+      "space_id": "string:Confluence space ID or key",
+      "title": "string:Page title",
+      "body": "string:Page content in Markdown or storage format",
+      "parent_id": "string:optional:Parent page ID",
+      "is_markdown": "boolean:optional:Whether body is Markdown (default: true)",
+      "enable_heading_anchors": "boolean:optional:Generate heading anchors",
+      "content_representation": "string:optional:Content format (storage, wiki, etc.)"
+    },
+    "examples": {
+      "minimal": {
+        "space_id": "SPACE",
+        "title": "Getting Started",
+        "body": "# Welcome\n\nThis is a new page with basic content."
+      },
+      "complete": {
+        "space_id": "DOCS",
+        "title": "API Documentation",
+        "body": "# API Documentation\n\n## Overview\nThis document describes our REST API endpoints.\n\n## Authentication\nUse Bearer tokens for authentication.",
+        "parent_id": "123456",
+        "is_markdown": true,
+        "enable_heading_anchors": true
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "update": {
+    "required": [
+      "title",
+      "body"
+    ],
+    "fields": {
+      "title": "string:Updated page title",
+      "body": "string:Updated page content",
+      "is_markdown": "boolean:optional:Content format flag",
+      "enable_heading_anchors": "boolean:optional:Heading anchor setting",
+      "content_representation": "string:optional:Content representation"
+    },
+    "examples": {
+      "minimal": {
+        "title": "Updated Getting Started",
+        "body": "# Welcome (Updated)\n\nThis page has been updated with new information."
+      },
+      "complete": {
+        "title": "Complete API Documentation v2",
+        "body": "# API Documentation v2\n\n## What's New\n- Added GraphQL endpoints\n- Updated authentication\n\n## REST API\n...",
+        "is_markdown": true,
+        "enable_heading_anchors": true
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "get": {
+    "required": [],
+    "fields": {
+      "expand": "string:optional:Comma-separated expand options",
+      "body_format": "string:optional:Body format to retrieve"
+    },
+    "examples": {
+      "minimal": {},
+      "complete": {
+        "expand": "body.storage,version,space,ancestors",
+        "body_format": "storage"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "add": {
+    "required": [
+      "body"
+    ],
+    "fields": {
+      "body": "string:Comment text in Markdown or storage format",
+      "is_markdown": "boolean:optional:Whether body is Markdown (default: true)",
+      "parent_comment_id": "string:optional:Parent comment ID for replies"
+    },
+    "examples": {
+      "minimal": {
+        "body": "Great documentation! This is very helpful."
+      },
+      "complete": {
+        "body": "## Feedback\n\nThis documentation is excellent. A few suggestions:\n\n1. Add more code examples\n2. Include troubleshooting section\n3. Add API versioning details",
+        "is_markdown": true
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "update": {
+    "required": [
+      "body"
+    ],
+    "fields": {
+      "body": "string:Updated comment text",
+      "is_markdown": "boolean:optional:Content format flag"
+    },
+    "examples": {
+      "minimal": {
+        "body": "Updated comment with corrections."
+      },
+      "complete": {
+        "body": "## Updated Feedback\n\nAfter review, this documentation covers most cases well. Minor suggestion:\n\n- Consider adding a FAQ section",
+        "is_markdown": true
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "get": {
+    "required": [],
+    "fields": {
+      "expand": "string:optional:Expand options for comment details"
+    },
+    "examples": {
+      "minimal": {},
+      "complete": {
+        "expand": "body.storage,version"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  }
+}

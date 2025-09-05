@@ -1,0 +1,66 @@
+{
+  "create": {
+    "required": [
+      "name",
+      "board_id"
+    ],
+    "fields": {
+      "name": "string:Sprint name",
+      "board_id": "integer:Agile board ID",
+      "goal": "string:optional:Sprint goal/objective",
+      "start_date": "string:optional:Start date (ISO format)",
+      "end_date": "string:optional:End date (ISO format)"
+    },
+    "examples": {
+      "minimal": {
+        "name": "Sprint 42",
+        "board_id": 123
+      },
+      "complete": {
+        "name": "Authentication Sprint",
+        "board_id": 123,
+        "goal": "Implement OAuth 2.0 authentication system",
+        "start_date": "2024-01-15T09:00:00.000Z",
+        "end_date": "2024-01-29T17:00:00.000Z"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "update": {
+    "required": [],
+    "fields": {
+      "name": "string:optional:Updated sprint name",
+      "goal": "string:optional:Updated sprint goal",
+      "state": "string:optional:Sprint state (active, closed, future)",
+      "start_date": "string:optional:Updated start date",
+      "end_date": "string:optional:Updated end date"
+    },
+    "examples": {
+      "minimal": {
+        "name": "Authentication & Security Sprint"
+      },
+      "complete": {
+        "name": "Authentication & Security Sprint",
+        "goal": "Implement OAuth 2.0 and add security headers",
+        "state": "active"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "get": {
+    "required": [],
+    "fields": {
+      "expand": "string:optional:Expand options (issues, etc.)"
+    },
+    "examples": {
+      "minimal": {},
+      "complete": {
+        "expand": "issues"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  }
+}

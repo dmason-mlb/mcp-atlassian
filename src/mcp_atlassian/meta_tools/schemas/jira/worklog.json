@@ -1,0 +1,62 @@
+{
+  "add": {
+    "required": [
+      "time_spent"
+    ],
+    "fields": {
+      "time_spent": "string:Time spent (e.g., '2h 30m', '4d', '1w')",
+      "comment": "string:optional:Work description",
+      "started": "string:optional:Start date/time (ISO format)",
+      "visibility": "object:optional:Visibility restrictions"
+    },
+    "examples": {
+      "minimal": {
+        "time_spent": "2h"
+      },
+      "complete": {
+        "time_spent": "3h 15m",
+        "comment": "Fixed authentication bug and added unit tests",
+        "started": "2024-01-15T09:00:00.000+0000",
+        "visibility": {
+          "type": "group",
+          "value": "developers"
+        }
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "update": {
+    "required": [],
+    "fields": {
+      "time_spent": "string:optional:Updated time spent",
+      "comment": "string:optional:Updated work description",
+      "started": "string:optional:Updated start time"
+    },
+    "examples": {
+      "minimal": {
+        "time_spent": "3h"
+      },
+      "complete": {
+        "time_spent": "4h 30m",
+        "comment": "Extended work - also refactored related components"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "get": {
+    "required": [],
+    "fields": {
+      "expand": "string:optional:Expand options for worklog details"
+    },
+    "examples": {
+      "minimal": {},
+      "complete": {
+        "expand": "properties"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  }
+}

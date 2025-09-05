@@ -141,6 +141,13 @@ logger = setup_logging(logging_level, logging_stream)
     help="Atlassian Cloud OAuth 2.0 access token (if you have your own you'd like to "
     "use for the session.)",
 )
+@click.option(
+    "--version",
+    "tool_version",
+    type=click.Choice(["v1", "v2"]),
+    default="v1",
+    help="Tool version to load: v1 (legacy 42 tools) or v2 (optimized meta-tools)",
+)
 def main(
     verbose: int,
     env_file: str | None,
@@ -169,6 +176,7 @@ def main(
     oauth_scope: str | None,
     oauth_cloud_id: str | None,
     oauth_access_token: str | None,
+    tool_version: str,
 ) -> None:
     """MCP Atlassian Server - Jira and Confluence functionality for MCP
 
@@ -305,6 +313,8 @@ def main(
         os.environ["JIRA_SSL_VERIFY"] = str(jira_ssl_verify).lower()
     if click_ctx and was_option_provided(click_ctx, "jira_projects_filter"):
         os.environ["JIRA_PROJECTS_FILTER"] = jira_projects_filter
+    if click_ctx and was_option_provided(click_ctx, "tool_version"):
+        os.environ["MCP_VERSION"] = tool_version
 
     from mcp_atlassian.servers import main_mcp
 

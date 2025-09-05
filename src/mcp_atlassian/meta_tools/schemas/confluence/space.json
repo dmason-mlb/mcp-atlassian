@@ -1,0 +1,64 @@
+{
+  "create": {
+    "required": [
+      "key",
+      "name"
+    ],
+    "fields": {
+      "key": "string:Space key (uppercase, no spaces, e.g., 'DOCS')",
+      "name": "string:Space display name",
+      "description": "string:optional:Space description",
+      "type": "string:optional:Space type (global, personal)",
+      "private": "boolean:optional:Whether space is private"
+    },
+    "examples": {
+      "minimal": {
+        "key": "DOCS",
+        "name": "Documentation"
+      },
+      "complete": {
+        "key": "TEAMDOCS",
+        "name": "Team Documentation Hub",
+        "description": "Central location for all team documentation, guides, and resources",
+        "type": "global",
+        "private": false
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "update": {
+    "required": [],
+    "fields": {
+      "name": "string:optional:Updated space name",
+      "description": "string:optional:Updated description",
+      "homepage_id": "string:optional:New homepage page ID"
+    },
+    "examples": {
+      "minimal": {
+        "name": "Updated Documentation Hub"
+      },
+      "complete": {
+        "name": "Comprehensive Documentation Hub",
+        "description": "Updated: Central hub for documentation, guides, tutorials, and team resources",
+        "homepage_id": "789012"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "get": {
+    "required": [],
+    "fields": {
+      "expand": "string:optional:Expand options for space details"
+    },
+    "examples": {
+      "minimal": {},
+      "complete": {
+        "expand": "description,homepage,metadata"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  }
+}

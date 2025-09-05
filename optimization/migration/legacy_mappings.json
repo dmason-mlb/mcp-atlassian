@@ -1,0 +1,1078 @@
+{
+  "jira": {
+    "get_issue": {
+      "meta_tool": "resource_manager",
+      "resource": "issue",
+      "operation": "get",
+      "parameter_mapping": {
+        "issue_key": "identifier",
+        "fields": {
+          "target": "options",
+          "field": "fields"
+        },
+        "expand": {
+          "target": "options",
+          "field": "expand"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "get_issue",
+          "parameters": {
+            "issue_key": "PROJ-123",
+            "fields": "summary,status,assignee",
+            "expand": "changelog"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "jira",
+            "resource": "issue",
+            "operation": "get",
+            "identifier": "PROJ-123",
+            "options": {
+              "fields": "summary,status,assignee",
+              "expand": "changelog"
+            }
+          }
+        }
+      },
+      "notes": "Simple 1:1 mapping for issue retrieval"
+    },
+    "create_issue": {
+      "meta_tool": "resource_manager",
+      "resource": "issue",
+      "operation": "create",
+      "parameter_mapping": {
+        "project_key": {
+          "target": "data",
+          "field": "project"
+        },
+        "summary": {
+          "target": "data",
+          "field": "summary"
+        },
+        "issue_type": {
+          "target": "data",
+          "field": "issuetype"
+        },
+        "description": {
+          "target": "data",
+          "field": "description"
+        },
+        "assignee": {
+          "target": "data",
+          "field": "assignee"
+        },
+        "components": {
+          "target": "data",
+          "field": "components"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "create_issue",
+          "parameters": {
+            "project_key": "PROJ",
+            "summary": "Fix bug in login",
+            "issue_type": "Bug",
+            "description": "Users cannot log in",
+            "assignee": "john.doe@example.com",
+            "components": "Frontend,API"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "jira",
+            "resource": "issue",
+            "operation": "create",
+            "data": {
+              "project": "PROJ",
+              "summary": "Fix bug in login",
+              "issuetype": "Bug",
+              "description": "Users cannot log in",
+              "assignee": "john.doe@example.com",
+              "components": ["Frontend", "API"]
+            }
+          }
+        }
+      },
+      "notes": "Components parameter converted from comma-separated string to array"
+    },
+    "update_issue": {
+      "meta_tool": "resource_manager",
+      "resource": "issue",
+      "operation": "update",
+      "parameter_mapping": {
+        "issue_key": "identifier",
+        "summary": {
+          "target": "data",
+          "field": "summary"
+        },
+        "description": {
+          "target": "data",
+          "field": "description"
+        },
+        "assignee": {
+          "target": "data",
+          "field": "assignee"
+        },
+        "components": {
+          "target": "data",
+          "field": "components"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "update_issue",
+          "parameters": {
+            "issue_key": "PROJ-123",
+            "summary": "Updated summary",
+            "assignee": "jane.doe@example.com"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "jira",
+            "resource": "issue",
+            "operation": "update",
+            "identifier": "PROJ-123",
+            "data": {
+              "summary": "Updated summary",
+              "assignee": "jane.doe@example.com"
+            }
+          }
+        }
+      },
+      "notes": "Direct field mapping for issue updates"
+    },
+    "delete_issue": {
+      "meta_tool": "resource_manager",
+      "resource": "issue",
+      "operation": "delete",
+      "parameter_mapping": {
+        "issue_key": "identifier"
+      },
+      "examples": {
+        "legacy": {
+          "tool": "delete_issue",
+          "parameters": {
+            "issue_key": "PROJ-123"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "jira",
+            "resource": "issue",
+            "operation": "delete",
+            "identifier": "PROJ-123"
+          }
+        }
+      },
+      "notes": "Simple deletion operation"
+    },
+    "add_comment": {
+      "meta_tool": "resource_manager",
+      "resource": "comment",
+      "operation": "add",
+      "parameter_mapping": {
+        "issue_key": "identifier",
+        "comment_body": {
+          "target": "data",
+          "field": "body"
+        },
+        "visibility": {
+          "target": "data",
+          "field": "visibility"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "add_comment",
+          "parameters": {
+            "issue_key": "PROJ-123",
+            "comment_body": "This is a comment",
+            "visibility": "Developers"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "jira",
+            "resource": "comment",
+            "operation": "add",
+            "identifier": "PROJ-123",
+            "data": {
+              "body": "This is a comment",
+              "visibility": "Developers"
+            }
+          }
+        }
+      },
+      "notes": "Comment creation on issues"
+    },
+    "create_sprint": {
+      "meta_tool": "resource_manager",
+      "resource": "sprint",
+      "operation": "create",
+      "parameter_mapping": {
+        "board_id": {
+          "target": "data",
+          "field": "originBoardId"
+        },
+        "name": {
+          "target": "data",
+          "field": "name"
+        },
+        "start_date": {
+          "target": "data",
+          "field": "startDate"
+        },
+        "end_date": {
+          "target": "data",
+          "field": "endDate"
+        },
+        "goal": {
+          "target": "data",
+          "field": "goal"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "create_sprint",
+          "parameters": {
+            "board_id": "123",
+            "name": "Sprint 1",
+            "start_date": "2024-01-01",
+            "end_date": "2024-01-14",
+            "goal": "Complete user stories"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "jira",
+            "resource": "sprint",
+            "operation": "create",
+            "data": {
+              "originBoardId": "123",
+              "name": "Sprint 1",
+              "startDate": "2024-01-01",
+              "endDate": "2024-01-14",
+              "goal": "Complete user stories"
+            }
+          }
+        }
+      },
+      "notes": "Sprint creation for agile boards"
+    },
+    "update_sprint": {
+      "meta_tool": "resource_manager",
+      "resource": "sprint",
+      "operation": "update",
+      "parameter_mapping": {
+        "sprint_id": "identifier",
+        "name": {
+          "target": "data",
+          "field": "name"
+        },
+        "start_date": {
+          "target": "data",
+          "field": "startDate"
+        },
+        "end_date": {
+          "target": "data",
+          "field": "endDate"
+        },
+        "goal": {
+          "target": "data",
+          "field": "goal"
+        },
+        "state": {
+          "target": "data",
+          "field": "state"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "update_sprint",
+          "parameters": {
+            "sprint_id": "456",
+            "name": "Sprint 1 Updated",
+            "state": "active"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "jira",
+            "resource": "sprint",
+            "operation": "update",
+            "identifier": "456",
+            "data": {
+              "name": "Sprint 1 Updated",
+              "state": "active"
+            }
+          }
+        }
+      },
+      "notes": "Sprint updates including state changes"
+    },
+    "create_version": {
+      "meta_tool": "resource_manager",
+      "resource": "version",
+      "operation": "create",
+      "parameter_mapping": {
+        "project_key": {
+          "target": "data",
+          "field": "project"
+        },
+        "name": {
+          "target": "data",
+          "field": "name"
+        },
+        "description": {
+          "target": "data",
+          "field": "description"
+        },
+        "start_date": {
+          "target": "data",
+          "field": "startDate"
+        },
+        "release_date": {
+          "target": "data",
+          "field": "releaseDate"
+        },
+        "archived": {
+          "target": "data",
+          "field": "archived"
+        },
+        "released": {
+          "target": "data",
+          "field": "released"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "create_version",
+          "parameters": {
+            "project_key": "PROJ",
+            "name": "v1.0.0",
+            "description": "First release",
+            "release_date": "2024-12-31"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "jira",
+            "resource": "version",
+            "operation": "create",
+            "data": {
+              "project": "PROJ",
+              "name": "v1.0.0",
+              "description": "First release",
+              "releaseDate": "2024-12-31"
+            }
+          }
+        }
+      },
+      "notes": "Project version creation"
+    },
+    "batch_create_versions": {
+      "meta_tool": "batch_processor",
+      "resource": "versions",
+      "operation": "create",
+      "parameter_mapping": {
+        "project_key": {
+          "target": "options",
+          "field": "project_key"
+        },
+        "versions": "items"
+      },
+      "examples": {
+        "legacy": {
+          "tool": "batch_create_versions",
+          "parameters": {
+            "project_key": "PROJ",
+            "versions": [
+              {"name": "v1.0.0", "description": "First release"},
+              {"name": "v1.1.0", "description": "Bug fixes"}
+            ]
+          }
+        },
+        "meta_tool": {
+          "tool": "batch_processor",
+          "parameters": {
+            "service": "jira",
+            "operation": "create",
+            "resource_type": "versions",
+            "items": [
+              {"name": "v1.0.0", "description": "First release"},
+              {"name": "v1.1.0", "description": "Bug fixes"}
+            ],
+            "options": {
+              "project_key": "PROJ"
+            }
+          }
+        }
+      },
+      "notes": "Batch version creation - requires batch_processor meta-tool"
+    },
+    "batch_create_issues": {
+      "meta_tool": "batch_processor",
+      "resource": "issues",
+      "operation": "create",
+      "parameter_mapping": {
+        "issues": "items"
+      },
+      "examples": {
+        "legacy": {
+          "tool": "batch_create_issues",
+          "parameters": {
+            "issues": [
+              {
+                "project_key": "PROJ",
+                "summary": "Task 1",
+                "issue_type": "Task"
+              },
+              {
+                "project_key": "PROJ", 
+                "summary": "Task 2",
+                "issue_type": "Task"
+              }
+            ]
+          }
+        },
+        "meta_tool": {
+          "tool": "batch_processor",
+          "parameters": {
+            "service": "jira",
+            "operation": "create",
+            "resource_type": "issues",
+            "items": [
+              {
+                "project": "PROJ",
+                "summary": "Task 1",
+                "issuetype": "Task"
+              },
+              {
+                "project": "PROJ",
+                "summary": "Task 2", 
+                "issuetype": "Task"
+              }
+            ]
+          }
+        }
+      },
+      "notes": "Batch issue creation - requires batch_processor meta-tool"
+    },
+    "transition_issue": {
+      "meta_tool": "workflow_engine",
+      "resource": "issue",
+      "operation": "transition",
+      "parameter_mapping": {
+        "issue_key": "identifier",
+        "transition_id": {
+          "target": "data",
+          "field": "transition_id"
+        },
+        "comment": {
+          "target": "data",
+          "field": "comment"
+        },
+        "fields": {
+          "target": "data",
+          "field": "fields"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "transition_issue",
+          "parameters": {
+            "issue_key": "PROJ-123",
+            "transition_id": "31",
+            "comment": "Moving to done"
+          }
+        },
+        "meta_tool": {
+          "tool": "workflow_engine",
+          "parameters": {
+            "service": "jira",
+            "resource": "issue",
+            "operation": "transition",
+            "identifier": "PROJ-123",
+            "data": {
+              "transition_id": "31",
+              "comment": "Moving to done"
+            }
+          }
+        }
+      },
+      "notes": "Issue state transitions - requires workflow_engine meta-tool"
+    },
+    "create_issue_link": {
+      "meta_tool": "relationship_manager",
+      "resource": "issue_link",
+      "operation": "create",
+      "parameter_mapping": {
+        "inward_issue": {
+          "target": "data",
+          "field": "inwardIssue"
+        },
+        "outward_issue": {
+          "target": "data",
+          "field": "outwardIssue"
+        },
+        "link_type": {
+          "target": "data",
+          "field": "type"
+        },
+        "comment": {
+          "target": "data",
+          "field": "comment"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "create_issue_link",
+          "parameters": {
+            "inward_issue": "PROJ-123",
+            "outward_issue": "PROJ-124",
+            "link_type": "Blocks",
+            "comment": "Dependencies established"
+          }
+        },
+        "meta_tool": {
+          "tool": "relationship_manager",
+          "parameters": {
+            "service": "jira",
+            "resource": "issue_link",
+            "operation": "create",
+            "data": {
+              "inwardIssue": "PROJ-123",
+              "outwardIssue": "PROJ-124",
+              "type": "Blocks",
+              "comment": "Dependencies established"
+            }
+          }
+        }
+      },
+      "notes": "Issue linking - requires relationship_manager meta-tool"
+    },
+    "upload_attachment": {
+      "meta_tool": "attachment_handler",
+      "resource": "attachment",
+      "operation": "upload",
+      "parameter_mapping": {
+        "issue_key": "identifier",
+        "file_path": {
+          "target": "data",
+          "field": "file_path"
+        },
+        "filename": {
+          "target": "data",
+          "field": "filename"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "upload_attachment",
+          "parameters": {
+            "issue_key": "PROJ-123",
+            "file_path": "/path/to/file.pdf",
+            "filename": "document.pdf"
+          }
+        },
+        "meta_tool": {
+          "tool": "attachment_handler",
+          "parameters": {
+            "service": "jira",
+            "resource": "attachment", 
+            "operation": "upload",
+            "identifier": "PROJ-123",
+            "data": {
+              "file_path": "/path/to/file.pdf",
+              "filename": "document.pdf"
+            }
+          }
+        }
+      },
+      "notes": "File attachment upload - requires attachment_handler meta-tool"
+    },
+    "download_attachments": {
+      "meta_tool": "attachment_handler",
+      "resource": "attachment",
+      "operation": "download",
+      "parameter_mapping": {
+        "issue_key": "identifier",
+        "attachment_id": {
+          "target": "options",
+          "field": "attachment_id"
+        },
+        "download_path": {
+          "target": "options",
+          "field": "download_path"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "download_attachments",
+          "parameters": {
+            "issue_key": "PROJ-123",
+            "attachment_id": "12345",
+            "download_path": "/downloads/"
+          }
+        },
+        "meta_tool": {
+          "tool": "attachment_handler",
+          "parameters": {
+            "service": "jira",
+            "resource": "attachment",
+            "operation": "download",
+            "identifier": "PROJ-123",
+            "options": {
+              "attachment_id": "12345",
+              "download_path": "/downloads/"
+            }
+          }
+        }
+      },
+      "notes": "Attachment download - requires attachment_handler meta-tool"
+    },
+    "search": {
+      "meta_tool": "search_engine",
+      "resource": "issues",
+      "operation": "search",
+      "parameter_mapping": {
+        "jql": "query",
+        "start_at": {
+          "target": "options",
+          "field": "start_at"
+        },
+        "max_results": {
+          "target": "options", 
+          "field": "max_results"
+        },
+        "fields": {
+          "target": "options",
+          "field": "fields"
+        },
+        "expand": {
+          "target": "options",
+          "field": "expand"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "search",
+          "parameters": {
+            "jql": "project = PROJ AND status = 'In Progress'",
+            "fields": "summary,status,assignee",
+            "max_results": 50
+          }
+        },
+        "meta_tool": {
+          "tool": "search_engine",
+          "parameters": {
+            "service": "jira",
+            "query_type": "issues",
+            "query": "project = PROJ AND status = 'In Progress'",
+            "options": {
+              "fields": "summary,status,assignee",
+              "max_results": 50
+            }
+          }
+        }
+      },
+      "notes": "JQL search - requires search_engine meta-tool"
+    },
+    "search_user": {
+      "meta_tool": "search_engine",
+      "resource": "users",
+      "operation": "search",
+      "parameter_mapping": {
+        "query": "query",
+        "max_results": {
+          "target": "options",
+          "field": "max_results"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "search_user",
+          "parameters": {
+            "query": "john.doe",
+            "max_results": 10
+          }
+        },
+        "meta_tool": {
+          "tool": "search_engine",
+          "parameters": {
+            "service": "jira",
+            "query_type": "users",
+            "query": "john.doe",
+            "options": {
+              "max_results": 10
+            }
+          }
+        }
+      },
+      "notes": "User search - requires search_engine meta-tool"
+    },
+    "get_all_projects": {
+      "meta_tool": "search_engine",
+      "resource": "projects",
+      "operation": "search",
+      "parameter_mapping": {
+        "expand": {
+          "target": "options",
+          "field": "expand"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "get_all_projects",
+          "parameters": {
+            "expand": "description,lead"
+          }
+        },
+        "meta_tool": {
+          "tool": "search_engine",
+          "parameters": {
+            "service": "jira",
+            "query_type": "projects",
+            "query": "*",
+            "options": {
+              "expand": "description,lead"
+            }
+          }
+        }
+      },
+      "notes": "Project listing - requires search_engine meta-tool"
+    }
+  },
+  "confluence": {
+    "get_page": {
+      "meta_tool": "resource_manager",
+      "resource": "page",
+      "operation": "get",
+      "parameter_mapping": {
+        "page_id": "identifier",
+        "expand": {
+          "target": "options",
+          "field": "expand"
+        },
+        "version": {
+          "target": "options",
+          "field": "version"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "get_page",
+          "parameters": {
+            "page_id": "123456",
+            "expand": "body.storage,version,space"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "confluence",
+            "resource": "page",
+            "operation": "get",
+            "identifier": "123456",
+            "options": {
+              "expand": "body.storage,version,space"
+            }
+          }
+        }
+      },
+      "notes": "Simple page retrieval"
+    },
+    "create_page": {
+      "meta_tool": "resource_manager",
+      "resource": "page",
+      "operation": "create",
+      "parameter_mapping": {
+        "space_key": {
+          "target": "data",
+          "field": "space"
+        },
+        "title": {
+          "target": "data",
+          "field": "title"
+        },
+        "body": {
+          "target": "data",
+          "field": "body"
+        },
+        "parent_id": {
+          "target": "data",
+          "field": "parent_id"
+        },
+        "representation": {
+          "target": "data",
+          "field": "representation"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "create_page",
+          "parameters": {
+            "space_key": "DOCS",
+            "title": "New Documentation",
+            "body": "# Hello World\n\nThis is content.",
+            "parent_id": "789012"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "confluence",
+            "resource": "page",
+            "operation": "create",
+            "data": {
+              "space": "DOCS",
+              "title": "New Documentation",
+              "body": "# Hello World\n\nThis is content.",
+              "parent_id": "789012"
+            }
+          }
+        }
+      },
+      "notes": "Page creation with optional parent hierarchy"
+    },
+    "update_page": {
+      "meta_tool": "resource_manager",
+      "resource": "page",
+      "operation": "update",
+      "parameter_mapping": {
+        "page_id": "identifier",
+        "title": {
+          "target": "data",
+          "field": "title"
+        },
+        "body": {
+          "target": "data",
+          "field": "body"
+        },
+        "version_number": {
+          "target": "data",
+          "field": "version_number"
+        },
+        "representation": {
+          "target": "data",
+          "field": "representation"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "update_page",
+          "parameters": {
+            "page_id": "123456",
+            "title": "Updated Documentation",
+            "body": "# Updated Content\n\nThis is updated.",
+            "version_number": 2
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "confluence",
+            "resource": "page",
+            "operation": "update",
+            "identifier": "123456",
+            "data": {
+              "title": "Updated Documentation",
+              "body": "# Updated Content\n\nThis is updated.",
+              "version_number": 2
+            }
+          }
+        }
+      },
+      "notes": "Page updates require version number for optimistic locking"
+    },
+    "delete_page": {
+      "meta_tool": "resource_manager",
+      "resource": "page",
+      "operation": "delete",
+      "parameter_mapping": {
+        "page_id": "identifier"
+      },
+      "examples": {
+        "legacy": {
+          "tool": "delete_page",
+          "parameters": {
+            "page_id": "123456"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "confluence",
+            "resource": "page",
+            "operation": "delete",
+            "identifier": "123456"
+          }
+        }
+      },
+      "notes": "Simple page deletion"
+    },
+    "add_comment": {
+      "meta_tool": "resource_manager",
+      "resource": "comment",
+      "operation": "add",
+      "parameter_mapping": {
+        "page_id": "identifier",
+        "comment_body": {
+          "target": "data",
+          "field": "body"
+        },
+        "parent_comment_id": {
+          "target": "data",
+          "field": "parent_id"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "add_comment",
+          "parameters": {
+            "page_id": "123456",
+            "comment_body": "This is a comment on the page",
+            "parent_comment_id": "789012"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "confluence",
+            "resource": "comment",
+            "operation": "add",
+            "identifier": "123456",
+            "data": {
+              "body": "This is a comment on the page",
+              "parent_id": "789012"
+            }
+          }
+        }
+      },
+      "notes": "Page comment creation with optional parent for threading"
+    },
+    "add_label": {
+      "meta_tool": "resource_manager",
+      "resource": "label",
+      "operation": "add",
+      "parameter_mapping": {
+        "page_id": "identifier",
+        "label": {
+          "target": "data",
+          "field": "name"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "add_label",
+          "parameters": {
+            "page_id": "123456",
+            "label": "important"
+          }
+        },
+        "meta_tool": {
+          "tool": "resource_manager",
+          "parameters": {
+            "service": "confluence",
+            "resource": "label",
+            "operation": "add",
+            "identifier": "123456",
+            "data": {
+              "name": "important"
+            }
+          }
+        }
+      },
+      "notes": "Label addition to pages"
+    },
+    "search": {
+      "meta_tool": "search_engine",
+      "resource": "pages",
+      "operation": "search",
+      "parameter_mapping": {
+        "cql": "query",
+        "limit": {
+          "target": "options",
+          "field": "limit"
+        },
+        "start": {
+          "target": "options",
+          "field": "start"
+        },
+        "expand": {
+          "target": "options",
+          "field": "expand"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "search",
+          "parameters": {
+            "cql": "space = DOCS AND title ~ \"documentation\"",
+            "limit": 25,
+            "expand": "body.view"
+          }
+        },
+        "meta_tool": {
+          "tool": "search_engine",
+          "parameters": {
+            "service": "confluence",
+            "query_type": "pages",
+            "query": "space = DOCS AND title ~ \"documentation\"",
+            "options": {
+              "limit": 25,
+              "expand": "body.view"
+            }
+          }
+        }
+      },
+      "notes": "CQL search - requires search_engine meta-tool"
+    },
+    "search_user": {
+      "meta_tool": "search_engine",
+      "resource": "users",
+      "operation": "search",
+      "parameter_mapping": {
+        "query": "query",
+        "limit": {
+          "target": "options",
+          "field": "limit"
+        }
+      },
+      "examples": {
+        "legacy": {
+          "tool": "search_user",
+          "parameters": {
+            "query": "john.doe",
+            "limit": 10
+          }
+        },
+        "meta_tool": {
+          "tool": "search_engine",
+          "parameters": {
+            "service": "confluence",
+            "query_type": "users",
+            "query": "john.doe",
+            "options": {
+              "limit": 10
+            }
+          }
+        }
+      },
+      "notes": "User search - requires search_engine meta-tool"
+    }
+  }
+}

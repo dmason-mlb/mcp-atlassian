@@ -29,6 +29,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **HTTP transport (SSE)**: `uv run mcp-atlassian --transport sse --port 9000`
 - **HTTP transport (streamable)**: `uv run mcp-atlassian --transport streamable-http --port 9000`
 
+#### Version Selection (Tool Loading)
+The server supports two tool loading modes to balance functionality with token efficiency:
+
+- **v1 (Legacy)**: `uv run mcp-atlassian --version v1` - Loads all 42 individual tools (default for backward compatibility)
+- **v2 (Meta-tools)**: `uv run mcp-atlassian --version v2` - Loads 6-10 optimized meta-tools for 75% token reduction
+- **Environment variable**: Set `MCP_VERSION=v2` as alternative to CLI flag
+
+**Version Features:**
+- **v1**: Full backward compatibility, all existing tools available
+- **v2**: Token-optimized meta-tools (resource_manager, schema_discovery, etc.)
+- **Mutual exclusivity**: Only one version loads at a time to prevent token waste
+- **Migration support**: v1 remains default to ensure existing integrations work
+
 ### Debug Scripts (Root Directory)
 Several debug scripts are available for troubleshooting specific components:
 - **Debug ADF conversion**: `python debug_confluence_formats.py`

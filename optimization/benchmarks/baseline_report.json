@@ -1,0 +1,4089 @@
+{
+  "metadata": {
+    "timestamp": "2025-09-05T16:48:31.852321+00:00",
+    "encoding": "cl100k_base",
+    "analysis_version": "1.0.0",
+    "project_path": "/Users/douglas.mason/Documents/GitHub/mcp-atlassian.worktrees/develop"
+  },
+  "current_tools": {
+    "total_tools": 102,
+    "total_tokens": 32166,
+    "by_service": {
+      "jira": {
+        "tool_count": 91,
+        "total_tokens": 28137,
+        "tools": [
+          {
+            "name": "get_issue",
+            "module": "src/mcp_atlassian/servers/jira_core.py",
+            "tokens": 730,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue",
+            "module": "src/mcp_atlassian/servers/jira_core.py",
+            "tokens": 706,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_issue",
+            "module": "src/mcp_atlassian/servers/jira_core.py",
+            "tokens": 343,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "delete_issue",
+            "module": "src/mcp_atlassian/servers/jira_core.py",
+            "tokens": 108,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "add_comment",
+            "module": "src/mcp_atlassian/servers/jira_core.py",
+            "tokens": 137,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_user_profile",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 149,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_issue",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 730,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 703,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search_fields",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 266,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_issues",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 229,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_transitions",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 94,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_worklog",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 93,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "download_attachments",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 119,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_agile_boards",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 441,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_board_issues",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 619,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprints_from_board",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 324,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprint_issues",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 376,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_link_types",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 58,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 704,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_create_issues",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 337,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_get_changelogs",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 359,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_issue",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 322,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "delete_issue",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 105,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "add_comment",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 135,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "add_worklog",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 543,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "link_to_epic",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 161,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue_link",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 326,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_remote_issue_link",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 494,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "remove_issue_link",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 111,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "transition_issue",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 334,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_sprint",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 257,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_sprint",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 417,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_versions",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 61,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_all_projects",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 176,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_version",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 288,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_create_versions",
+            "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+            "tokens": 245,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_create_issues",
+            "module": "src/mcp_atlassian/servers/jira_project.py",
+            "tokens": 337,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_get_changelogs",
+            "module": "src/mcp_atlassian/servers/jira_project.py",
+            "tokens": 359,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_versions",
+            "module": "src/mcp_atlassian/servers/jira_project.py",
+            "tokens": 61,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_all_projects",
+            "module": "src/mcp_atlassian/servers/jira_project.py",
+            "tokens": 176,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_version",
+            "module": "src/mcp_atlassian/servers/jira_project.py",
+            "tokens": 288,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "search",
+            "module": "src/mcp_atlassian/servers/jira_search.py",
+            "tokens": 703,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search_fields",
+            "module": "src/mcp_atlassian/servers/jira_search.py",
+            "tokens": 266,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_issues",
+            "module": "src/mcp_atlassian/servers/jira_search.py",
+            "tokens": 229,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_link_types",
+            "module": "src/mcp_atlassian/servers/jira_links.py",
+            "tokens": 58,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "link_to_epic",
+            "module": "src/mcp_atlassian/servers/jira_links.py",
+            "tokens": 161,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue_link",
+            "module": "src/mcp_atlassian/servers/jira_links.py",
+            "tokens": 326,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_remote_issue_link",
+            "module": "src/mcp_atlassian/servers/jira_links.py",
+            "tokens": 494,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "remove_issue_link",
+            "module": "src/mcp_atlassian/servers/jira_links.py",
+            "tokens": 111,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_user_profile",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 149,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_issue",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 730,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 703,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search_fields",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 266,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_issues",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 229,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_transitions",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 94,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "download_attachments",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 119,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "upload_attachment",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 157,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_agile_boards",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 441,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_board_issues",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 619,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprints_from_board",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 324,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprint_issues",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 376,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_link_types",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 58,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 706,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_create_issues",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 337,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_get_changelogs",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 359,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_issue",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 350,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "delete_issue",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 105,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "add_comment",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 135,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "link_to_epic",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 161,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue_link",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 326,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_remote_issue_link",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 494,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "remove_issue_link",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 111,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "transition_issue",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 334,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_sprint",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 257,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_sprint",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 417,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_versions",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 61,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_all_projects",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 176,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_version",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 288,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_create_versions",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 245,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "issues_create_issue",
+            "module": "src/mcp_atlassian/servers/jira.py",
+            "tokens": 554,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_transitions",
+            "module": "src/mcp_atlassian/servers/jira_workflow.py",
+            "tokens": 94,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "download_attachments",
+            "module": "src/mcp_atlassian/servers/jira_workflow.py",
+            "tokens": 119,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "upload_attachment",
+            "module": "src/mcp_atlassian/servers/jira_workflow.py",
+            "tokens": 157,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "transition_issue",
+            "module": "src/mcp_atlassian/servers/jira_workflow.py",
+            "tokens": 334,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_sprint",
+            "module": "src/mcp_atlassian/servers/jira_agile.py",
+            "tokens": 257,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_sprint",
+            "module": "src/mcp_atlassian/servers/jira_agile.py",
+            "tokens": 417,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_agile_boards",
+            "module": "src/mcp_atlassian/servers/jira_agile.py",
+            "tokens": 441,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_board_issues",
+            "module": "src/mcp_atlassian/servers/jira_agile.py",
+            "tokens": 619,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprints_from_board",
+            "module": "src/mcp_atlassian/servers/jira_agile.py",
+            "tokens": 324,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprint_issues",
+            "module": "src/mcp_atlassian/servers/jira_agile.py",
+            "tokens": 376,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_user_profile",
+            "module": "src/mcp_atlassian/servers/jira_agile.py",
+            "tokens": 149,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          }
+        ],
+        "avg_tokens_per_tool": 309.1978021978022,
+        "token_breakdown": {
+          "signature": 12490,
+          "docstring": 7493,
+          "parameters": 6662,
+          "decorators": 1492
+        }
+      },
+      "confluence": {
+        "tool_count": 11,
+        "total_tokens": 4029,
+        "tools": [
+          {
+            "name": "get_page",
+            "module": "src/mcp_atlassian/servers/confluence/pages.py",
+            "tokens": 800,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "get_page_children",
+            "module": "src/mcp_atlassian/servers/confluence/pages.py",
+            "tokens": 521,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "create_page",
+            "module": "src/mcp_atlassian/servers/confluence/pages.py",
+            "tokens": 563,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          },
+          {
+            "name": "update_page",
+            "module": "src/mcp_atlassian/servers/confluence/pages.py",
+            "tokens": 615,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          },
+          {
+            "name": "delete_page",
+            "module": "src/mcp_atlassian/servers/confluence/pages.py",
+            "tokens": 102,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          },
+          {
+            "name": "get_comments",
+            "module": "src/mcp_atlassian/servers/confluence/content.py",
+            "tokens": 122,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "get_labels",
+            "module": "src/mcp_atlassian/servers/confluence/content.py",
+            "tokens": 122,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "add_label",
+            "module": "src/mcp_atlassian/servers/confluence/content.py",
+            "tokens": 137,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          },
+          {
+            "name": "add_comment",
+            "module": "src/mcp_atlassian/servers/confluence/content.py",
+            "tokens": 139,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          },
+          {
+            "name": "search",
+            "module": "src/mcp_atlassian/servers/confluence/search.py",
+            "tokens": 665,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "search_user",
+            "module": "src/mcp_atlassian/servers/confluence/search.py",
+            "tokens": 243,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          }
+        ],
+        "avg_tokens_per_tool": 366.27272727272725,
+        "token_breakdown": {
+          "signature": 1791,
+          "docstring": 946,
+          "parameters": 1129,
+          "decorators": 163
+        }
+      }
+    },
+    "by_module": {
+      "src/mcp_atlassian/servers/jira_core.py": {
+        "tool_count": 5,
+        "total_tokens": 2024,
+        "service": "jira",
+        "tools": [
+          {
+            "name": "get_issue",
+            "tokens": 730,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue",
+            "tokens": 706,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_issue",
+            "tokens": 343,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "delete_issue",
+            "tokens": 108,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "add_comment",
+            "tokens": 137,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/jira_original_backup.py": {
+        "tool_count": 31,
+        "total_tokens": 9576,
+        "service": "jira",
+        "tools": [
+          {
+            "name": "get_user_profile",
+            "tokens": 149,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_issue",
+            "tokens": 730,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search",
+            "tokens": 703,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search_fields",
+            "tokens": 266,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_issues",
+            "tokens": 229,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_transitions",
+            "tokens": 94,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_worklog",
+            "tokens": 93,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "download_attachments",
+            "tokens": 119,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_agile_boards",
+            "tokens": 441,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_board_issues",
+            "tokens": 619,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprints_from_board",
+            "tokens": 324,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprint_issues",
+            "tokens": 376,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_link_types",
+            "tokens": 58,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue",
+            "tokens": 704,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_create_issues",
+            "tokens": 337,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_get_changelogs",
+            "tokens": 359,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_issue",
+            "tokens": 322,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "delete_issue",
+            "tokens": 105,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "add_comment",
+            "tokens": 135,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "add_worklog",
+            "tokens": 543,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "link_to_epic",
+            "tokens": 161,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue_link",
+            "tokens": 326,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_remote_issue_link",
+            "tokens": 494,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "remove_issue_link",
+            "tokens": 111,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "transition_issue",
+            "tokens": 334,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_sprint",
+            "tokens": 257,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_sprint",
+            "tokens": 417,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_versions",
+            "tokens": 61,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_all_projects",
+            "tokens": 176,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_version",
+            "tokens": 288,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_create_versions",
+            "tokens": 245,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/jira_project.py": {
+        "tool_count": 5,
+        "total_tokens": 1221,
+        "service": "jira",
+        "tools": [
+          {
+            "name": "batch_create_issues",
+            "tokens": 337,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_get_changelogs",
+            "tokens": 359,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_versions",
+            "tokens": 61,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_all_projects",
+            "tokens": 176,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_version",
+            "tokens": 288,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/jira_search.py": {
+        "tool_count": 3,
+        "total_tokens": 1198,
+        "service": "jira",
+        "tools": [
+          {
+            "name": "search",
+            "tokens": 703,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search_fields",
+            "tokens": 266,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_issues",
+            "tokens": 229,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/jira_links.py": {
+        "tool_count": 5,
+        "total_tokens": 1150,
+        "service": "jira",
+        "tools": [
+          {
+            "name": "get_link_types",
+            "tokens": 58,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "link_to_epic",
+            "tokens": 161,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue_link",
+            "tokens": 326,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_remote_issue_link",
+            "tokens": 494,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "remove_issue_link",
+            "tokens": 111,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/jira.py": {
+        "tool_count": 31,
+        "total_tokens": 9681,
+        "service": "jira",
+        "tools": [
+          {
+            "name": "get_user_profile",
+            "tokens": 149,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_issue",
+            "tokens": 730,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search",
+            "tokens": 703,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "search_fields",
+            "tokens": 266,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_issues",
+            "tokens": 229,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_transitions",
+            "tokens": 94,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "download_attachments",
+            "tokens": 119,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "upload_attachment",
+            "tokens": 157,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_agile_boards",
+            "tokens": 441,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_board_issues",
+            "tokens": 619,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprints_from_board",
+            "tokens": 324,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprint_issues",
+            "tokens": 376,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_link_types",
+            "tokens": 58,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue",
+            "tokens": 706,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_create_issues",
+            "tokens": 337,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_get_changelogs",
+            "tokens": 359,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_issue",
+            "tokens": 350,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "delete_issue",
+            "tokens": 105,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "add_comment",
+            "tokens": 135,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "link_to_epic",
+            "tokens": 161,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_issue_link",
+            "tokens": 326,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_remote_issue_link",
+            "tokens": 494,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "remove_issue_link",
+            "tokens": 111,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "transition_issue",
+            "tokens": 334,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_sprint",
+            "tokens": 257,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_sprint",
+            "tokens": 417,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_project_versions",
+            "tokens": 61,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_all_projects",
+            "tokens": 176,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "create_version",
+            "tokens": 288,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "batch_create_versions",
+            "tokens": 245,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "issues_create_issue",
+            "tokens": 554,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/jira_workflow.py": {
+        "tool_count": 4,
+        "total_tokens": 704,
+        "service": "jira",
+        "tools": [
+          {
+            "name": "get_transitions",
+            "tokens": 94,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "download_attachments",
+            "tokens": 119,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "upload_attachment",
+            "tokens": 157,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "transition_issue",
+            "tokens": 334,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/jira_agile.py": {
+        "tool_count": 7,
+        "total_tokens": 2583,
+        "service": "jira",
+        "tools": [
+          {
+            "name": "create_sprint",
+            "tokens": 257,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "update_sprint",
+            "tokens": 417,
+            "tags": [
+              "write",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_agile_boards",
+            "tokens": 441,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_board_issues",
+            "tokens": 619,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprints_from_board",
+            "tokens": 324,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_sprint_issues",
+            "tokens": 376,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          },
+          {
+            "name": "get_user_profile",
+            "tokens": 149,
+            "tags": [
+              "read",
+              "jira"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/confluence/pages.py": {
+        "tool_count": 5,
+        "total_tokens": 2601,
+        "service": "confluence",
+        "tools": [
+          {
+            "name": "get_page",
+            "tokens": 800,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "get_page_children",
+            "tokens": 521,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "create_page",
+            "tokens": 563,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          },
+          {
+            "name": "update_page",
+            "tokens": 615,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          },
+          {
+            "name": "delete_page",
+            "tokens": 102,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/confluence/content.py": {
+        "tool_count": 4,
+        "total_tokens": 520,
+        "service": "confluence",
+        "tools": [
+          {
+            "name": "get_comments",
+            "tokens": 122,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "get_labels",
+            "tokens": 122,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "add_label",
+            "tokens": 137,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          },
+          {
+            "name": "add_comment",
+            "tokens": 139,
+            "tags": [
+              "write",
+              "confluence"
+            ]
+          }
+        ]
+      },
+      "src/mcp_atlassian/servers/confluence/search.py": {
+        "tool_count": 2,
+        "total_tokens": 908,
+        "service": "confluence",
+        "tools": [
+          {
+            "name": "search",
+            "tokens": 665,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          },
+          {
+            "name": "search_user",
+            "tokens": 243,
+            "tags": [
+              "read",
+              "confluence"
+            ]
+          }
+        ]
+      }
+    },
+    "token_breakdown": {
+      "signature_tokens": 14281,
+      "docstring_tokens": 8439,
+      "parameter_tokens": 7791,
+      "decorator_tokens": 1655,
+      "total_tokens": 32166,
+      "breakdown_percentages": {
+        "signature": 44.39781135360318,
+        "docstring": 26.235776907293417,
+        "parameters": 24.221227382950943,
+        "decorators": 5.145184356152459
+      }
+    },
+    "detailed_tools": [
+      {
+        "name": "get_issue",
+        "module": "src/mcp_atlassian/servers/jira_core.py",
+        "service": "jira",
+        "tokens": {
+          "total": 730,
+          "signature": 257,
+          "docstring": 151,
+          "parameters": 308,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 18
+      },
+      {
+        "name": "create_issue",
+        "module": "src/mcp_atlassian/servers/jira_core.py",
+        "service": "jira",
+        "tokens": {
+          "total": 706,
+          "signature": 375,
+          "docstring": 166,
+          "parameters": 142,
+          "decorators": 23
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 103
+      },
+      {
+        "name": "update_issue",
+        "module": "src/mcp_atlassian/servers/jira_core.py",
+        "service": "jira",
+        "tokens": {
+          "total": 343,
+          "signature": 225,
+          "docstring": 100,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 217
+      },
+      {
+        "name": "delete_issue",
+        "module": "src/mcp_atlassian/servers/jira_core.py",
+        "service": "jira",
+        "tokens": {
+          "total": 108,
+          "signature": 36,
+          "docstring": 54,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 288
+      },
+      {
+        "name": "add_comment",
+        "module": "src/mcp_atlassian/servers/jira_core.py",
+        "service": "jira",
+        "tokens": {
+          "total": 137,
+          "signature": 53,
+          "docstring": 66,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 313
+      },
+      {
+        "name": "get_user_profile",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 149,
+          "signature": 60,
+          "docstring": 75,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 27
+      },
+      {
+        "name": "get_issue",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 730,
+          "signature": 257,
+          "docstring": 151,
+          "parameters": 308,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 85
+      },
+      {
+        "name": "search",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 703,
+          "signature": 331,
+          "docstring": 96,
+          "parameters": 262,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 168
+      },
+      {
+        "name": "search_fields",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 266,
+          "signature": 88,
+          "docstring": 61,
+          "parameters": 103,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 255
+      },
+      {
+        "name": "get_project_issues",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 229,
+          "signature": 83,
+          "docstring": 59,
+          "parameters": 73,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 289
+      },
+      {
+        "name": "get_transitions",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 94,
+          "signature": 38,
+          "docstring": 42,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 321
+      },
+      {
+        "name": "get_worklog",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 93,
+          "signature": 38,
+          "docstring": 41,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 341
+      },
+      {
+        "name": "download_attachments",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 119,
+          "signature": 55,
+          "docstring": 50,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 361
+      },
+      {
+        "name": "get_agile_boards",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 441,
+          "signature": 159,
+          "docstring": 85,
+          "parameters": 183,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 384
+      },
+      {
+        "name": "get_board_issues",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 619,
+          "signature": 313,
+          "docstring": 94,
+          "parameters": 198,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 434
+      },
+      {
+        "name": "get_sprints_from_board",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 324,
+          "signature": 123,
+          "docstring": 78,
+          "parameters": 109,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 511
+      },
+      {
+        "name": "get_sprint_issues",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 376,
+          "signature": 144,
+          "docstring": 64,
+          "parameters": 154,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 548
+      },
+      {
+        "name": "get_link_types",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 58,
+          "signature": 12,
+          "docstring": 32,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 596
+      },
+      {
+        "name": "create_issue",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 704,
+          "signature": 373,
+          "docstring": 166,
+          "parameters": 142,
+          "decorators": 23
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 614
+      },
+      {
+        "name": "batch_create_issues",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 337,
+          "signature": 205,
+          "docstring": 78,
+          "parameters": 36,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 720
+      },
+      {
+        "name": "batch_get_changelogs",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 359,
+          "signature": 153,
+          "docstring": 109,
+          "parameters": 83,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 788
+      },
+      {
+        "name": "update_issue",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 322,
+          "signature": 197,
+          "docstring": 107,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 861
+      },
+      {
+        "name": "delete_issue",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 105,
+          "signature": 36,
+          "docstring": 51,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 962
+      },
+      {
+        "name": "add_comment",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 135,
+          "signature": 53,
+          "docstring": 64,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 987
+      },
+      {
+        "name": "add_worklog",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 543,
+          "signature": 221,
+          "docstring": 107,
+          "parameters": 197,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1013
+      },
+      {
+        "name": "link_to_epic",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 161,
+          "signature": 72,
+          "docstring": 71,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1080
+      },
+      {
+        "name": "create_issue_link",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 326,
+          "signature": 171,
+          "docstring": 111,
+          "parameters": 26,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1113
+      },
+      {
+        "name": "create_remote_issue_link",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 494,
+          "signature": 188,
+          "docstring": 188,
+          "parameters": 100,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1181
+      },
+      {
+        "name": "remove_issue_link",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 111,
+          "signature": 31,
+          "docstring": 62,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1263
+      },
+      {
+        "name": "transition_issue",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 334,
+          "signature": 174,
+          "docstring": 95,
+          "parameters": 47,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1289
+      },
+      {
+        "name": "create_sprint",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 257,
+          "signature": 128,
+          "docstring": 87,
+          "parameters": 24,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1362
+      },
+      {
+        "name": "update_sprint",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 417,
+          "signature": 153,
+          "docstring": 103,
+          "parameters": 143,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1407
+      },
+      {
+        "name": "get_project_versions",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 61,
+          "signature": 36,
+          "docstring": 11,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 1464
+      },
+      {
+        "name": "get_all_projects",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 176,
+          "signature": 36,
+          "docstring": 91,
+          "parameters": 35,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 1475
+      },
+      {
+        "name": "create_version",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 288,
+          "signature": 113,
+          "docstring": 74,
+          "parameters": 83,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1541
+      },
+      {
+        "name": "batch_create_versions",
+        "module": "src/mcp_atlassian/servers/jira_original_backup.py",
+        "service": "jira",
+        "tokens": {
+          "total": 245,
+          "signature": 165,
+          "docstring": 56,
+          "parameters": 0,
+          "decorators": 24
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1589
+      },
+      {
+        "name": "batch_create_issues",
+        "module": "src/mcp_atlassian/servers/jira_project.py",
+        "service": "jira",
+        "tokens": {
+          "total": 337,
+          "signature": 205,
+          "docstring": 78,
+          "parameters": 36,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 21
+      },
+      {
+        "name": "batch_get_changelogs",
+        "module": "src/mcp_atlassian/servers/jira_project.py",
+        "service": "jira",
+        "tokens": {
+          "total": 359,
+          "signature": 153,
+          "docstring": 109,
+          "parameters": 83,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 89
+      },
+      {
+        "name": "get_project_versions",
+        "module": "src/mcp_atlassian/servers/jira_project.py",
+        "service": "jira",
+        "tokens": {
+          "total": 61,
+          "signature": 36,
+          "docstring": 11,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 161
+      },
+      {
+        "name": "get_all_projects",
+        "module": "src/mcp_atlassian/servers/jira_project.py",
+        "service": "jira",
+        "tokens": {
+          "total": 176,
+          "signature": 36,
+          "docstring": 91,
+          "parameters": 35,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 172
+      },
+      {
+        "name": "create_version",
+        "module": "src/mcp_atlassian/servers/jira_project.py",
+        "service": "jira",
+        "tokens": {
+          "total": 288,
+          "signature": 113,
+          "docstring": 74,
+          "parameters": 83,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 238
+      },
+      {
+        "name": "search",
+        "module": "src/mcp_atlassian/servers/jira_search.py",
+        "service": "jira",
+        "tokens": {
+          "total": 703,
+          "signature": 331,
+          "docstring": 96,
+          "parameters": 262,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 15
+      },
+      {
+        "name": "search_fields",
+        "module": "src/mcp_atlassian/servers/jira_search.py",
+        "service": "jira",
+        "tokens": {
+          "total": 266,
+          "signature": 88,
+          "docstring": 61,
+          "parameters": 103,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 102
+      },
+      {
+        "name": "get_project_issues",
+        "module": "src/mcp_atlassian/servers/jira_search.py",
+        "service": "jira",
+        "tokens": {
+          "total": 229,
+          "signature": 83,
+          "docstring": 59,
+          "parameters": 73,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 136
+      },
+      {
+        "name": "get_link_types",
+        "module": "src/mcp_atlassian/servers/jira_links.py",
+        "service": "jira",
+        "tokens": {
+          "total": 58,
+          "signature": 12,
+          "docstring": 32,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 16
+      },
+      {
+        "name": "link_to_epic",
+        "module": "src/mcp_atlassian/servers/jira_links.py",
+        "service": "jira",
+        "tokens": {
+          "total": 161,
+          "signature": 72,
+          "docstring": 71,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 33
+      },
+      {
+        "name": "create_issue_link",
+        "module": "src/mcp_atlassian/servers/jira_links.py",
+        "service": "jira",
+        "tokens": {
+          "total": 326,
+          "signature": 171,
+          "docstring": 111,
+          "parameters": 26,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 66
+      },
+      {
+        "name": "create_remote_issue_link",
+        "module": "src/mcp_atlassian/servers/jira_links.py",
+        "service": "jira",
+        "tokens": {
+          "total": 494,
+          "signature": 188,
+          "docstring": 188,
+          "parameters": 100,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 134
+      },
+      {
+        "name": "remove_issue_link",
+        "module": "src/mcp_atlassian/servers/jira_links.py",
+        "service": "jira",
+        "tokens": {
+          "total": 111,
+          "signature": 31,
+          "docstring": 62,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 216
+      },
+      {
+        "name": "get_user_profile",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 149,
+          "signature": 60,
+          "docstring": 75,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 27
+      },
+      {
+        "name": "get_issue",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 730,
+          "signature": 257,
+          "docstring": 151,
+          "parameters": 308,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 85
+      },
+      {
+        "name": "search",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 703,
+          "signature": 331,
+          "docstring": 96,
+          "parameters": 262,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 168
+      },
+      {
+        "name": "search_fields",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 266,
+          "signature": 88,
+          "docstring": 61,
+          "parameters": 103,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 255
+      },
+      {
+        "name": "get_project_issues",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 229,
+          "signature": 83,
+          "docstring": 59,
+          "parameters": 73,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 289
+      },
+      {
+        "name": "get_transitions",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 94,
+          "signature": 38,
+          "docstring": 42,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 321
+      },
+      {
+        "name": "download_attachments",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 119,
+          "signature": 55,
+          "docstring": 50,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 346
+      },
+      {
+        "name": "upload_attachment",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 157,
+          "signature": 61,
+          "docstring": 78,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 370
+      },
+      {
+        "name": "get_agile_boards",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 441,
+          "signature": 159,
+          "docstring": 85,
+          "parameters": 183,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 398
+      },
+      {
+        "name": "get_board_issues",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 619,
+          "signature": 313,
+          "docstring": 94,
+          "parameters": 198,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 448
+      },
+      {
+        "name": "get_sprints_from_board",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 324,
+          "signature": 123,
+          "docstring": 78,
+          "parameters": 109,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 525
+      },
+      {
+        "name": "get_sprint_issues",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 376,
+          "signature": 144,
+          "docstring": 64,
+          "parameters": 154,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 562
+      },
+      {
+        "name": "get_link_types",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 58,
+          "signature": 12,
+          "docstring": 32,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 610
+      },
+      {
+        "name": "create_issue",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 706,
+          "signature": 375,
+          "docstring": 166,
+          "parameters": 142,
+          "decorators": 23
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 628
+      },
+      {
+        "name": "batch_create_issues",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 337,
+          "signature": 205,
+          "docstring": 78,
+          "parameters": 36,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 746
+      },
+      {
+        "name": "batch_get_changelogs",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 359,
+          "signature": 153,
+          "docstring": 109,
+          "parameters": 83,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 814
+      },
+      {
+        "name": "update_issue",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 350,
+          "signature": 225,
+          "docstring": 107,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 887
+      },
+      {
+        "name": "delete_issue",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 105,
+          "signature": 36,
+          "docstring": 51,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 989
+      },
+      {
+        "name": "add_comment",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 135,
+          "signature": 53,
+          "docstring": 64,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1014
+      },
+      {
+        "name": "link_to_epic",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 161,
+          "signature": 72,
+          "docstring": 71,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1045
+      },
+      {
+        "name": "create_issue_link",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 326,
+          "signature": 171,
+          "docstring": 111,
+          "parameters": 26,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1078
+      },
+      {
+        "name": "create_remote_issue_link",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 494,
+          "signature": 188,
+          "docstring": 188,
+          "parameters": 100,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1146
+      },
+      {
+        "name": "remove_issue_link",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 111,
+          "signature": 31,
+          "docstring": 62,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1228
+      },
+      {
+        "name": "transition_issue",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 334,
+          "signature": 174,
+          "docstring": 95,
+          "parameters": 47,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1254
+      },
+      {
+        "name": "create_sprint",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 257,
+          "signature": 128,
+          "docstring": 87,
+          "parameters": 24,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1327
+      },
+      {
+        "name": "update_sprint",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 417,
+          "signature": 153,
+          "docstring": 103,
+          "parameters": 143,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1372
+      },
+      {
+        "name": "get_project_versions",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 61,
+          "signature": 36,
+          "docstring": 11,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 1429
+      },
+      {
+        "name": "get_all_projects",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 176,
+          "signature": 36,
+          "docstring": 91,
+          "parameters": 35,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 1440
+      },
+      {
+        "name": "create_version",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 288,
+          "signature": 113,
+          "docstring": 74,
+          "parameters": 83,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1506
+      },
+      {
+        "name": "batch_create_versions",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 245,
+          "signature": 165,
+          "docstring": 56,
+          "parameters": 0,
+          "decorators": 24
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1554
+      },
+      {
+        "name": "issues_create_issue",
+        "module": "src/mcp_atlassian/servers/jira.py",
+        "service": "jira",
+        "tokens": {
+          "total": 554,
+          "signature": 373,
+          "docstring": 14,
+          "parameters": 138,
+          "decorators": 29
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 1637
+      },
+      {
+        "name": "get_transitions",
+        "module": "src/mcp_atlassian/servers/jira_workflow.py",
+        "service": "jira",
+        "tokens": {
+          "total": 94,
+          "signature": 38,
+          "docstring": 42,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 16
+      },
+      {
+        "name": "download_attachments",
+        "module": "src/mcp_atlassian/servers/jira_workflow.py",
+        "service": "jira",
+        "tokens": {
+          "total": 119,
+          "signature": 55,
+          "docstring": 50,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 41
+      },
+      {
+        "name": "upload_attachment",
+        "module": "src/mcp_atlassian/servers/jira_workflow.py",
+        "service": "jira",
+        "tokens": {
+          "total": 157,
+          "signature": 61,
+          "docstring": 78,
+          "parameters": 0,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 65
+      },
+      {
+        "name": "transition_issue",
+        "module": "src/mcp_atlassian/servers/jira_workflow.py",
+        "service": "jira",
+        "tokens": {
+          "total": 334,
+          "signature": 174,
+          "docstring": 95,
+          "parameters": 47,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 94
+      },
+      {
+        "name": "create_sprint",
+        "module": "src/mcp_atlassian/servers/jira_agile.py",
+        "service": "jira",
+        "tokens": {
+          "total": 257,
+          "signature": 128,
+          "docstring": 87,
+          "parameters": 24,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 23
+      },
+      {
+        "name": "update_sprint",
+        "module": "src/mcp_atlassian/servers/jira_agile.py",
+        "service": "jira",
+        "tokens": {
+          "total": 417,
+          "signature": 153,
+          "docstring": 103,
+          "parameters": 143,
+          "decorators": 18
+        },
+        "tags": [
+          "write",
+          "jira"
+        ],
+        "line_number": 68
+      },
+      {
+        "name": "get_agile_boards",
+        "module": "src/mcp_atlassian/servers/jira_agile.py",
+        "service": "jira",
+        "tokens": {
+          "total": 441,
+          "signature": 159,
+          "docstring": 85,
+          "parameters": 183,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 125
+      },
+      {
+        "name": "get_board_issues",
+        "module": "src/mcp_atlassian/servers/jira_agile.py",
+        "service": "jira",
+        "tokens": {
+          "total": 619,
+          "signature": 313,
+          "docstring": 94,
+          "parameters": 198,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 175
+      },
+      {
+        "name": "get_sprints_from_board",
+        "module": "src/mcp_atlassian/servers/jira_agile.py",
+        "service": "jira",
+        "tokens": {
+          "total": 324,
+          "signature": 123,
+          "docstring": 78,
+          "parameters": 109,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 252
+      },
+      {
+        "name": "get_sprint_issues",
+        "module": "src/mcp_atlassian/servers/jira_agile.py",
+        "service": "jira",
+        "tokens": {
+          "total": 376,
+          "signature": 144,
+          "docstring": 64,
+          "parameters": 154,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 289
+      },
+      {
+        "name": "get_user_profile",
+        "module": "src/mcp_atlassian/servers/jira_agile.py",
+        "service": "jira",
+        "tokens": {
+          "total": 149,
+          "signature": 60,
+          "docstring": 75,
+          "parameters": 0,
+          "decorators": 14
+        },
+        "tags": [
+          "read",
+          "jira"
+        ],
+        "line_number": 337
+      },
+      {
+        "name": "get_page",
+        "module": "src/mcp_atlassian/servers/confluence/pages.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 800,
+          "signature": 281,
+          "docstring": 143,
+          "parameters": 363,
+          "decorators": 13
+        },
+        "tags": [
+          "read",
+          "confluence"
+        ],
+        "line_number": 34
+      },
+      {
+        "name": "get_page_children",
+        "module": "src/mcp_atlassian/servers/confluence/pages.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 521,
+          "signature": 194,
+          "docstring": 95,
+          "parameters": 219,
+          "decorators": 13
+        },
+        "tags": [
+          "read",
+          "confluence"
+        ],
+        "line_number": 152
+      },
+      {
+        "name": "create_page",
+        "module": "src/mcp_atlassian/servers/confluence/pages.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 563,
+          "signature": 244,
+          "docstring": 128,
+          "parameters": 174,
+          "decorators": 17
+        },
+        "tags": [
+          "write",
+          "confluence"
+        ],
+        "line_number": 243
+      },
+      {
+        "name": "update_page",
+        "module": "src/mcp_atlassian/servers/confluence/pages.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 615,
+          "signature": 235,
+          "docstring": 153,
+          "parameters": 210,
+          "decorators": 17
+        },
+        "tags": [
+          "write",
+          "confluence"
+        ],
+        "line_number": 335
+      },
+      {
+        "name": "delete_page",
+        "module": "src/mcp_atlassian/servers/confluence/pages.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 102,
+          "signature": 30,
+          "docstring": 55,
+          "parameters": 0,
+          "decorators": 17
+        },
+        "tags": [
+          "write",
+          "confluence"
+        ],
+        "line_number": 429
+      },
+      {
+        "name": "get_comments",
+        "module": "src/mcp_atlassian/servers/confluence/content.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 122,
+          "signature": 68,
+          "docstring": 41,
+          "parameters": 0,
+          "decorators": 13
+        },
+        "tags": [
+          "read",
+          "confluence"
+        ],
+        "line_number": 34
+      },
+      {
+        "name": "get_labels",
+        "module": "src/mcp_atlassian/servers/confluence/content.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 122,
+          "signature": 68,
+          "docstring": 41,
+          "parameters": 0,
+          "decorators": 13
+        },
+        "tags": [
+          "read",
+          "confluence"
+        ],
+        "line_number": 65
+      },
+      {
+        "name": "add_label",
+        "module": "src/mcp_atlassian/servers/confluence/content.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 137,
+          "signature": 46,
+          "docstring": 74,
+          "parameters": 0,
+          "decorators": 17
+        },
+        "tags": [
+          "write",
+          "confluence"
+        ],
+        "line_number": 97
+      },
+      {
+        "name": "add_comment",
+        "module": "src/mcp_atlassian/servers/confluence/content.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 139,
+          "signature": 50,
+          "docstring": 72,
+          "parameters": 0,
+          "decorators": 17
+        },
+        "tags": [
+          "write",
+          "confluence"
+        ],
+        "line_number": 123
+      },
+      {
+        "name": "search",
+        "module": "src/mcp_atlassian/servers/confluence/search.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 665,
+          "signature": 453,
+          "docstring": 81,
+          "parameters": 118,
+          "decorators": 13
+        },
+        "tags": [
+          "read",
+          "confluence"
+        ],
+        "line_number": 33
+      },
+      {
+        "name": "search_user",
+        "module": "src/mcp_atlassian/servers/confluence/search.py",
+        "service": "confluence",
+        "tokens": {
+          "total": 243,
+          "signature": 122,
+          "docstring": 63,
+          "parameters": 45,
+          "decorators": 13
+        },
+        "tags": [
+          "read",
+          "confluence"
+        ],
+        "line_number": 124
+      }
+    ]
+  },
+  "meta_tools": {
+    "total_meta_tools": 19,
+    "total_tokens": 9435,
+    "tools_consolidated": 3,
+    "consolidation_ratio": 0.029411764705882353,
+    "analysis_summary": {
+      "by_type": {
+        "class_method": {
+          "count": 19,
+          "total_tokens": 9435,
+          "tools": [
+            {
+              "name": "SchemaCache.__init__",
+              "tokens": 93,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery.__init__",
+              "tokens": 57,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._ensure_schema_dir",
+              "tokens": 61,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery.get_resource_schema",
+              "tokens": 233,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._generate_schema",
+              "tokens": 103,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._load_json_schema",
+              "tokens": 151,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._generate_from_model",
+              "tokens": 127,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._extract_schema_from_model",
+              "tokens": 291,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._is_field_required",
+              "tokens": 191,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._get_field_type",
+              "tokens": 138,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._generate_examples",
+              "tokens": 332,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._get_fallback_schema",
+              "tokens": 348,
+              "consolidates_count": 0
+            },
+            {
+              "name": "SchemaDiscovery._get_service_capabilities",
+              "tokens": 479,
+              "consolidates_count": 0
+            },
+            {
+              "name": "ResourceManager.__init__",
+              "tokens": 49,
+              "consolidates_count": 0
+            },
+            {
+              "name": "ResourceManager.get_resource_schema",
+              "tokens": 983,
+              "consolidates_count": 3
+            },
+            {
+              "name": "ResourceManager._validate_operation_inputs",
+              "tokens": 468,
+              "consolidates_count": 0
+            },
+            {
+              "name": "ResourceManager._perform_dry_run_validation",
+              "tokens": 196,
+              "consolidates_count": 0
+            },
+            {
+              "name": "ResourceManager._get_required_fields",
+              "tokens": 4848,
+              "consolidates_count": 0
+            },
+            {
+              "name": "MetaToolError.__init__",
+              "tokens": 287,
+              "consolidates_count": 0
+            }
+          ]
+        }
+      },
+      "by_module": {
+        "src/mcp_atlassian/meta_tools/schema_discovery.py": {
+          "count": 13,
+          "total_tokens": 2604,
+          "tools": [
+            "SchemaCache.__init__",
+            "SchemaDiscovery.__init__",
+            "SchemaDiscovery._ensure_schema_dir",
+            "SchemaDiscovery.get_resource_schema",
+            "SchemaDiscovery._generate_schema",
+            "SchemaDiscovery._load_json_schema",
+            "SchemaDiscovery._generate_from_model",
+            "SchemaDiscovery._extract_schema_from_model",
+            "SchemaDiscovery._is_field_required",
+            "SchemaDiscovery._get_field_type",
+            "SchemaDiscovery._generate_examples",
+            "SchemaDiscovery._get_fallback_schema",
+            "SchemaDiscovery._get_service_capabilities"
+          ]
+        },
+        "src/mcp_atlassian/meta_tools/resource_manager.py": {
+          "count": 5,
+          "total_tokens": 6544,
+          "tools": [
+            "ResourceManager.__init__",
+            "ResourceManager.get_resource_schema",
+            "ResourceManager._validate_operation_inputs",
+            "ResourceManager._perform_dry_run_validation",
+            "ResourceManager._get_required_fields"
+          ]
+        },
+        "src/mcp_atlassian/meta_tools/errors.py": {
+          "count": 1,
+          "total_tokens": 287,
+          "tools": [
+            "MetaToolError.__init__"
+          ]
+        }
+      },
+      "consolidation_ratio": 0.15789473684210525
+    },
+    "detailed_meta_tools": [
+      {
+        "name": "SchemaCache.__init__",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 93,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery.__init__",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 57,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._ensure_schema_dir",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 61,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery.get_resource_schema",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 233,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._generate_schema",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 103,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._load_json_schema",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 151,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._generate_from_model",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 127,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._extract_schema_from_model",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 291,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._is_field_required",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 191,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._get_field_type",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 138,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._generate_examples",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 332,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._get_fallback_schema",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 348,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "SchemaDiscovery._get_service_capabilities",
+        "module": "src/mcp_atlassian/meta_tools/schema_discovery.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 479,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "ResourceManager.__init__",
+        "module": "src/mcp_atlassian/meta_tools/resource_manager.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 49,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "ResourceManager.get_resource_schema",
+        "module": "src/mcp_atlassian/meta_tools/resource_manager.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 983,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [
+          "search_fields",
+          "get_transitions",
+          "get_link_types"
+        ],
+        "consolidates_count": 3
+      },
+      {
+        "name": "ResourceManager._validate_operation_inputs",
+        "module": "src/mcp_atlassian/meta_tools/resource_manager.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 468,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "ResourceManager._perform_dry_run_validation",
+        "module": "src/mcp_atlassian/meta_tools/resource_manager.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 196,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "ResourceManager._get_required_fields",
+        "module": "src/mcp_atlassian/meta_tools/resource_manager.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 4848,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      },
+      {
+        "name": "MetaToolError.__init__",
+        "module": "src/mcp_atlassian/meta_tools/errors.py",
+        "type": "class_method",
+        "tokens": {
+          "total": 287,
+          "signature": 0,
+          "docstring": 0,
+          "parameters": 0,
+          "decorators": 0
+        },
+        "consolidates": [],
+        "consolidates_count": 0
+      }
+    ]
+  },
+  "comparison": {
+    "token_analysis": {
+      "current_tools_tokens": 32166,
+      "current_overhead_tokens": 1070,
+      "current_total_tokens": 33236,
+      "meta_tools_tokens": 9435,
+      "meta_overhead_tokens": 240,
+      "meta_total_tokens": 9675,
+      "absolute_reduction": 23561,
+      "reduction_percentage": 70.88999879648574,
+      "efficiency_ratio": 0.29110001203514263
+    },
+    "tool_consolidation": {
+      "original_tool_count": 102,
+      "meta_tool_count": 19,
+      "consolidation_factor": 5.368421052631579,
+      "tools_eliminated": 83
+    },
+    "service_breakdown": {
+      "jira": {
+        "original_tokens": 28137,
+        "original_tool_count": 91,
+        "avg_tokens_per_tool": 309.1978021978022,
+        "estimated_meta_tool_tokens": 4717
+      },
+      "confluence": {
+        "original_tokens": 4029,
+        "original_tool_count": 11,
+        "avg_tokens_per_tool": 366.27272727272725,
+        "estimated_meta_tool_tokens": 4717
+      }
+    },
+    "performance_impact": {
+      "context_window_savings_percentage": 70.88999879648574,
+      "estimated_response_time_improvement": 25,
+      "memory_efficiency_improvement": 21.266999638945723
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "Token Optimization",
+      "title": "Implement Meta-Tools Architecture",
+      "description": "Meta-tools approach reduces token usage by 70.9%, providing significant context window savings.",
+      "estimated_impact": "High - Major performance improvement",
+      "implementation_effort": "Medium"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Service Optimization",
+      "title": "Consolidate Jira Tools",
+      "description": "Jira service has 91 tools averaging 309 tokens each. Consider consolidation.",
+      "estimated_impact": "Medium - Service-level efficiency",
+      "implementation_effort": "Low"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Service Optimization",
+      "title": "Consolidate Confluence Tools",
+      "description": "Confluence service has 11 tools averaging 366 tokens each. Consider consolidation.",
+      "estimated_impact": "Medium - Service-level efficiency",
+      "implementation_effort": "Low"
+    }
+  ]
+}

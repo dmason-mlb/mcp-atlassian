@@ -43,6 +43,11 @@ async def main_lifespan(app: FastMCP[MainAppContext]) -> AsyncIterator[dict]:
     services = get_available_services()
     read_only = is_read_only_mode()
     enabled_tools = get_enabled_tools()
+    
+    # Import and get tool version
+    from mcp_atlassian.meta_tools.loader import get_tool_version, log_tool_loading_decision
+    tool_version = get_tool_version().value
+    log_tool_loading_decision()
 
     loaded_jira_config: JiraConfig | None = None
     loaded_confluence_config: ConfluenceConfig | None = None
@@ -82,6 +87,7 @@ async def main_lifespan(app: FastMCP[MainAppContext]) -> AsyncIterator[dict]:
         full_confluence_config=loaded_confluence_config,
         read_only=read_only,
         enabled_tools=enabled_tools,
+        tool_version=tool_version,
     )
     logger.info(f"Read-only mode: {'ENABLED' if read_only else 'DISABLED'}")
     logger.info(f"Enabled tools filter: {enabled_tools or 'All tools enabled'}")
@@ -133,9 +139,24 @@ class AtlassianMCP(FastMCP[MainAppContext]):
             if app_lifespan_state
             else None
         )
-        logger.debug(
-            f"_main_mcp_list_tools: read_only={read_only}, enabled_tools_filter={enabled_tools_filter}"
+        tool_version = (
+            getattr(app_lifespan_state, "tool_version", "v1")
+            if app_lifespan_state
+            else "v1"
         )
+        logger.debug(
+            f"_main_mcp_list_tools: read_only={read_only}, enabled_tools_filter={enabled_tools_filter}, tool_version={tool_version}"
+        )
+        
+        # Register tools based on version if not already registered
+        if not hasattr(self, "_tools_registered"):
+            if tool_version == "v2":
+                logger.info("Registering v2 (meta) tools")
+                register_v2_tools(self)
+            else:
+                logger.info("Registering v1 (legacy) tools")
+                register_v1_tools(self)
+            self._tools_registered = True
 
         all_tools: dict[str, FastMCPTool] = await self.get_tools()
         logger.debug(
@@ -145,6 +166,18 @@ class AtlassianMCP(FastMCP[MainAppContext]):
         filtered_tools: list[MCPTool] = []
         for registered_name, tool_obj in all_tools.items():
             tool_tags = tool_obj.tags
+
+            # Version-based filtering - exclude tools that don't match current version
+            if tool_version == "v1" and "v2" in tool_tags:
+                logger.debug(f"Excluding v2 tool '{registered_name}' (v1 mode active)")
+                continue
+            if tool_version == "v2" and "v1" in tool_tags:
+                logger.debug(f"Excluding v1 tool '{registered_name}' (v2 mode active)")
+                continue
+            # For v2 mode, also filter out tools without version tags that aren't meta-tools
+            if tool_version == "v2" and not any(tag in tool_tags for tag in ["v1", "v2", "meta"]):
+                logger.debug(f"Excluding unversioned legacy tool '{registered_name}' (v2 mode active)")
+                continue
 
             if not should_include_tool(registered_name, enabled_tools_filter):
                 logger.debug(f"Excluding tool '{registered_name}' (not enabled)")
@@ -329,13 +362,74 @@ class UserTokenMiddleware(BaseHTTPMiddleware):
         return response
 
 
-main_mcp = AtlassianMCP(name="Atlassian MCP", lifespan=main_lifespan)
-main_mcp.mount("jira", jira_mcp)
-main_mcp.mount("confluence", confluence_mcp)  # Restored Confluence server
+def register_v1_tools(server: AtlassianMCP) -> None:
+    """Register v1 (legacy) tools by mounting existing Jira and Confluence servers."""
+    server.mount("jira", jira_mcp)
+    server.mount("confluence", confluence_mcp)
+    
+    # Wrap all tools with error handling after mounting
+    wrap_all_tools_with_error_handling(jira_mcp)
+    wrap_all_tools_with_error_handling(confluence_mcp)
 
-# Wrap all tools with error handling after mounting
-wrap_all_tools_with_error_handling(jira_mcp)
-wrap_all_tools_with_error_handling(confluence_mcp)  # Restored Confluence server
+
+def register_v2_tools(server: AtlassianMCP) -> None:
+    """Register v2 (meta) tools for token optimization."""
+    # Import meta-tools modules here to avoid circular imports
+    from ..meta_tools.resource_manager import ResourceManager
+    from ..meta_tools.schema_discovery import SchemaDiscovery
+    
+    # Create ResourceManager instance  
+    resource_manager = ResourceManager()
+    schema_discovery = SchemaDiscovery()
+    
+    @server.tool(tags={"v2", "meta", "crud"})
+    async def resource_manager_tool(
+        service: str,
+        resource: str,
+        operation: str,
+        identifier: str | None = None,
+        data: dict | None = None,
+        options: dict | None = None,
+        dry_run: bool = False
+    ) -> str:
+        """Universal resource manager for CRUD operations on Jira and Confluence resources."""
+        try:
+            result = await resource_manager.execute_operation(
+                service=service,
+                resource=resource,
+                operation=operation,
+                identifier=identifier,
+                data=data,
+                options=options,
+                dry_run=dry_run
+            )
+            return result
+        except Exception as e:
+            logger.error(f"Error in resource_manager_tool: {e}", exc_info=True)
+            raise
+    
+    @server.tool(tags={"v2", "meta", "discovery"})
+    async def get_resource_schema(
+        service: str,
+        resource: str,
+        operation: str = "create"
+    ) -> str:
+        """Get schema information for a specific resource operation."""
+        try:
+            schema_info = schema_discovery.get_schema(
+                service=service,
+                resource=resource,
+                operation=operation
+            )
+            return schema_info
+        except Exception as e:
+            logger.error(f"Error in get_resource_schema: {e}", exc_info=True)
+            raise
+
+
+main_mcp = AtlassianMCP(name="Atlassian MCP", lifespan=main_lifespan)
+
+# Version-aware tool registration will happen dynamically based on context
 
 
 @main_mcp.custom_route("/healthz", methods=["GET"], include_in_schema=False)

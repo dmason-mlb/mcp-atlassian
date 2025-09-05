@@ -1,0 +1,83 @@
+{
+  "create": {
+    "required": ["project_key", "summary", "issue_type"],
+    "fields": {
+      "project_key": "string:JIRA project key (e.g., 'PROJ', 'DEV')",
+      "summary": "string:Issue title/summary",
+      "issue_type": "string:Issue type ('Task', 'Bug', 'Story', 'Epic')",
+      "description": "string:optional:Issue description in Markdown",
+      "assignee": "string:optional:User email, display name, or account ID",
+      "components": "array:optional:Component names to assign",
+      "priority": "object:optional:Priority object with 'name' field",
+      "labels": "array:optional:Label strings",
+      "fix_versions": "array:optional:Fix version objects",
+      "parent": "string:optional:Parent issue key for subtasks",
+      "epic_link": "string:optional:Epic key to link to",
+      "custom_fields": "object:optional:Custom field values"
+    },
+    "examples": {
+      "minimal": {
+        "project_key": "PROJ",
+        "summary": "Fix login bug",
+        "issue_type": "Bug"
+      },
+      "complete": {
+        "project_key": "PROJ",
+        "summary": "Implement user authentication",
+        "issue_type": "Task",
+        "description": "Add OAuth 2.0 authentication to the user login system",
+        "assignee": "developer@company.com",
+        "components": ["Frontend", "Security"],
+        "priority": {"name": "High"},
+        "labels": ["security", "frontend"],
+        "epic_link": "PROJ-100"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "update": {
+    "required": [],
+    "fields": {
+      "summary": "string:optional:Updated issue title",
+      "description": "string:optional:Updated description",
+      "assignee": "string:optional:New assignee",
+      "status": "object:optional:Status transition",
+      "priority": "object:optional:Priority change",
+      "labels": "array:optional:Updated labels",
+      "components": "array:optional:Updated components",
+      "fix_versions": "array:optional:Updated fix versions",
+      "custom_fields": "object:optional:Custom field updates"
+    },
+    "examples": {
+      "minimal": {
+        "summary": "Updated issue title"
+      },
+      "complete": {
+        "summary": "Enhanced user authentication system",
+        "description": "Updated requirements for OAuth 2.0",
+        "assignee": "senior-dev@company.com",
+        "priority": {"name": "Critical"},
+        "labels": ["security", "frontend", "urgent"]
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "get": {
+    "required": [],
+    "fields": {
+      "expand": "string:optional:Comma-separated expand options",
+      "fields": "string:optional:Comma-separated field names"
+    },
+    "examples": {
+      "minimal": {},
+      "complete": {
+        "expand": "comments,worklog,attachments",
+        "fields": "summary,description,status,assignee"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  }
+}

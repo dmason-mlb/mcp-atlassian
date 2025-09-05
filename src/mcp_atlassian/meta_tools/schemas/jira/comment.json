@@ -1,0 +1,59 @@
+{
+  "add": {
+    "required": [
+      "body"
+    ],
+    "fields": {
+      "body": "string:Comment text content in Markdown",
+      "visibility": "object:optional:Visibility restrictions",
+      "properties": "array:optional:Comment properties"
+    },
+    "examples": {
+      "minimal": {
+        "body": "This looks good to me, approved!"
+      },
+      "complete": {
+        "body": "## Review Complete\n\nI've reviewed the changes and they look good. Just one minor suggestion:\n\n- Consider adding error handling for edge cases",
+        "visibility": {
+          "type": "role",
+          "value": "Developers"
+        }
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "update": {
+    "required": [
+      "body"
+    ],
+    "fields": {
+      "body": "string:Updated comment text",
+      "visibility": "object:optional:Updated visibility"
+    },
+    "examples": {
+      "minimal": {
+        "body": "Updated comment text"
+      },
+      "complete": {
+        "body": "## Updated Review\n\nAfter further consideration, I think we should also add unit tests."
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  },
+  "get": {
+    "required": [],
+    "fields": {
+      "expand": "string:optional:Expand options for comment details"
+    },
+    "examples": {
+      "minimal": {},
+      "complete": {
+        "expand": "renderedBody"
+      }
+    },
+    "cache_key": "",
+    "cache_hint": ""
+  }
+}
