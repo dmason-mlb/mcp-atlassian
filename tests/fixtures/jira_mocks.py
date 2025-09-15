@@ -320,10 +320,10 @@ MOCK_JIRA_COMMENTS = {
             "jsdPublic": True,
         },
         {
-            "self": "https://example.atlassian.net/rest/api/2/issue/10001/comment/10102",
+            "self": "https://example.atlassian.net/rest/api/3/issue/10001/comment/10102",
             "id": "10102",
             "author": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-2",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-2",
                 "accountId": "account-id-2",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user2_48.png",
@@ -338,7 +338,7 @@ MOCK_JIRA_COMMENTS = {
             },
             "body": "I agree with John. Let's schedule a meeting to discuss the implementation details.",
             "updateAuthor": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-2",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-2",
                 "accountId": "account-id-2",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user2_48.png",
@@ -356,10 +356,10 @@ MOCK_JIRA_COMMENTS = {
             "jsdPublic": True,
         },
         {
-            "self": "https://example.atlassian.net/rest/api/2/issue/10001/comment/10103",
+            "self": "https://example.atlassian.net/rest/api/3/issue/10001/comment/10103",
             "id": "10103",
             "author": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-3",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-3",
                 "accountId": "account-id-3",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user3_48.png",
@@ -374,7 +374,7 @@ MOCK_JIRA_COMMENTS = {
             },
             "body": "I've created a draft implementation. Please review the code changes in the linked PR.",
             "updateAuthor": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-3",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-3",
                 "accountId": "account-id-3",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user3_48.png",
@@ -392,10 +392,10 @@ MOCK_JIRA_COMMENTS = {
             "jsdPublic": True,
         },
         {
-            "self": "https://example.atlassian.net/rest/api/2/issue/10001/comment/10104",
+            "self": "https://example.atlassian.net/rest/api/3/issue/10001/comment/10104",
             "id": "10104",
             "author": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-1",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-1",
                 "accountId": "account-id-1",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user1_48.png",
@@ -410,7 +410,7 @@ MOCK_JIRA_COMMENTS = {
             },
             "body": "The code looks good. I've left some minor suggestions in the PR review.",
             "updateAuthor": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-1",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-1",
                 "accountId": "account-id-1",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user1_48.png",
@@ -428,10 +428,10 @@ MOCK_JIRA_COMMENTS = {
             "jsdPublic": True,
         },
         {
-            "self": "https://example.atlassian.net/rest/api/2/issue/10001/comment/10105",
+            "self": "https://example.atlassian.net/rest/api/3/issue/10001/comment/10105",
             "id": "10105",
             "author": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-3",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-3",
                 "accountId": "account-id-3",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user3_48.png",
@@ -446,7 +446,7 @@ MOCK_JIRA_COMMENTS = {
             },
             "body": "I've addressed all the feedback and merged the PR. Issue can be closed.",
             "updateAuthor": {
-                "self": "https://example.atlassian.net/rest/api/2/user?accountId=account-id-3",
+                "self": "https://example.atlassian.net/rest/api/3/user?accountId=account-id-3",
                 "accountId": "account-id-3",
                 "avatarUrls": {
                     "48x48": "https://avatar.example.com/avatar/user3_48.png",

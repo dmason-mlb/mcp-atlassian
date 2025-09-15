@@ -531,7 +531,7 @@ class TestMetaToolsEndToEnd:
         atlassian_stub.stub_error_response(
             "jira",
             "GET",
-            "/rest/api/2/issue/ERROR-001",
+            "/rest/api/3/issue/ERROR-001",
             status_code=404,
             error_data={"error": "Issue not found"}
         )

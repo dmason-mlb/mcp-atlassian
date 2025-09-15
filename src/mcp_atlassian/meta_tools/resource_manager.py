@@ -530,10 +530,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_COMMENT_GET_NOT_IMPLEMENTED",
-            "Jira comment get operation not yet implemented",
-        )
+        """Get Jira comment by ID."""
+        try:
+            if not identifier:
+                raise ValueError("Comment ID is required")
+
+            comment = client.get_comment(identifier)
+            return comment.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_GET_COMMENT_FAILED",
+                api_endpoint=f"/rest/api/3/comment/{identifier}",
+                suggestions=[
+                    "Verify the comment ID exists and you have permission to view it",
+                ],
+                context={"comment_id": identifier},
+            )
 
     async def _add_jira_comment(
         self,
@@ -542,10 +555,32 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_COMMENT_ADD_NOT_IMPLEMENTED",
-            "Jira comment add operation not yet implemented",
-        )
+        """Add comment to Jira issue."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Issue key and comment data are required")
+
+            body = data.get("body")
+            if not body:
+                raise ValueError("Comment body is required")
+
+            comment = client.add_comment(
+                issue_key=identifier,
+                body=body,
+                visibility=data.get("visibility")
+            )
+            return comment.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_ADD_COMMENT_FAILED",
+                api_endpoint=f"/rest/api/3/issue/{identifier}/comment",
+                suggestions=[
+                    "Verify the issue key exists and you have permission to comment",
+                    "Check that the comment body is not empty",
+                ],
+                context={"issue_key": identifier},
+            )
 
     async def _update_jira_comment(
         self,
@@ -554,10 +589,32 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_COMMENT_UPDATE_NOT_IMPLEMENTED",
-            "Jira comment update operation not yet implemented",
-        )
+        """Update Jira comment."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Comment ID and update data are required")
+
+            body = data.get("body")
+            if not body:
+                raise ValueError("Comment body is required")
+
+            comment = client.update_comment(
+                comment_id=identifier,
+                body=body,
+                visibility=data.get("visibility")
+            )
+            return comment.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_UPDATE_COMMENT_FAILED",
+                api_endpoint=f"/rest/api/3/comment/{identifier}",
+                suggestions=[
+                    "Verify the comment ID exists and you have permission to edit it",
+                    "Check that the comment body is not empty",
+                ],
+                context={"comment_id": identifier},
+            )
 
     async def _delete_jira_comment(
         self,
@@ -566,10 +623,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_COMMENT_DELETE_NOT_IMPLEMENTED",
-            "Jira comment delete operation not yet implemented",
-        )
+        """Delete Jira comment."""
+        try:
+            if not identifier:
+                raise ValueError("Comment ID is required")
+
+            success = client.delete_comment(identifier)
+            return {"deleted": success, "comment_id": identifier}
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_DELETE_COMMENT_FAILED",
+                api_endpoint=f"/rest/api/3/comment/{identifier}",
+                suggestions=[
+                    "Verify the comment ID exists and you have permission to delete it",
+                ],
+                context={"comment_id": identifier},
+            )
 
     async def _get_jira_worklog(
         self,
@@ -578,10 +648,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_WORKLOG_GET_NOT_IMPLEMENTED",
-            "Jira worklog get operation not yet implemented",
-        )
+        """Get Jira worklog by ID."""
+        try:
+            if not identifier:
+                raise ValueError("Worklog ID is required")
+
+            worklog = client.get_worklog(identifier)
+            return worklog.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_GET_WORKLOG_FAILED",
+                api_endpoint=f"/rest/api/3/worklog/{identifier}",
+                suggestions=[
+                    "Verify the worklog ID exists and you have permission to view it",
+                ],
+                context={"worklog_id": identifier},
+            )
 
     async def _add_jira_worklog(
         self,
@@ -590,10 +673,34 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_WORKLOG_ADD_NOT_IMPLEMENTED",
-            "Jira worklog add operation not yet implemented",
-        )
+        """Add worklog to Jira issue."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Issue key and worklog data are required")
+
+            time_spent = data.get("time_spent")
+            if not time_spent:
+                raise ValueError("Time spent is required")
+
+            worklog = client.add_worklog(
+                issue_key=identifier,
+                time_spent=time_spent,
+                comment=data.get("comment"),
+                started=data.get("started"),
+                visibility=data.get("visibility")
+            )
+            return worklog.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_ADD_WORKLOG_FAILED",
+                api_endpoint=f"/rest/api/3/issue/{identifier}/worklog",
+                suggestions=[
+                    "Verify the issue key exists and you have permission to log work",
+                    "Check that time_spent is in valid format (e.g., '2h 30m')",
+                ],
+                context={"issue_key": identifier},
+            )
 
     async def _update_jira_worklog(
         self,
@@ -602,10 +709,30 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_WORKLOG_UPDATE_NOT_IMPLEMENTED",
-            "Jira worklog update operation not yet implemented",
-        )
+        """Update Jira worklog."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Worklog ID and update data are required")
+
+            worklog = client.update_worklog(
+                worklog_id=identifier,
+                time_spent=data.get("time_spent"),
+                comment=data.get("comment"),
+                started=data.get("started"),
+                visibility=data.get("visibility")
+            )
+            return worklog.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_UPDATE_WORKLOG_FAILED",
+                api_endpoint=f"/rest/api/3/worklog/{identifier}",
+                suggestions=[
+                    "Verify the worklog ID exists and you have permission to edit it",
+                    "Check that time_spent is in valid format if provided",
+                ],
+                context={"worklog_id": identifier},
+            )
 
     async def _delete_jira_worklog(
         self,
@@ -614,10 +741,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_WORKLOG_DELETE_NOT_IMPLEMENTED",
-            "Jira worklog delete operation not yet implemented",
-        )
+        """Delete Jira worklog."""
+        try:
+            if not identifier:
+                raise ValueError("Worklog ID is required")
+
+            success = client.delete_worklog(identifier)
+            return {"deleted": success, "worklog_id": identifier}
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_DELETE_WORKLOG_FAILED",
+                api_endpoint=f"/rest/api/3/worklog/{identifier}",
+                suggestions=[
+                    "Verify the worklog ID exists and you have permission to delete it",
+                ],
+                context={"worklog_id": identifier},
+            )
 
     async def _get_jira_attachment(
         self,
@@ -626,10 +766,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_ATTACHMENT_GET_NOT_IMPLEMENTED",
-            "Jira attachment get operation not yet implemented",
-        )
+        """Get Jira attachment by ID."""
+        try:
+            if not identifier:
+                raise ValueError("Attachment ID is required")
+
+            attachment = client.get_attachment(identifier)
+            return attachment.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_GET_ATTACHMENT_FAILED",
+                api_endpoint=f"/rest/api/3/attachment/{identifier}",
+                suggestions=[
+                    "Verify the attachment ID exists and you have permission to view it",
+                ],
+                context={"attachment_id": identifier},
+            )
 
     async def _add_jira_attachment(
         self,
@@ -638,10 +791,33 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_ATTACHMENT_ADD_NOT_IMPLEMENTED",
-            "Jira attachment add operation not yet implemented",
-        )
+        """Add attachment to Jira issue."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Issue key and attachment data are required")
+
+            filename = data.get("filename")
+            content = data.get("content")
+            if not filename or not content:
+                raise ValueError("Filename and content are required")
+
+            attachment = client.add_attachment(
+                issue_key=identifier,
+                filename=filename,
+                content=content
+            )
+            return attachment.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_ADD_ATTACHMENT_FAILED",
+                api_endpoint=f"/rest/api/3/issue/{identifier}/attachments",
+                suggestions=[
+                    "Verify the issue key exists and you have permission to attach files",
+                    "Check that filename and content are provided",
+                ],
+                context={"issue_key": identifier},
+            )
 
     async def _delete_jira_attachment(
         self,
@@ -650,10 +826,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_ATTACHMENT_DELETE_NOT_IMPLEMENTED",
-            "Jira attachment delete operation not yet implemented",
-        )
+        """Delete Jira attachment."""
+        try:
+            if not identifier:
+                raise ValueError("Attachment ID is required")
+
+            success = client.delete_attachment(identifier)
+            return {"deleted": success, "attachment_id": identifier}
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_DELETE_ATTACHMENT_FAILED",
+                api_endpoint=f"/rest/api/3/attachment/{identifier}",
+                suggestions=[
+                    "Verify the attachment ID exists and you have permission to delete it",
+                ],
+                context={"attachment_id": identifier},
+            )
 
     async def _create_jira_issue_link(
         self,
@@ -662,10 +851,43 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_LINK_CREATE_NOT_IMPLEMENTED",
-            "Jira link create operation not yet implemented",
-        )
+        """Create link between Jira issues."""
+        try:
+            if not data:
+                raise ValueError("Link data is required")
+
+            from_issue = data.get("from_issue")
+            to_issue = data.get("to_issue")
+            link_type = data.get("link_type")
+
+            if not all([from_issue, to_issue, link_type]):
+                missing = [
+                    f for f, v in [
+                        ("from_issue", from_issue),
+                        ("to_issue", to_issue),
+                        ("link_type", link_type)
+                    ] if not v
+                ]
+                raise ValueError(f"Missing required fields: {', '.join(missing)}")
+
+            link = client.create_issue_link(
+                from_issue=from_issue,
+                to_issue=to_issue,
+                link_type=link_type,
+                comment=data.get("comment")
+            )
+            return link.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_CREATE_LINK_FAILED",
+                api_endpoint="/rest/api/3/issueLink",
+                suggestions=[
+                    "Verify both issue keys exist and you have permission to link them",
+                    "Check that the link type is valid for this Jira instance",
+                ],
+                context={"from_issue": data.get("from_issue") if data else None},
+            )
 
     async def _delete_jira_issue_link(
         self,
@@ -674,10 +896,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_LINK_DELETE_NOT_IMPLEMENTED",
-            "Jira link delete operation not yet implemented",
-        )
+        """Delete Jira issue link."""
+        try:
+            if not identifier:
+                raise ValueError("Link ID is required")
+
+            success = client.delete_issue_link(identifier)
+            return {"deleted": success, "link_id": identifier}
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_DELETE_LINK_FAILED",
+                api_endpoint=f"/rest/api/3/issueLink/{identifier}",
+                suggestions=[
+                    "Verify the link ID exists and you have permission to delete it",
+                ],
+                context={"link_id": identifier},
+            )
 
     async def _get_jira_sprint(
         self,
@@ -686,10 +921,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_SPRINT_GET_NOT_IMPLEMENTED",
-            "Jira sprint get operation not yet implemented",
-        )
+        """Get Jira sprint by ID."""
+        try:
+            if not identifier:
+                raise ValueError("Sprint ID is required")
+
+            sprint = client.get_sprint(identifier)
+            return sprint.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_GET_SPRINT_FAILED",
+                api_endpoint=f"/rest/agile/1.0/sprint/{identifier}",
+                suggestions=[
+                    "Verify the sprint ID exists and you have permission to view it",
+                ],
+                context={"sprint_id": identifier},
+            )
 
     async def _create_jira_sprint(
         self,
@@ -698,10 +946,36 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_SPRINT_CREATE_NOT_IMPLEMENTED",
-            "Jira sprint create operation not yet implemented",
-        )
+        """Create Jira sprint."""
+        try:
+            if not data:
+                raise ValueError("Sprint data is required")
+
+            name = data.get("name")
+            board_id = data.get("board_id")
+            if not all([name, board_id]):
+                missing = [f for f, v in [("name", name), ("board_id", board_id)] if not v]
+                raise ValueError(f"Missing required fields: {', '.join(missing)}")
+
+            sprint = client.create_sprint(
+                name=name,
+                board_id=board_id,
+                start_date=data.get("start_date"),
+                end_date=data.get("end_date"),
+                goal=data.get("goal")
+            )
+            return sprint.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_CREATE_SPRINT_FAILED",
+                api_endpoint="/rest/agile/1.0/sprint",
+                suggestions=[
+                    "Verify the board ID exists and you have permission to create sprints",
+                    "Check that the sprint name is unique",
+                ],
+                context={"board_id": data.get("board_id") if data else None},
+            )
 
     async def _update_jira_sprint(
         self,
@@ -710,10 +984,31 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_SPRINT_UPDATE_NOT_IMPLEMENTED",
-            "Jira sprint update operation not yet implemented",
-        )
+        """Update Jira sprint."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Sprint ID and update data are required")
+
+            sprint = client.update_sprint(
+                sprint_id=identifier,
+                name=data.get("name"),
+                start_date=data.get("start_date"),
+                end_date=data.get("end_date"),
+                goal=data.get("goal"),
+                state=data.get("state")
+            )
+            return sprint.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_UPDATE_SPRINT_FAILED",
+                api_endpoint=f"/rest/agile/1.0/sprint/{identifier}",
+                suggestions=[
+                    "Verify the sprint ID exists and you have permission to edit it",
+                    "Check that state values are valid (future, active, closed)",
+                ],
+                context={"sprint_id": identifier},
+            )
 
     async def _get_jira_version(
         self,
@@ -722,10 +1017,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_VERSION_GET_NOT_IMPLEMENTED",
-            "Jira version get operation not yet implemented",
-        )
+        """Get Jira version by ID."""
+        try:
+            if not identifier:
+                raise ValueError("Version ID is required")
+
+            version = client.get_version(identifier)
+            return version.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_GET_VERSION_FAILED",
+                api_endpoint=f"/rest/api/3/version/{identifier}",
+                suggestions=[
+                    "Verify the version ID exists and you have permission to view it",
+                ],
+                context={"version_id": identifier},
+            )
 
     async def _create_jira_version(
         self,
@@ -734,10 +1042,37 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_VERSION_CREATE_NOT_IMPLEMENTED",
-            "Jira version create operation not yet implemented",
-        )
+        """Create Jira version."""
+        try:
+            if not data:
+                raise ValueError("Version data is required")
+
+            name = data.get("name")
+            project_key = data.get("project_key")
+            if not all([name, project_key]):
+                missing = [f for f, v in [("name", name), ("project_key", project_key)] if not v]
+                raise ValueError(f"Missing required fields: {', '.join(missing)}")
+
+            version = client.create_version(
+                name=name,
+                project_key=project_key,
+                description=data.get("description"),
+                archived=data.get("archived", False),
+                released=data.get("released", False),
+                release_date=data.get("release_date")
+            )
+            return version.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_CREATE_VERSION_FAILED",
+                api_endpoint="/rest/api/3/version",
+                suggestions=[
+                    "Verify the project key exists and you have permission to create versions",
+                    "Check that the version name is unique within the project",
+                ],
+                context={"project_key": data.get("project_key") if data else None},
+            )
 
     async def _update_jira_version(
         self,
@@ -746,10 +1081,31 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_VERSION_UPDATE_NOT_IMPLEMENTED",
-            "Jira version update operation not yet implemented",
-        )
+        """Update Jira version."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Version ID and update data are required")
+
+            version = client.update_version(
+                version_id=identifier,
+                name=data.get("name"),
+                description=data.get("description"),
+                archived=data.get("archived"),
+                released=data.get("released"),
+                release_date=data.get("release_date")
+            )
+            return version.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_UPDATE_VERSION_FAILED",
+                api_endpoint=f"/rest/api/3/version/{identifier}",
+                suggestions=[
+                    "Verify the version ID exists and you have permission to edit it",
+                    "Check that the version name is unique if changing it",
+                ],
+                context={"version_id": identifier},
+            )
 
     async def _delete_jira_version(
         self,
@@ -758,10 +1114,24 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "JIRA_VERSION_DELETE_NOT_IMPLEMENTED",
-            "Jira version delete operation not yet implemented",
-        )
+        """Delete Jira version."""
+        try:
+            if not identifier:
+                raise ValueError("Version ID is required")
+
+            success = client.delete_version(identifier)
+            return {"deleted": success, "version_id": identifier}
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="JIRA_DELETE_VERSION_FAILED",
+                api_endpoint=f"/rest/api/3/version/{identifier}",
+                suggestions=[
+                    "Verify the version ID exists and you have permission to delete it",
+                    "Check that the version is not referenced by any issues",
+                ],
+                context={"version_id": identifier},
+            )
 
     # Confluence operation implementations
     async def _get_confluence_page(
@@ -934,10 +1304,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_COMMENT_GET_NOT_IMPLEMENTED",
-            "Confluence comment get operation not yet implemented",
-        )
+        """Get Confluence comment by ID."""
+        try:
+            if not identifier:
+                raise ValueError("Comment ID is required")
+
+            comment = client.get_comment(identifier)
+            return comment.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_GET_COMMENT_FAILED",
+                api_endpoint=f"/wiki/api/v2/comments/{identifier}",
+                suggestions=[
+                    "Verify the comment ID exists and you have permission to view it",
+                ],
+                context={"comment_id": identifier},
+            )
 
     async def _add_confluence_comment(
         self,
@@ -946,10 +1329,32 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_COMMENT_ADD_NOT_IMPLEMENTED",
-            "Confluence comment add operation not yet implemented",
-        )
+        """Add comment to Confluence page."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Page ID and comment data are required")
+
+            body = data.get("body")
+            if not body:
+                raise ValueError("Comment body is required")
+
+            comment = client.add_comment(
+                page_id=identifier,
+                body=body,
+                is_markdown=data.get("is_markdown", True)
+            )
+            return comment.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_ADD_COMMENT_FAILED",
+                api_endpoint=f"/wiki/api/v2/pages/{identifier}/comments",
+                suggestions=[
+                    "Verify the page ID exists and you have permission to comment",
+                    "Check that the comment body is not empty",
+                ],
+                context={"page_id": identifier},
+            )
 
     async def _update_confluence_comment(
         self,
@@ -958,10 +1363,32 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_COMMENT_UPDATE_NOT_IMPLEMENTED",
-            "Confluence comment update operation not yet implemented",
-        )
+        """Update Confluence comment."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Comment ID and update data are required")
+
+            body = data.get("body")
+            if not body:
+                raise ValueError("Comment body is required")
+
+            comment = client.update_comment(
+                comment_id=identifier,
+                body=body,
+                is_markdown=data.get("is_markdown", True)
+            )
+            return comment.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_UPDATE_COMMENT_FAILED",
+                api_endpoint=f"/wiki/api/v2/comments/{identifier}",
+                suggestions=[
+                    "Verify the comment ID exists and you have permission to edit it",
+                    "Check that the comment body is not empty",
+                ],
+                context={"comment_id": identifier},
+            )
 
     async def _delete_confluence_comment(
         self,
@@ -970,10 +1397,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_COMMENT_DELETE_NOT_IMPLEMENTED",
-            "Confluence comment delete operation not yet implemented",
-        )
+        """Delete Confluence comment."""
+        try:
+            if not identifier:
+                raise ValueError("Comment ID is required")
+
+            success = client.delete_comment(identifier)
+            return {"deleted": success, "comment_id": identifier}
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_DELETE_COMMENT_FAILED",
+                api_endpoint=f"/wiki/api/v2/comments/{identifier}",
+                suggestions=[
+                    "Verify the comment ID exists and you have permission to delete it",
+                ],
+                context={"comment_id": identifier},
+            )
 
     async def _add_confluence_label(
         self,
@@ -982,10 +1422,31 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_LABEL_ADD_NOT_IMPLEMENTED",
-            "Confluence label add operation not yet implemented",
-        )
+        """Add label to Confluence page."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Page ID and label data are required")
+
+            label_name = data.get("name")
+            if not label_name:
+                raise ValueError("Label name is required")
+
+            label = client.add_label(
+                page_id=identifier,
+                label_name=label_name
+            )
+            return label.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_ADD_LABEL_FAILED",
+                api_endpoint=f"/wiki/api/v2/pages/{identifier}/labels",
+                suggestions=[
+                    "Verify the page ID exists and you have permission to add labels",
+                    "Check that the label name is valid",
+                ],
+                context={"page_id": identifier},
+            )
 
     async def _delete_confluence_label(
         self,
@@ -994,10 +1455,31 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_LABEL_DELETE_NOT_IMPLEMENTED",
-            "Confluence label delete operation not yet implemented",
-        )
+        """Delete label from Confluence page."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Page ID and label data are required")
+
+            label_name = data.get("name")
+            if not label_name:
+                raise ValueError("Label name is required")
+
+            success = client.remove_label(
+                page_id=identifier,
+                label_name=label_name
+            )
+            return {"deleted": success, "page_id": identifier, "label_name": label_name}
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_DELETE_LABEL_FAILED",
+                api_endpoint=f"/wiki/api/v2/pages/{identifier}/labels",
+                suggestions=[
+                    "Verify the page ID and label name exist",
+                    "Check that you have permission to remove labels",
+                ],
+                context={"page_id": identifier, "label_name": data.get("name") if data else None},
+            )
 
     async def _get_confluence_space(
         self,
@@ -1006,10 +1488,23 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_SPACE_GET_NOT_IMPLEMENTED",
-            "Confluence space get operation not yet implemented",
-        )
+        """Get Confluence space by ID."""
+        try:
+            if not identifier:
+                raise ValueError("Space ID is required")
+
+            space = client.get_space(identifier)
+            return space.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_GET_SPACE_FAILED",
+                api_endpoint=f"/wiki/api/v2/spaces/{identifier}",
+                suggestions=[
+                    "Verify the space ID exists and you have permission to view it",
+                ],
+                context={"space_id": identifier},
+            )
 
     async def _create_confluence_space(
         self,
@@ -1018,10 +1513,35 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_SPACE_CREATE_NOT_IMPLEMENTED",
-            "Confluence space create operation not yet implemented",
-        )
+        """Create Confluence space."""
+        try:
+            if not data:
+                raise ValueError("Space data is required")
+
+            name = data.get("name")
+            key = data.get("key")
+            if not all([name, key]):
+                missing = [f for f, v in [("name", name), ("key", key)] if not v]
+                raise ValueError(f"Missing required fields: {', '.join(missing)}")
+
+            space = client.create_space(
+                name=name,
+                key=key,
+                description=data.get("description"),
+                type=data.get("type", "global")
+            )
+            return space.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_CREATE_SPACE_FAILED",
+                api_endpoint="/wiki/api/v2/spaces",
+                suggestions=[
+                    "Check that the space key is unique and follows naming conventions",
+                    "Verify you have permission to create spaces",
+                ],
+                context={"space_key": data.get("key") if data else None},
+            )
 
     async def _update_confluence_space(
         self,
@@ -1030,10 +1550,27 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_SPACE_UPDATE_NOT_IMPLEMENTED",
-            "Confluence space update operation not yet implemented",
-        )
+        """Update Confluence space."""
+        try:
+            if not identifier or not data:
+                raise ValueError("Space ID and update data are required")
+
+            space = client.update_space(
+                space_id=identifier,
+                name=data.get("name"),
+                description=data.get("description")
+            )
+            return space.to_dict()
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_UPDATE_SPACE_FAILED",
+                api_endpoint=f"/wiki/api/v2/spaces/{identifier}",
+                suggestions=[
+                    "Verify the space ID exists and you have permission to edit it",
+                ],
+                context={"space_id": identifier},
+            )
 
     async def _delete_confluence_space(
         self,
@@ -1042,7 +1579,21 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        raise MetaToolError(
-            "CONFLUENCE_SPACE_DELETE_NOT_IMPLEMENTED",
-            "Confluence space delete operation not yet implemented",
-        )
+        """Delete Confluence space."""
+        try:
+            if not identifier:
+                raise ValueError("Space ID is required")
+
+            success = client.delete_space(identifier)
+            return {"deleted": success, "space_id": identifier}
+        except Exception as e:
+            raise MetaToolError.from_exception(
+                error=e,
+                error_code="CONFLUENCE_DELETE_SPACE_FAILED",
+                api_endpoint=f"/wiki/api/v2/spaces/{identifier}",
+                suggestions=[
+                    "Verify the space ID exists and you have permission to delete it",
+                    "Check that the space is not referenced by other content",
+                ],
+                context={"space_id": identifier},
+            )
