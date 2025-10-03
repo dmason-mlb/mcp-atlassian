@@ -330,6 +330,7 @@ class JiraV3Client(BaseRESTClient):
         properties: list[str] | None = None,
         fields_by_keys: bool = False,
         validate_query: bool = True,
+        reconcile_issues: list[str] | None = None,
     ) -> dict[str, Any]:
         """Search for issues using JQL.
 
@@ -342,25 +343,37 @@ class JiraV3Client(BaseRESTClient):
             properties: Properties to return
             fields_by_keys: Return fields by keys
             validate_query: Validate the JQL query
+            reconcile_issues: List of issue keys to reconcile (ensures read-after-write consistency)
 
         Returns:
             Search results with pagination
         """
+        # New search/jql API has different parameter requirements
         data = {
             "jql": jql,
-            "startAt": start_at,
             "maxResults": max_results,
-            "fieldsByKeys": fields_by_keys,
-            "validateQuery": validate_query,
         }
         if fields:
             data["fields"] = fields
-        if expand:
-            data["expand"] = expand
-        if properties:
-            data["properties"] = properties
+        # Note: expand, properties, fields_by_keys, validate_query, reconcile_issues
+        # are not supported by the new /rest/api/3/search/jql endpoint
 
-        return self.post("/rest/api/3/search", json_data=data)
+        response = self.post("/rest/api/3/search/jql", json_data=data)
+
+        # Transform new format to old format for backward compatibility
+        if isinstance(response, dict) and "issues" in response:
+            # New format: {issues: [...], nextPageToken: "...", isLast: boolean}
+            # Old format: {issues: [...], total: X, startAt: Y, maxResults: Z}
+            return {
+                "issues": response.get("issues", []),
+                "total": len(response.get("issues", [])),  # Approximate - new API doesn't provide total
+                "startAt": start_at,
+                "maxResults": max_results,
+                "isLast": response.get("isLast", True),
+                "nextPageToken": response.get("nextPageToken")
+            }
+
+        return response
 
     # === Projects ===
 

@@ -1,0 +1,124 @@
+{
+  "parameter_registry": {
+    "space_key": {
+      "type": "string",
+      "description": "Confluence space key (e.g., ~911651470 for personal space)",
+      "example": "~911651470"
+    },
+    "title": {
+      "type": "string",
+      "description": "Page or issue title",
+      "example": "My Test Page"
+    },
+    "body": {
+      "type": "string",
+      "description": "Content body (markdown for pages, text for comments)",
+      "example": "# Welcome\n\nThis is **bold** text with *italics*."
+    },
+    "page_id": {
+      "type": "string",
+      "description": "Confluence page identifier",
+      "example": "123456789"
+    },
+    "parent_id": {
+      "type": "string",
+      "description": "Parent page ID (optional)",
+      "example": "987654321"
+    },
+    "version": {
+      "type": "integer",
+      "description": "Page version number for updates",
+      "example": 1
+    },
+    "project_key": {
+      "type": "string",
+      "description": "Jira project key",
+      "example": "FTEST"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Issue summary/title",
+      "example": "Fix authentication bug"
+    },
+    "issue_type": {
+      "type": "string",
+      "description": "Jira issue type",
+      "example": "Task"
+    },
+    "description": {
+      "type": "string",
+      "description": "Issue description",
+      "example": "Detailed description of the issue"
+    },
+    "issue_key": {
+      "type": "string",
+      "description": "Jira issue key",
+      "example": "FTEST-123"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comment text",
+      "example": "This is a comment"
+    },
+    "time_spent": {
+      "type": "string",
+      "description": "Time spent in Jira format",
+      "example": "2h 30m"
+    },
+    "fields": {
+      "type": "array",
+      "description": "Fields to include in response",
+      "example": ["summary", "status", "assignee"]
+    },
+    "expand": {
+      "type": "string",
+      "description": "Fields to expand in response",
+      "example": "body.storage,version"
+    },
+    "dry_run": {
+      "type": "boolean",
+      "description": "Validate operation without executing",
+      "example": false
+    },
+    "limit": {
+      "type": "integer",
+      "description": "Maximum results to return",
+      "example": 50
+    },
+    "start_at": {
+      "type": "integer",
+      "description": "Starting index for pagination",
+      "example": 0
+    },
+    "jql": {
+      "type": "string",
+      "description": "Jira Query Language expression",
+      "example": "project = FTEST AND status = Open"
+    },
+    "cql": {
+      "type": "string",
+      "description": "Confluence Query Language expression",
+      "example": "space = '~911651470' AND type = page"
+    }
+  },
+  "parameter_combinations": {
+    "confluence_page_operations": ["space_key", "title", "body", "page_id", "parent_id", "version"],
+    "confluence_comment_operations": ["page_id", "body", "comment"],
+    "jira_issue_operations": ["project_key", "summary", "issue_type", "description", "issue_key"],
+    "jira_comment_operations": ["issue_key", "body", "comment"],
+    "jira_worklog_operations": ["issue_key", "time_spent", "comment"],
+    "search_operations": ["limit", "start_at", "jql", "cql"],
+    "common_operations": ["fields", "expand", "dry_run"]
+  },
+  "context_defaults": {
+    "confluence": {
+      "space_key": "~911651470",
+      "expand": "body.storage,version"
+    },
+    "jira": {
+      "project_key": "FTEST",
+      "fields": ["summary", "status", "assignee"],
+      "expand": "names"
+    }
+  }
+}

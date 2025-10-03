@@ -9,9 +9,9 @@ import logging
 import asyncio
 from typing import Any, Literal
 
-from ..exceptions import MetaToolError
-from ..jira.client import JiraFetcher
-from ..confluence.client import ConfluenceFetcher
+from .errors import MetaToolError
+from ..jira import JiraFetcher
+from ..confluence import ConfluenceFetcher
 
 logger = logging.getLogger(__name__)
 
@@ -68,28 +68,28 @@ class BatchProcessor:
         }
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the BatchProcessor."""
         pass
 
     async def execute_batch_operation(
         self,
+        ctx: Any,  # FastMCP Context
         service: Literal["jira", "confluence"],
         operation: Literal["create", "update", "get", "delete"],
         resource_type: str,
         items: list[dict],
         options: dict[str, Any] | None = None,
-        dry_run: bool = False,
     ) -> str:
         """Execute a batch operation.
 
         Args:
+            ctx: The FastMCP context
             service: Target service (jira or confluence)
             operation: Operation type (create, update, get, delete)
             resource_type: Type of resource (issue, page, version, etc.)
             items: Array of items to process
             options: Additional options (validation, parallel processing, etc.)
-            dry_run: If True, validate without executing
 
         Returns:
             JSON string with batch operation results
@@ -98,22 +98,16 @@ class BatchProcessor:
             # Validate inputs
             self._validate_batch_inputs(service, operation, resource_type, items, options)
 
-            # Perform dry run validation if requested
-            if dry_run:
-                return self._perform_dry_run_validation(
-                    service, operation, resource_type, items, options
-                )
-
-            # Get appropriate client based on service
+            # Get appropriate fetcher based on service
             if service == "jira":
-                from ..servers.context import get_jira_client
-                client = get_jira_client()
+                from ..servers.dependencies import get_jira_fetcher
+                client = await get_jira_fetcher(ctx)
                 return await self._execute_jira_batch(
                     client, operation, resource_type, items, options
                 )
             else:
-                from ..servers.context import get_confluence_client
-                client = get_confluence_client()
+                from ..servers.dependencies import get_confluence_fetcher
+                client = await get_confluence_fetcher(ctx)
                 return await self._execute_confluence_batch(
                     client, operation, resource_type, items, options
                 )
@@ -223,46 +217,6 @@ class BatchProcessor:
                 },
             )
 
-    def _perform_dry_run_validation(
-        self,
-        service: str,
-        operation: str,
-        resource_type: str,
-        items: list[dict],
-        options: dict[str, Any] | None,
-    ) -> str:
-        """Perform dry run validation without executing the batch operation."""
-        validation_result = {
-            "dry_run": True,
-            "service": service,
-            "operation": operation,
-            "resource_type": resource_type,
-            "validation": "PASSED",
-            "item_count": len(items),
-            "required_fields": self._get_required_fields(service, operation, resource_type),
-            "estimated_duration": self._estimate_batch_duration(len(items), options),
-            "parallel_processing": options.get("parallel", False) if options else False,
-        }
-
-        # Validate each item has required fields
-        missing_fields_items = []
-        required_fields = validation_result["required_fields"]
-
-        for i, item in enumerate(items):
-            missing_fields = [field for field in required_fields if field not in item]
-            if missing_fields:
-                missing_fields_items.append({
-                    "item_index": i,
-                    "missing_fields": missing_fields,
-                    "provided_fields": list(item.keys()),
-                })
-
-        if missing_fields_items:
-            validation_result["validation"] = "FAILED"
-            validation_result["validation_errors"] = missing_fields_items[:5]  # Show first 5 errors
-            validation_result["total_errors"] = len(missing_fields_items)
-
-        return json.dumps(validation_result, indent=2, ensure_ascii=False)
 
     def _get_required_fields(self, service: str, operation: str, resource_type: str) -> list[str]:
         """Get required fields for a specific batch operation."""
@@ -527,11 +481,13 @@ class BatchProcessor:
             else:
                 raise ValueError(f"Unsupported operation: {operation}")
 
-            # Convert result to dict
-            if hasattr(result, 'to_dict'):
-                result_data = result.to_dict()
-            elif hasattr(result, 'to_simplified_dict'):
+            # Convert result to JSON-serializable format
+            if hasattr(result, 'to_simplified_dict'):
                 result_data = result.to_simplified_dict()
+            elif hasattr(result, 'to_dict'):
+                result_data = result.to_dict()
+            elif hasattr(result, 'model_dump'):
+                result_data = result.model_dump(exclude_none=True)
             else:
                 result_data = result
 
@@ -699,11 +655,13 @@ class BatchProcessor:
             else:
                 raise ValueError(f"Unsupported operation: {operation}")
 
-            # Convert result to dict
-            if hasattr(result, 'to_dict'):
-                result_data = result.to_dict()
-            elif hasattr(result, 'to_simplified_dict'):
+            # Convert result to JSON-serializable format
+            if hasattr(result, 'to_simplified_dict'):
                 result_data = result.to_simplified_dict()
+            elif hasattr(result, 'to_dict'):
+                result_data = result.to_dict()
+            elif hasattr(result, 'model_dump'):
+                result_data = result.model_dump(exclude_none=True)
             else:
                 result_data = result
 

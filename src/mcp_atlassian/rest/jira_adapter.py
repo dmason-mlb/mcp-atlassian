@@ -221,6 +221,7 @@ class JiraAdapter:
         limit: int = 50,
         fields: str | list[str] | None = None,
         expand: str | None = None,
+        reconcile_issues: list[str] | None = None,
     ) -> dict[str, Any]:
         """Search using JQL."""
         if isinstance(fields, str):
@@ -234,6 +235,7 @@ class JiraAdapter:
             max_results=limit,
             fields=fields,
             expand=expand_list,
+            reconcile_issues=reconcile_issues,
         )
 
     def enhanced_jql_get_list_of_tickets(
@@ -242,6 +244,7 @@ class JiraAdapter:
         fields: str | list[str] | None = None,
         limit: int = 100,
         expand: str | None = None,
+        reconcile_issues: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         """Enhanced JQL search for cloud instances that returns just issues list.
 
@@ -253,6 +256,7 @@ class JiraAdapter:
             fields: Fields to return (comma-separated string or list)
             limit: Maximum number of issues to return
             expand: Fields to expand
+            reconcile_issues: List of issue keys to reconcile (ensures read-after-write consistency)
 
         Returns:
             List of issue dictionaries
@@ -264,6 +268,7 @@ class JiraAdapter:
             limit=limit,
             fields=fields,
             expand=expand,
+            reconcile_issues=reconcile_issues,
         )
 
         # Return just the issues array

@@ -88,9 +88,16 @@
     },
     
     "summary": {
-      "type": "string", 
+      "type": "string",
       "description": "Issue summary",
       "usage_count": 8
+    },
+
+    "issue_type": {
+      "type": "string",
+      "description": "Issue type (e.g., Task, Bug, Story)",
+      "example": "Task",
+      "usage_count": 6
     },
     
     "description": {
@@ -126,12 +133,6 @@
       "usage_count": 4
     },
     
-    "dry_run": {
-      "type": "boolean",
-      "default": false,
-      "description": "Validate without executing",
-      "usage_count": 8
-    },
     
     "comment_limit": {
       "type": "integer",
@@ -206,6 +207,31 @@
       "type": ["string", "null"],
       "description": "Parent page ID",
       "usage_count": 3
+    },
+
+    "body": {
+      "type": "string",
+      "description": "Content body (markdown for pages, text for comments)",
+      "example": "# Welcome\n\nThis is **bold** text with *italics*.",
+      "usage_count": 10
+    },
+
+    "reconcile_issues": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z]+-\\d+$"
+      },
+      "description": "Issue keys for read-after-write consistency (Jira Cloud only)",
+      "example": ["PROJ-123", "PROJ-124"],
+      "usage_count": 3
+    },
+
+    "wait_for_indexing": {
+      "type": "boolean",
+      "default": true,
+      "description": "Wait for issue to be indexed before returning (helps with eventual consistency)",
+      "usage_count": 2
     }
   },
   
@@ -227,8 +253,7 @@
     },
     
     "update_operations": {
-      "minor_edit": false,
-      "dry_run": false  
+      "minor_edit": false
     },
     
     "pagination_operations": {
@@ -238,11 +263,13 @@
   },
   
   "parameter_combinations": {
-    "jira_issue_operations": ["issue_key", "fields", "expand", "comment_limit"],
-    "jira_search_operations": ["jql", "fields", "limit", "start_at"],
+    "jira_issue_operations": ["project_key", "summary", "issue_type", "issue_key", "fields", "expand", "comment_limit", "wait_for_indexing"],
+    "jira_search_operations": ["jql", "fields", "limit", "start_at", "reconcile_issues"],
     "jira_agile_operations": ["board_id", "sprint_id", "limit", "start_at"],
-    "confluence_page_operations": ["page_id", "title", "space_key", "parent_id"],
+    "jira_comment_operations": ["issue_key", "body"],
+    "confluence_page_operations": ["page_id", "title", "space_key", "parent_id", "body"],
     "confluence_search_operations": ["cql", "limit", "start_at"],
+    "confluence_comment_operations": ["page_id", "body"],
     "user_operations": ["user_identifier"],
     "pagination_operations": ["limit", "start_at"],
     "date_operations": ["start_date", "end_date"]

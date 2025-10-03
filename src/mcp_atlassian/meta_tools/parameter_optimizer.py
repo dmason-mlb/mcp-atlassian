@@ -228,8 +228,8 @@ class ParameterOptimizer:
         if resource_key in self.combinations:
             base_params = self.combinations[resource_key].copy()
         else:
-            # Use generic operation parameters
-            base_params = []
+            # Use hardcoded fallbacks for critical operations
+            base_params = self._get_fallback_parameters(service, resource, operation)
             
         # Add operation-specific parameters
         if operation == "search":
@@ -245,6 +245,23 @@ class ParameterOptimizer:
             
         # Remove duplicates while preserving order
         return list(dict.fromkeys(base_params))
+
+    def _get_fallback_parameters(self, service: Service, resource: Resource, operation: Operation) -> list[str]:
+        """Get hardcoded fallback parameters when registry is unavailable."""
+        # Hardcoded fallbacks for critical operations
+        fallbacks = {
+            ("confluence", "page", "create"): ["space_key", "title", "body", "parent_id"],
+            ("confluence", "page", "update"): ["page_id", "title", "body", "version"],
+            ("confluence", "page", "get"): ["page_id", "expand"],
+            ("confluence", "comment", "add"): ["page_id", "body"],
+            ("jira", "issue", "create"): ["project_key", "summary", "issue_type", "description"],
+            ("jira", "issue", "update"): ["issue_key", "summary", "description"],
+            ("jira", "issue", "get"): ["issue_key", "fields", "expand"],
+            ("jira", "comment", "add"): ["issue_key", "body"],
+            ("jira", "worklog", "add"): ["issue_key", "time_spent", "comment"],
+        }
+
+        return fallbacks.get((service, resource, operation), [])
 
     def get_parameter_schema_ref(self, param_name: str) -> dict[str, str] | None:
         """Get JSON Schema $ref for a common parameter.

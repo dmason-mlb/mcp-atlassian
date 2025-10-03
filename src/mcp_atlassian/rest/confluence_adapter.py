@@ -44,7 +44,7 @@ class ConfluenceAdapter:
         self.enable_adf = enable_adf
 
         # Initialize FormatRouter for deployment detection and format conversion
-        self.format_router = FormatRouter(adf_validation_level=adf_validation_level)
+        self.format_router = FormatRouter()
 
         # Determine effective ADF usage
         self.should_use_adf = self._determine_adf_usage()

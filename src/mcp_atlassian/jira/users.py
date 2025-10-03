@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, Any
 
 import requests
 from requests.exceptions import HTTPError
@@ -381,3 +381,42 @@ class UsersMixin(JiraClient):
             raise Exception(
                 f"Error processing user profile for '{identifier}': {str(e)}"
             ) from e
+
+    def search_users(
+        self, query: str, start_at: int = 0, max_results: int = 50
+    ) -> list[dict[str, Any]]:
+        """
+        Search for users in Jira.
+
+        Args:
+            query: Search query string
+            start_at: Starting index for pagination
+            max_results: Maximum number of results to return
+
+        Returns:
+            List of user dictionaries
+
+        Raises:
+            Exception: If there is an error searching for users
+        """
+        try:
+            # Use the underlying Jira API to search for users
+            if self.config.is_cloud:
+                response = self.jira.user_find_by_user_string(
+                    query=query, start_at=start_at, max_results=max_results
+                )
+            else:
+                # For Server/DC, the API might be different
+                response = self.jira.user_find_by_user_string(
+                    query=query, start_at=start_at, max_results=max_results
+                )
+            
+            if not isinstance(response, list):
+                logger.error(f"Unexpected return value type from `jira.user_find_by_user_string`: {type(response)}")
+                return []
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Error searching for users with query '{query}': {str(e)}")
+            return []

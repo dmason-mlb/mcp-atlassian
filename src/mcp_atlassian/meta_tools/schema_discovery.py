@@ -210,14 +210,14 @@ class SchemaDiscovery:
         """Determine if a field is required using optimized logic."""
         # Key required fields by operation
         required_patterns = {
-            "create": ["summary", "title", "project_key", "space_key", "issue_key"],
+            "create": ["summary", "title", "project_key", "space_key", "body"],
             "update": ["issue_key", "page_id", "title"],
             "get": ["issue_key", "page_id"],
             "delete": ["issue_key", "page_id"],
-            "add": ["issue_key", "page_id", "comment"],
+            "add": ["issue_key", "page_id", "comment", "body"],
             "search": ["jql", "cql"]
         }
-        
+
         return field_name in required_patterns.get(operation, [])
     
     def _generate_optimized_examples(
@@ -260,15 +260,17 @@ class SchemaDiscovery:
     def _get_field_example(self, field_name: str, service: Service) -> str:
         """Get example value for a field."""
         examples = {
-            "issue_key": "PROJ-123",
-            "project_key": "PROJ", 
+            "issue_key": "FTEST-123",
+            "project_key": "FTEST",
             "page_id": "123456",
             "title": "Example Page",
             "summary": "Example issue summary",
-            "jql": "project = PROJ AND status = Open",
-            "cql": "space = SPACE AND type = page",
+            "body": "# Welcome to My Page\n\nThis page contains **bold** text and *italic* text.\n\n## Features\n- Bullet points\n- Code blocks\n- Tables\n\nPage content goes here!",
+            "jql": "project = FTEST AND status = Open",
+            "cql": "space = '~911651470' AND type = page",
             "comment": "Example comment",
-            "space_key": "SPACE"
+            "space_key": "~911651470",
+            "description": "Detailed description of the issue or content"
         }
         return examples.get(field_name, f"<{field_name}_value>")
 

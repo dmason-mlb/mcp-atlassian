@@ -37,3 +37,43 @@ def is_atlassian_cloud_url(url: str) -> bool:
         or ".jira-dev.com" in hostname
         or "api.atlassian.com" in hostname
     )
+
+
+def extract_cloud_id_from_url(url: str) -> str | None:
+    """Extract cloud_id from an Atlassian Cloud URL.
+
+    For URLs like https://mycompany.atlassian.net, the cloud_id is 'mycompany'.
+    This is essential for OAuth authentication with Atlassian Cloud.
+
+    Args:
+        url: The Atlassian Cloud URL
+
+    Returns:
+        The cloud_id if extractable, None otherwise
+
+    Examples:
+        >>> extract_cloud_id_from_url("https://baseball.atlassian.net")
+        'baseball'
+        >>> extract_cloud_id_from_url("https://mycompany.atlassian.net/secure/Dashboard.jspa")
+        'mycompany'
+        >>> extract_cloud_id_from_url("https://localhost:8080")
+        None
+    """
+    if not url or not is_atlassian_cloud_url(url):
+        return None
+
+    parsed_url = urlparse(url)
+    hostname = parsed_url.hostname or ""
+
+    # Extract cloud_id from standard Atlassian Cloud domains
+    if ".atlassian.net" in hostname:
+        # Format: {cloud_id}.atlassian.net
+        cloud_id = hostname.split(".atlassian.net")[0]
+        # Handle potential subdomain prefixes (e.g., wiki.mycompany.atlassian.net)
+        if "." in cloud_id:
+            cloud_id = cloud_id.split(".")[-1]
+        return cloud_id if cloud_id else None
+
+    # For other cloud domains, cloud_id extraction might be different
+    # but these are less common, so return None for now
+    return None

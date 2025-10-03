@@ -8,6 +8,7 @@ from requests.exceptions import HTTPError
 from ...exceptions import MCPAtlassianAuthenticationError
 from ...models.jira import JiraIssue
 from ...utils import parse_date
+from ...utils.consistency import ConsistencyHelper, get_consistency_config_from_jira_config, IndexingDelayMessageHelper
 from ..client import JiraClient
 from ..protocols import (
     EpicOperationsProto,
@@ -87,15 +88,7 @@ class IssueCreationMixin(
                     description_content = self.markdown_to_jira(
                         description, return_raw_adf=True
                     )
-                    # Ensure we pass an object, not a JSON-encoded string
-                    if isinstance(description_content, str):
-                        try:
-                            import json as _json
-
-                            description_content = _json.loads(description_content)
-                        except Exception:  # noqa: BLE001
-                            # If it isn't JSON, leave as-is and let API validate
-                            pass
+                    # FormattingMixin now returns dict directly for ADF
                 else:
                     description_content = self.markdown_to_jira(
                         description, return_raw_adf=False
@@ -197,6 +190,140 @@ class IssueCreationMixin(
         except Exception as e:
             self._handle_create_issue_error(e, issue_type)
             raise
+
+    def create_issue_with_consistency(
+        self,
+        project_key: str,
+        summary: str,
+        issue_type: str,
+        description: str = "",
+        assignee: str | None = None,
+        components: list[str] | None = None,
+        wait_for_indexing: bool = True,
+        **kwargs: Any,
+    ) -> JiraIssue:
+        """
+        Create a Jira issue with optional consistency checking.
+
+        This method creates an issue and optionally waits for it to be indexed
+        and visible in search results, addressing eventual consistency issues
+        in Jira Cloud.
+
+        Args:
+            project_key: The project key
+            summary: Issue summary
+            issue_type: Type of issue (e.g. 'Task', 'Bug', 'Story')
+            description: Issue description (Markdown format)
+            assignee: Assignee username or email
+            components: List of component names
+            wait_for_indexing: Whether to wait for the issue to be visible in search
+            **kwargs: Additional fields (same as create_issue)
+
+        Returns:
+            JiraIssue model representing the created issue
+
+        Raises:
+            Exception: If there is an error creating the issue
+        """
+        # Create the issue using the standard method
+        created_issue = self.create_issue(
+            project_key=project_key,
+            summary=summary,
+            issue_type=issue_type,
+            description=description,
+            assignee=assignee,
+            components=components,
+            **kwargs,
+        )
+
+        # If consistency checking is disabled or not needed, return immediately
+        if not wait_for_indexing or not hasattr(self, 'search_issues'):
+            return created_issue
+
+        issue_key = created_issue.key
+        if not issue_key:
+            logger.warning("Created issue has no key, cannot verify indexing")
+            return created_issue
+
+        # Set up consistency checking
+        try:
+            consistency_config = get_consistency_config_from_jira_config(self.config)
+            consistency_helper = ConsistencyHelper(consistency_config)
+
+            # Only perform consistency checking for Cloud instances and if strategy is not "none"
+            if not getattr(self.config, 'is_cloud', False) or consistency_config.strategy == "none":
+                logger.debug("Skipping consistency check for non-cloud instance or disabled strategy")
+                return created_issue
+
+            logger.debug(f"Checking indexing consistency for issue {issue_key} using strategy: {consistency_config.strategy}")
+
+            # Create a search function that handles both reconcile and polling strategies
+            def search_function(jql: str, reconcile_issues: list[str] | None):
+                try:
+                    return self.search_issues(
+                        jql=jql,
+                        limit=1,
+                        reconcile_issues=reconcile_issues,
+                    )
+                except Exception as e:
+                    logger.debug(f"Search failed during consistency check: {e}")
+                    return None
+
+            # Create a direct issue access function for hybrid strategy
+            def get_issue_function(issue_key: str):
+                try:
+                    if hasattr(self, 'get_issue'):
+                        return self.get_issue(issue_key)
+                    elif hasattr(self.jira, 'get_issue'):
+                        return self.jira.get_issue(issue_key)
+                    else:
+                        logger.debug("No get_issue method available for direct access")
+                        return None
+                except Exception as e:
+                    logger.debug(f"Direct issue access failed: {e}")
+                    return None
+
+            # Create the appropriate visibility checker based on strategy
+            if consistency_config.strategy == "hybrid":
+                visibility_checker = consistency_helper.create_hybrid_issue_checker(
+                    get_issue_function=get_issue_function,
+                    search_function=search_function,
+                    issue_key=issue_key,
+                )
+            else:
+                visibility_checker = consistency_helper.create_issue_visibility_checker(
+                    search_function=search_function,
+                    issue_key=issue_key,
+                )
+
+            # Check if the issue is visible in search results
+            is_visible = consistency_helper.poll_until_visible(visibility_checker)
+
+            if not is_visible:
+                delay_message = IndexingDelayMessageHelper.create_search_delay_message(
+                    operation="issue creation verification",
+                    issue_key=issue_key,
+                    is_cloud=self.config.is_cloud,
+                )
+                logger.warning(f"Indexing delay detected for issue {issue_key}: {delay_message}")
+            else:
+                logger.debug(f"Issue {issue_key} is visible in search results")
+
+        except Exception as e:
+            # Enhanced error message for consistency checking failures
+            if self.config.is_cloud:
+                error_msg = (
+                    f"Error during consistency checking for issue {issue_key}: {e}. "
+                    f"The issue was created successfully but verification failed. "
+                    f"{IndexingDelayMessageHelper.create_general_delay_warning(is_cloud=True, operation='verification')}"
+                )
+            else:
+                error_msg = f"Error during consistency checking for issue {issue_key}: {e}"
+
+            logger.warning(error_msg)
+            # Don't fail the overall operation due to consistency checking errors
+
+        return created_issue
 
     def _is_epic_issue_type(self, issue_type: str) -> bool:
         """

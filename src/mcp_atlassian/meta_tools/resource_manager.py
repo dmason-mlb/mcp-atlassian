@@ -102,13 +102,30 @@ class ResourceManager:
         },
     }
 
-    def __init__(self, dry_run: bool = False) -> None:
-        """Initialize ResourceManager.
+    def __init__(self) -> None:
+        """Initialize ResourceManager."""
+        pass
 
-        Args:
-            dry_run: If True, validate operations without executing them
+    def _serialize_result(self, result: Any) -> dict[str, Any] | Any:
         """
-        self.dry_run = dry_run
+        Safely serialize API results to dict.
+        
+        Args:
+            result: The API result to serialize
+            
+        Returns:
+            Dictionary representation of the result
+        """
+        if hasattr(result, 'to_simplified_dict'):
+            return result.to_simplified_dict()
+        elif hasattr(result, 'to_dict'):
+            return result.to_dict()
+        elif hasattr(result, 'model_dump'):
+            return result.model_dump(exclude_none=True)
+        elif isinstance(result, dict):
+            return result
+        else:
+            return result
 
     def get_resource_schema(
         self,
@@ -136,7 +153,7 @@ class ResourceManager:
             return json.dumps(
                 {
                     "error": f"Schema not available for {service} {resource} {operation}",
-                    "fallback": "Use the dry_run parameter to validate your data structure",
+                    "fallback": "Check the schema documentation for required field structure",
                 },
                 indent=2,
             )
@@ -173,11 +190,6 @@ class ResourceManager:
             self._validate_operation_inputs(
                 service, resource, operation, identifier, data
             )
-
-            if self.dry_run:
-                return self._perform_dry_run_validation(
-                    service, resource, operation, data
-                )
 
             # Get appropriate service client
             if service == "jira":
@@ -232,17 +244,71 @@ class ResourceManager:
             raise
         except Exception as e:
             logger.error(f"Unexpected error in resource_manager: {e}", exc_info=True)
+
+            # Provide specific error messages based on the underlying error
+            error_message = str(e).lower()
+            specific_suggestions = []
+
+            if "oauth authentication requires a valid cloud_id" in error_message:
+                specific_suggestions = [
+                    "Add 'cloud_id' to your service configuration",
+                    "For Cloud instances, set ATLASSIAN_CLOUD_ID environment variable",
+                    "Example: ATLASSIAN_CLOUD_ID=your-site-id (found in your Atlassian URL)",
+                    "OAuth authentication requires both valid credentials and cloud_id"
+                ]
+            elif "authentication" in error_message and "failed" in error_message:
+                specific_suggestions = [
+                    "Verify your API token or OAuth credentials are correct",
+                    "Check that the token has not expired",
+                    "Ensure the token has required permissions for this operation",
+                    f"For {service.title()}, check your authentication configuration"
+                ]
+            elif "permission" in error_message or "forbidden" in error_message:
+                specific_suggestions = [
+                    f"Your account lacks permission to {operation} {resource} in {service.title()}",
+                    "Contact your administrator to grant the required permissions",
+                    f"Verify you have {operation} access to the target {resource}"
+                ]
+            elif "not found" in error_message or "does not exist" in error_message:
+                if identifier:
+                    specific_suggestions = [
+                        f"The {resource} '{identifier}' was not found",
+                        f"Verify the {resource} identifier is correct",
+                        f"Check that you have permission to view this {resource}"
+                    ]
+                else:
+                    specific_suggestions = [
+                        f"Required {resource} not found",
+                        "Check the service configuration and resource parameters"
+                    ]
+            elif "connection" in error_message or "timeout" in error_message:
+                specific_suggestions = [
+                    f"Unable to connect to {service.title()} service",
+                    "Check your internet connection",
+                    "Verify the service URL is correct",
+                    "The service may be temporarily unavailable"
+                ]
+            else:
+                # Fallback to more generic but still helpful suggestions
+                specific_suggestions = [
+                    f"Check your {service.title()} service configuration",
+                    "Verify authentication credentials are valid",
+                    "Ensure you have permission for this operation",
+                    "Check the get_resource_schema tool for parameter validation"
+                ]
+
             raise MetaToolError.from_exception(
                 error=e,
                 error_code="RESOURCE_MANAGER_ERROR",
                 user_message=f"Failed to {operation} {service} {resource}",
-                suggestions=["Check the service configuration and try again"],
+                suggestions=specific_suggestions,
                 context={
                     "service": service,
                     "resource": resource,
                     "operation": operation,
                     "identifier": identifier,
                     "has_data": data is not None,
+                    "underlying_error": str(e),
                 },
             )
 
@@ -307,32 +373,6 @@ class ResourceManager:
                 context={"operation": operation, "resource": resource},
             )
 
-    def _perform_dry_run_validation(
-        self,
-        service: str,
-        resource: str,
-        operation: str,
-        data: dict[str, Any] | None,
-    ) -> str:
-        """Perform dry run validation without executing the operation."""
-        validation_result = {
-            "dry_run": True,
-            "service": service,
-            "resource": resource,
-            "operation": operation,
-            "validation": "PASSED",
-            "required_fields": self._get_required_fields(service, resource, operation),
-            "provided_fields": list(data.keys()) if data else [],
-        }
-
-        if data:
-            required_fields = validation_result["required_fields"]
-            missing_fields = [field for field in required_fields if field not in data]
-            if missing_fields:
-                validation_result["validation"] = "FAILED"
-                validation_result["missing_fields"] = missing_fields
-
-        return json.dumps(validation_result, indent=2, ensure_ascii=False)
 
     def _get_required_fields(
         self, service: str, resource: str, operation: str
@@ -377,8 +417,22 @@ class ResourceManager:
             if not identifier:
                 raise ValueError("Issue key is required")
 
+            # Extract parameters from options
             expand_fields = options.get("expand") if options else None
-            issue = client.get_issue(identifier, expand=expand_fields)
+            fields = options.get("fields") if options else None
+            comment_limit = options.get("comment_limit", 10) if options else 10
+            properties = options.get("properties") if options else None
+            update_history = options.get("update_history", True) if options else True
+
+            # Call with correct parameter names
+            issue = client.get_issue(
+                issue_key=identifier,
+                expand=expand_fields,
+                fields=fields,
+                comment_limit=comment_limit,
+                properties=properties,
+                update_history=update_history,
+            )
             return issue.to_simplified_dict()
         except Exception as e:
             raise MetaToolError.from_exception(
@@ -436,14 +490,16 @@ class ResourceManager:
                 ]
                 raise ValueError(f"Missing required fields: {', '.join(missing)}")
 
-            # Create issue using existing implementation
-            issue = client.create_issue(
+            # Create issue using consistency-aware implementation
+            wait_for_indexing = (options or {}).get("wait_for_indexing", True)
+            issue = client.create_issue_with_consistency(
                 project_key=project_key,
                 summary=summary,
                 issue_type=issue_type,
                 description=data.get("description", ""),
                 assignee=data.get("assignee"),
                 components=data.get("components"),
+                wait_for_indexing=wait_for_indexing,
                 **{
                     k: v
                     for k, v in data.items()
@@ -483,7 +539,8 @@ class ResourceManager:
             if not identifier or not data:
                 raise ValueError("Issue key and update data are required")
 
-            issue = client.update_issue(identifier, fields=data)
+            # Use correct parameter name
+            issue = client.update_issue(issue_key=identifier, fields=data)
             return issue.to_simplified_dict()
         except Exception as e:
             raise MetaToolError.from_exception(
@@ -509,7 +566,8 @@ class ResourceManager:
             if not identifier:
                 raise ValueError("Issue key is required")
 
-            success = client.delete_issue(identifier)
+            # Use correct parameter name
+            success = client.delete_issue(issue_key=identifier)
             return {"deleted": success, "issue_key": identifier}
         except Exception as e:
             raise MetaToolError.from_exception(
@@ -536,7 +594,7 @@ class ResourceManager:
                 raise ValueError("Comment ID is required")
 
             comment = client.get_comment(identifier)
-            return comment.to_dict()
+            return self._serialize_result(comment)
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -564,12 +622,8 @@ class ResourceManager:
             if not body:
                 raise ValueError("Comment body is required")
 
-            comment = client.add_comment(
-                issue_key=identifier,
-                body=body,
-                visibility=data.get("visibility")
-            )
-            return comment.to_dict()
+            comment = client.add_comment(identifier, body)
+            return self._serialize_result(comment)
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -603,7 +657,7 @@ class ResourceManager:
                 body=body,
                 visibility=data.get("visibility")
             )
-            return comment.to_dict()
+            return self._serialize_result(comment)
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -654,7 +708,7 @@ class ResourceManager:
                 raise ValueError("Worklog ID is required")
 
             worklog = client.get_worklog(identifier)
-            return worklog.to_dict()
+            return self._serialize_result(worklog)
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -689,7 +743,7 @@ class ResourceManager:
                 started=data.get("started"),
                 visibility=data.get("visibility")
             )
-            return worklog.to_dict()
+            return self._serialize_result(worklog)
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -1146,9 +1200,9 @@ class ResourceManager:
             if not identifier:
                 raise ValueError("Page ID is required")
 
-            expand_fields = options.get("expand") if options else None
-            page = client.get_page_content(identifier, expand=expand_fields)
-            return page.to_dict()
+            convert_to_markdown = options.get("convert_to_markdown", True) if options else True
+            page = client.get_page_content(page_id=identifier, convert_to_markdown=convert_to_markdown)
+            return page.to_simplified_dict()
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -1168,49 +1222,83 @@ class ResourceManager:
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
         """Create Confluence page.
-        
+
         Automatically converts markdown content in the body field to the appropriate
         format for the target Confluence instance:
-        - Cloud instances: Converts to ADF (Atlassian Document Format) 
+        - Cloud instances: Converts to ADF (Atlassian Document Format)
         - Server/DC instances: Converts to Confluence storage format (XHTML)
-        
+
         Supports ADF-specific markdown extensions like panels, status badges, dates,
         mentions, and expandable sections.
-        
+
         Args:
             client: ConfluenceFetcher instance
             identifier: Not used for creation
-            data: Page data dictionary containing space_id, title, body (markdown),
+            data: Page data dictionary containing space_key (or space_id), title, body (markdown),
                   and optional parent_id
             options: Optional parameters
-            
+
         Returns:
             Dictionary representation of the created page
         """
         try:
             if not data:
-                raise ValueError("Page data is required")
+                raise MetaToolError(
+                    error_code="CONFLUENCE_MISSING_DATA",
+                    user_message="Page data is required",
+                    suggestions=[
+                        "Provide a data dictionary with required fields",
+                        "Example: data={'space_key': '~911651470', 'title': 'My Page', 'body': '# Content'}"
+                    ],
+                    context={"provided_data": None}
+                )
 
-            # Extract required fields
-            space_id = data.get("space_id")
+            # Extract required fields - support both space_key and space_id for compatibility
+            space_key = data.get("space_key") or data.get("space_id")
             title = data.get("title")
             body = data.get("body")
 
-            if not all([space_id, title, body]):
-                missing = [
-                    f
-                    for f, v in [
-                        ("space_id", space_id),
-                        ("title", title),
-                        ("body", body),
-                    ]
-                    if not v
-                ]
-                raise ValueError(f"Missing required fields: {', '.join(missing)}")
+            # Validate required fields with helpful error messages
+            if not space_key:
+                raise MetaToolError(
+                    error_code="CONFLUENCE_MISSING_SPACE",
+                    user_message="Missing required field: 'space_key'",
+                    suggestions=[
+                        "Add 'space_key' to your data object",
+                        "For personal space use: \"space_key\": \"~911651470\"",
+                        "For team space use: \"space_key\": \"TEAMSPACE\"",
+                        "You can also use 'space_id' if you have the numeric ID"
+                    ],
+                    context={"provided_fields": list(data.keys())}
+                )
+
+            if not title:
+                raise MetaToolError(
+                    error_code="CONFLUENCE_MISSING_TITLE",
+                    user_message="Missing required field: 'title'",
+                    suggestions=[
+                        "Add 'title' to your data object",
+                        "Example: \"title\": \"My Page Title\"",
+                        "Page titles must be unique within the space"
+                    ],
+                    context={"provided_fields": list(data.keys())}
+                )
+
+            if not body:
+                raise MetaToolError(
+                    error_code="CONFLUENCE_MISSING_BODY",
+                    user_message="Missing required field: 'body'",
+                    suggestions=[
+                        "Add 'body' to your data object",
+                        "Example: \"body\": \"# My Page\\n\\nContent with **markdown** formatting\"",
+                        "Body content supports full markdown syntax"
+                    ],
+                    context={"provided_fields": list(data.keys())}
+                )
 
             # Create page using existing implementation
             page = client.create_page(
-                space_id=space_id,
+                space_id=space_key,  # The create_page method handles both space_key and space_id
                 title=title,
                 body=body,
                 parent_id=data.get("parent_id"),
@@ -1218,18 +1306,85 @@ class ResourceManager:
                 enable_heading_anchors=data.get("enable_heading_anchors", False),
                 content_representation=data.get("content_representation"),
             )
-            return page.to_dict()
+            return page.model_dump()
+        except MetaToolError:
+            # Re-raise MetaToolError as-is to preserve structured error information
+            raise
         except Exception as e:
-            raise MetaToolError.from_exception(
-                error=e,
-                error_code="CONFLUENCE_CREATE_PAGE_FAILED",
-                api_endpoint="/wiki/api/v2/pages",
-                suggestions=[
-                    "Verify space ID exists and you have permission to create pages",
-                    "Check that the page title is unique within the space",
-                ],
-                context={"space_id": data.get("space_id") if data else None},
-            )
+            # Enhanced error handling with more specific guidance
+            error_message = str(e).lower()
+
+            if "space" in error_message and ("not found" in error_message or "does not exist" in error_message):
+                raise MetaToolError.from_exception(
+                    error=e,
+                    error_code="CONFLUENCE_SPACE_NOT_FOUND",
+                    api_endpoint="/wiki/api/v2/pages",
+                    suggestions=[
+                        f"Space '{space_key}' was not found or you don't have access to it",
+                        "Verify the space key is correct (e.g., '~911651470' for personal space)",
+                        "Check that you have permission to view and create pages in this space",
+                        "For personal spaces, use format: ~<account_id>",
+                        "For team spaces, use the space key from the URL"
+                    ],
+                    context={
+                        "space_key": space_key,
+                        "title": title,
+                        "provided_fields": list(data.keys())
+                    }
+                )
+            elif "title" in error_message and ("duplicate" in error_message or "already exists" in error_message):
+                raise MetaToolError.from_exception(
+                    error=e,
+                    error_code="CONFLUENCE_DUPLICATE_TITLE",
+                    api_endpoint="/wiki/api/v2/pages",
+                    suggestions=[
+                        f"A page with title '{title}' already exists in space '{space_key}'",
+                        "Choose a different page title",
+                        "Or update the existing page instead of creating a new one",
+                        "Page titles must be unique within each space"
+                    ],
+                    context={
+                        "space_key": space_key,
+                        "title": title,
+                        "provided_fields": list(data.keys())
+                    }
+                )
+            elif "permission" in error_message or "forbidden" in error_message or "401" in error_message or "403" in error_message:
+                raise MetaToolError.from_exception(
+                    error=e,
+                    error_code="CONFLUENCE_PERMISSION_DENIED",
+                    api_endpoint="/wiki/api/v2/pages",
+                    suggestions=[
+                        "You don't have permission to create pages in this space",
+                        "Check that your API token has the required scopes",
+                        "Verify you have 'Add Page' permission in the space",
+                        "Contact your Confluence administrator for access"
+                    ],
+                    context={
+                        "space_key": space_key,
+                        "title": title,
+                        "provided_fields": list(data.keys())
+                    }
+                )
+            else:
+                # Generic error with helpful context
+                raise MetaToolError.from_exception(
+                    error=e,
+                    error_code="CONFLUENCE_CREATE_PAGE_FAILED",
+                    api_endpoint="/wiki/api/v2/pages",
+                    suggestions=[
+                        "Check that all field values are valid",
+                        "Verify the space exists and you have access to it",
+                        "Ensure the page title is unique within the space",
+                        "Check the get_resource_schema tool for field validation"
+                    ],
+                    context={
+                        "space_key": space_key,
+                        "title": title,
+                        "provided_fields": list(data.keys()),
+                        "error_details": str(e)
+                    }
+                )
 
     async def _update_confluence_page(
         self,
@@ -1283,7 +1438,7 @@ class ResourceManager:
             if not identifier:
                 raise ValueError("Page ID is required")
 
-            success = client.delete_page(identifier)
+            success = client.delete_page(page_id=identifier)
             return {"deleted": success, "page_id": identifier}
         except Exception as e:
             raise MetaToolError.from_exception(
@@ -1310,7 +1465,7 @@ class ResourceManager:
                 raise ValueError("Comment ID is required")
 
             comment = client.get_comment(identifier)
-            return comment.to_dict()
+            return self._serialize_result(comment)
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -1340,10 +1495,9 @@ class ResourceManager:
 
             comment = client.add_comment(
                 page_id=identifier,
-                body=body,
-                is_markdown=data.get("is_markdown", True)
+                content=body
             )
-            return comment.to_dict()
+            return self._serialize_result(comment) if comment else {"error": "Failed to create comment"}
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -1377,7 +1531,7 @@ class ResourceManager:
                 body=body,
                 is_markdown=data.get("is_markdown", True)
             )
-            return comment.to_dict()
+            return self._serialize_result(comment)
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -1431,11 +1585,11 @@ class ResourceManager:
             if not label_name:
                 raise ValueError("Label name is required")
 
-            label = client.add_label(
+            labels = client.add_page_label(
                 page_id=identifier,
-                label_name=label_name
+                name=label_name
             )
-            return label.to_dict()
+            return [label.to_simplified_dict() for label in labels]
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,

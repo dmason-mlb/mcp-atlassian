@@ -55,8 +55,33 @@ class JiraClient:
             session = Session()
 
             # Configure the session with OAuth authentication
-            if not configure_oauth_session(session, self.config.oauth_config):
-                error_msg = "Failed to configure OAuth session"
+            oauth_result = configure_oauth_session(session, self.config.oauth_config)
+            if not oauth_result:
+                # Provide specific error message based on OAuth configuration state
+                if not self.config.oauth_config.access_token:
+                    error_msg = (
+                        "OAuth authentication failed: No access token available. "
+                        "To fix this:\n"
+                        "1. Set ATLASSIAN_OAUTH_ACCESS_TOKEN environment variable, or\n"
+                        "2. Complete OAuth setup wizard with: uv run mcp-atlassian --oauth-setup, or\n"
+                        "3. Use API token authentication instead (JIRA_USERNAME + JIRA_API_TOKEN)"
+                    )
+                elif not self.config.oauth_config.refresh_token:
+                    error_msg = (
+                        "OAuth authentication failed: Access token expired and no refresh token available. "
+                        "To fix this:\n"
+                        "1. Provide a fresh access token via ATLASSIAN_OAUTH_ACCESS_TOKEN, or\n"
+                        "2. Run OAuth setup wizard: uv run mcp-atlassian --oauth-setup, or\n"
+                        "3. Use API token authentication instead (JIRA_USERNAME + JIRA_API_TOKEN)"
+                    )
+                else:
+                    error_msg = (
+                        "OAuth authentication failed: Unable to refresh access token. "
+                        "To fix this:\n"
+                        "1. Verify OAuth configuration is correct\n"
+                        "2. Run OAuth setup wizard: uv run mcp-atlassian --oauth-setup, or\n"
+                        "3. Use API token authentication instead (JIRA_USERNAME + JIRA_API_TOKEN)"
+                    )
                 raise MCPAtlassianAuthenticationError(error_msg)
 
             # The Jira API URL with OAuth is different

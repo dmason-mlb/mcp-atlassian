@@ -115,6 +115,75 @@ class TransitionsMixin(JiraClient, IssueOperationsProto, UsersOperationsProto):
 
         return result
 
+    def get_project_statuses(self, project_key: str) -> list[dict[str, Any]]:
+        """
+        Get all available statuses for a specific project.
+        
+        Args:
+            project_key: The project key (e.g. 'PROJ')
+            
+        Returns:
+            List of status information for the project
+            
+        Raises:
+            Exception: If there is an error getting project statuses
+        """
+        try:
+            # Use the v3 API endpoint for project statuses
+            statuses = self.jira.get(f"rest/api/3/project/{project_key}/statuses")
+            
+            # Extract all unique statuses from all issue types
+            unique_statuses = {}
+            
+            if isinstance(statuses, list):
+                for issue_type_data in statuses:
+                    if isinstance(issue_type_data, dict) and "statuses" in issue_type_data:
+                        for status in issue_type_data["statuses"]:
+                            if isinstance(status, dict) and "id" in status:
+                                unique_statuses[status["id"]] = {
+                                    "id": status["id"],
+                                    "name": status.get("name", "Unknown"),
+                                    "description": status.get("description", ""),
+                                    "category": status.get("statusCategory", {}).get("name", "Unknown")
+                                }
+            
+            return list(unique_statuses.values())
+            
+        except Exception as e:
+            logger.error(f"Error getting project statuses for {project_key}: {e}")
+            raise
+    
+    def get_all_statuses(self) -> list[dict[str, Any]]:
+        """
+        Get all available statuses in the Jira instance.
+        
+        Returns:
+            List of all status information
+            
+        Raises:
+            Exception: If there is an error getting statuses
+        """
+        try:
+            # Use the v3 API endpoint for all statuses
+            statuses = self.jira.get("rest/api/3/status")
+            
+            result = []
+            if isinstance(statuses, list):
+                for status in statuses:
+                    if isinstance(status, dict):
+                        result.append({
+                            "id": status.get("id"),
+                            "name": status.get("name", "Unknown"),
+                            "description": status.get("description", ""),
+                            "category": status.get("statusCategory", {}).get("name", "Unknown")
+                        })
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error getting all statuses: {e}")
+            raise
+
     def transition_issue(
         self,
         issue_key: str,

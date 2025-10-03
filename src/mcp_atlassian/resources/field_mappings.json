@@ -1,0 +1,275 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MCP Atlassian Field Mappings",
+  "description": "Correct field names and examples for all MCP Atlassian operations",
+  "version": "2.0",
+
+  "services": {
+    "confluence": {
+      "resources": {
+        "page": {
+          "operations": {
+            "create": {
+              "required_fields": ["space_key", "title", "body"],
+              "optional_fields": ["parent_id", "is_markdown", "enable_heading_anchors", "content_representation"],
+              "field_examples": {
+                "space_key": "~911651470",
+                "title": "My Test Page",
+                "body": "# Welcome\\n\\nThis is **bold** text with *italic* text.",
+                "parent_id": "123456789",
+                "is_markdown": true,
+                "enable_heading_anchors": false
+              },
+              "working_example": {
+                "service": "confluence",
+                "resource": "page",
+                "operation": "create",
+                "data": {
+                  "space_key": "~911651470",
+                  "title": "My Test Page",
+                  "body": "# Welcome\\n\\nThis is a test page with **markdown** formatting."
+                }
+              }
+            },
+            "update": {
+              "required_fields": ["title", "body"],
+              "optional_fields": ["version", "is_markdown", "content_representation"],
+              "field_examples": {
+                "title": "Updated Page Title",
+                "body": "# Updated Content\\n\\nThis page has been updated.",
+                "version": 2
+              },
+              "working_example": {
+                "service": "confluence",
+                "resource": "page",
+                "operation": "update",
+                "identifier": "123456789",
+                "data": {
+                  "title": "Updated Page Title",
+                  "body": "# Updated Content\\n\\nThis page has been updated."
+                }
+              }
+            },
+            "get": {
+              "required_fields": [],
+              "optional_fields": ["expand"],
+              "field_examples": {
+                "expand": "body.storage,version"
+              },
+              "working_example": {
+                "service": "confluence",
+                "resource": "page",
+                "operation": "get",
+                "identifier": "123456789",
+                "options": {
+                  "expand": "body.storage,version"
+                }
+              }
+            },
+            "delete": {
+              "required_fields": [],
+              "optional_fields": [],
+              "working_example": {
+                "service": "confluence",
+                "resource": "page",
+                "operation": "delete",
+                "identifier": "123456789"
+              }
+            }
+          }
+        },
+        "comment": {
+          "operations": {
+            "add": {
+              "required_fields": ["body"],
+              "optional_fields": [],
+              "field_examples": {
+                "body": "This is a comment on the page"
+              },
+              "working_example": {
+                "service": "confluence",
+                "resource": "comment",
+                "operation": "add",
+                "identifier": "123456789",
+                "data": {
+                  "body": "This is a comment on the page"
+                }
+              }
+            }
+          }
+        },
+        "space": {
+          "operations": {
+            "create": {
+              "required_fields": ["key", "name"],
+              "optional_fields": ["description"],
+              "field_examples": {
+                "key": "MYSPACE",
+                "name": "My Space",
+                "description": "Description of my space"
+              }
+            },
+            "get": {
+              "required_fields": [],
+              "optional_fields": ["expand"],
+              "field_examples": {
+                "expand": "permissions,description"
+              }
+            }
+          }
+        }
+      }
+    },
+    "jira": {
+      "resources": {
+        "issue": {
+          "operations": {
+            "create": {
+              "required_fields": ["project_key", "summary", "issue_type"],
+              "optional_fields": ["description", "assignee", "priority", "labels", "components"],
+              "field_examples": {
+                "project_key": "FTEST",
+                "summary": "Fix login bug",
+                "issue_type": "Bug",
+                "description": "Users cannot log in with special characters in password",
+                "assignee": "user@example.com",
+                "priority": "High",
+                "labels": ["bug", "login", "authentication"]
+              },
+              "working_example": {
+                "service": "jira",
+                "resource": "issue",
+                "operation": "create",
+                "data": {
+                  "project_key": "FTEST",
+                  "summary": "Implement user authentication",
+                  "issue_type": "Task",
+                  "description": "Add secure authentication system for users"
+                }
+              }
+            },
+            "update": {
+              "required_fields": [],
+              "optional_fields": ["summary", "description", "assignee", "priority", "status"],
+              "field_examples": {
+                "summary": "Updated issue title",
+                "description": "Updated description",
+                "assignee": "newuser@example.com",
+                "priority": "Medium"
+              },
+              "working_example": {
+                "service": "jira",
+                "resource": "issue",
+                "operation": "update",
+                "identifier": "FTEST-123",
+                "data": {
+                  "summary": "Updated issue title",
+                  "priority": "High"
+                }
+              }
+            },
+            "get": {
+              "required_fields": [],
+              "optional_fields": ["fields", "expand"],
+              "field_examples": {
+                "fields": "summary,status,assignee",
+                "expand": "changelog,comments"
+              },
+              "working_example": {
+                "service": "jira",
+                "resource": "issue",
+                "operation": "get",
+                "identifier": "FTEST-123",
+                "options": {
+                  "fields": "summary,status,assignee"
+                }
+              }
+            }
+          }
+        },
+        "comment": {
+          "operations": {
+            "add": {
+              "required_fields": ["body"],
+              "optional_fields": [],
+              "field_examples": {
+                "body": "This is a comment on the issue"
+              },
+              "working_example": {
+                "service": "jira",
+                "resource": "comment",
+                "operation": "add",
+                "identifier": "FTEST-123",
+                "data": {
+                  "body": "Updated the implementation based on feedback"
+                }
+              }
+            }
+          }
+        },
+        "worklog": {
+          "operations": {
+            "add": {
+              "required_fields": ["time_spent"],
+              "optional_fields": ["comment", "started"],
+              "field_examples": {
+                "time_spent": "2h 30m",
+                "comment": "Fixed authentication bug",
+                "started": "2024-01-15T09:00:00.000+0000"
+              },
+              "working_example": {
+                "service": "jira",
+                "resource": "worklog",
+                "operation": "add",
+                "identifier": "FTEST-123",
+                "data": {
+                  "time_spent": "4h",
+                  "comment": "Implemented authentication system"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "common_patterns": {
+    "space_key_formats": {
+      "personal_space": "~911651470",
+      "team_space": "TEAMSPACE",
+      "project_space": "PROJ"
+    },
+    "issue_key_formats": {
+      "jira_issue": "PROJ-123",
+      "pattern": "PROJECT_KEY-NUMBER"
+    },
+    "time_formats": {
+      "jira_time": ["1h", "2h 30m", "1d 4h", "1w 2d 3h 30m"],
+      "description": "Jira time format: combinations of w(eeks), d(ays), h(ours), m(inutes)"
+    }
+  },
+
+  "error_prevention": {
+    "field_validation": {
+      "space_key": {
+        "rules": ["Must exist", "Must have access", "Format varies by space type"],
+        "common_mistakes": ["Using space_id instead", "Wrong format", "Typos"]
+      },
+      "issue_key": {
+        "rules": ["Format: PROJECT-NUMBER", "Must exist", "Must have access"],
+        "common_mistakes": ["Wrong project key", "Non-existent issue number"]
+      },
+      "title": {
+        "rules": ["Must be unique within space", "Cannot be empty"],
+        "common_mistakes": ["Duplicate titles", "Empty strings"]
+      }
+    },
+    "best_practices": [
+      "Always use dry_run=true to test first",
+      "Check error messages for specific guidance",
+      "Verify permissions before operations",
+      "Use working examples as templates"
+    ]
+  }
+}

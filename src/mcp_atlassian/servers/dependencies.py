@@ -155,7 +155,7 @@ def _create_user_config_for_fetcher(
         raise TypeError(f"Unsupported base_config type: {type(base_config)}")
 
 
-async def get_jira_fetcher(ctx: Context) -> JiraFetcher:
+async def get_jira_fetcher(ctx: Context | None) -> JiraFetcher:
     """Returns a JiraFetcher instance appropriate for the current request context.
 
     Args:
@@ -168,6 +168,11 @@ async def get_jira_fetcher(ctx: Context) -> JiraFetcher:
         ValueError: If configuration or credentials are invalid.
     """
     logger.debug(f"get_jira_fetcher: ENTERED. Context ID: {id(ctx)}")
+
+    if ctx is None:
+        logger.warning("get_jira_fetcher: No Context provided, cannot access lifespan_context properly")
+        # Try to continue without context - will use global fallback
+
     try:
         request: Request = get_http_request()
         logger.debug(
@@ -199,7 +204,9 @@ async def get_jira_fetcher(ctx: Context) -> JiraFetcher:
                 credentials["oauth_access_token"] = user_token
             elif user_auth_type == "pat":
                 credentials["personal_access_token"] = user_token
-            lifespan_ctx_dict = ctx.request_context.lifespan_context  # type: ignore
+            lifespan_ctx_dict = None
+            if ctx and hasattr(ctx, 'request_context') and ctx.request_context:
+                lifespan_ctx_dict = getattr(ctx.request_context, 'lifespan_context', None)
             app_lifespan_ctx: MainAppContext | None = (
                 lifespan_ctx_dict.get("app_lifespan_context")
                 if isinstance(lifespan_ctx_dict, dict)
@@ -256,7 +263,9 @@ async def get_jira_fetcher(ctx: Context) -> JiraFetcher:
             "Not in an HTTP request context. Attempting global JiraFetcher for non-HTTP."
         )
     # Fallback to global fetcher if not in HTTP context or no user info
-    lifespan_ctx_dict_global = ctx.request_context.lifespan_context  # type: ignore
+    lifespan_ctx_dict_global = None
+    if ctx and hasattr(ctx, 'request_context') and ctx.request_context:
+        lifespan_ctx_dict_global = getattr(ctx.request_context, 'lifespan_context', None)
     app_lifespan_ctx_global: MainAppContext | None = (
         lifespan_ctx_dict_global.get("app_lifespan_context")
         if isinstance(lifespan_ctx_dict_global, dict)
@@ -274,7 +283,7 @@ async def get_jira_fetcher(ctx: Context) -> JiraFetcher:
     )
 
 
-async def get_confluence_fetcher(ctx: Context) -> ConfluenceFetcher:
+async def get_confluence_fetcher(ctx: Context | None) -> ConfluenceFetcher:
     """Returns a ConfluenceFetcher instance appropriate for the current request context.
 
     Args:
@@ -287,6 +296,11 @@ async def get_confluence_fetcher(ctx: Context) -> ConfluenceFetcher:
         ValueError: If configuration or credentials are invalid.
     """
     logger.debug(f"get_confluence_fetcher: ENTERED. Context ID: {id(ctx)}")
+
+    if ctx is None:
+        logger.warning("get_confluence_fetcher: No Context provided, cannot access lifespan_context properly")
+        # Try to continue without context - will use global fallback
+
     try:
         request: Request = get_http_request()
         logger.debug(
@@ -319,7 +333,9 @@ async def get_confluence_fetcher(ctx: Context) -> ConfluenceFetcher:
                 credentials["oauth_access_token"] = user_token
             elif user_auth_type == "pat":
                 credentials["personal_access_token"] = user_token
-            lifespan_ctx_dict = ctx.request_context.lifespan_context  # type: ignore
+            lifespan_ctx_dict = None
+            if ctx and hasattr(ctx, 'request_context') and ctx.request_context:
+                lifespan_ctx_dict = getattr(ctx.request_context, 'lifespan_context', None)
             app_lifespan_ctx: MainAppContext | None = (
                 lifespan_ctx_dict.get("app_lifespan_context")
                 if isinstance(lifespan_ctx_dict, dict)
@@ -394,7 +410,9 @@ async def get_confluence_fetcher(ctx: Context) -> ConfluenceFetcher:
         logger.debug(
             "Not in an HTTP request context. Attempting global ConfluenceFetcher for non-HTTP."
         )
-    lifespan_ctx_dict_global = ctx.request_context.lifespan_context  # type: ignore
+    lifespan_ctx_dict_global = None
+    if ctx and hasattr(ctx, 'request_context') and ctx.request_context:
+        lifespan_ctx_dict_global = getattr(ctx.request_context, 'lifespan_context', None)
     app_lifespan_ctx_global: MainAppContext | None = (
         lifespan_ctx_dict_global.get("app_lifespan_context")
         if isinstance(lifespan_ctx_dict_global, dict)

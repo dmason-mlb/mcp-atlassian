@@ -1,43 +1,11 @@
-"""Confluence FastMCP server instance and tool definitions.
+"""Confluence server - Legacy tools removed, only meta-tools available.
 
-This module re-exports the aggregated FastMCP service and individual tool
-functions for backward compatibility with existing imports in tests and
-downstream integrations.
+This file maintains backward compatibility for imports but no longer contains
+individual tool definitions. All Confluence functionality is now provided through
+meta-tools in v2 mode.
 """
 
-# Aggregated service
-from .confluence import confluence_mcp  # noqa: F401
-from .confluence.content import (  # noqa: F401
-    add_comment,
-    add_label,
-    get_comments,
-    get_labels,
-)
-from .confluence.pages import (  # noqa: F401
-    create_page,
-    delete_page,
-    get_page,
-    get_page_children,
-    update_page,
-)
+# All legacy Confluence tools have been removed and replaced with meta-tools
+# Legacy migration tools have been removed - all functionality is available through meta-tools
 
-# Re-export individual tool functions
-from .confluence.search import search, search_user  # noqa: F401
-
-__all__ = [
-    "confluence_mcp",
-    # Search tools
-    "search",
-    "search_user",
-    # Page tools
-    "get_page",
-    "get_page_children",
-    "create_page",
-    "update_page",
-    "delete_page",
-    # Content tools
-    "get_comments",
-    "add_comment",
-    "get_labels",
-    "add_label",
-]
+__all__ = []

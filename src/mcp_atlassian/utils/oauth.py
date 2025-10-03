@@ -396,6 +396,8 @@ class OAuthConfig:
         Returns:
             OAuthConfig instance or None if OAuth is not enabled
         """
+        from .urls import extract_cloud_id_from_url
+
         # Check if OAuth is explicitly enabled (allows minimal config)
         oauth_enabled = os.getenv("ATLASSIAN_OAUTH_ENABLE", "").lower() in (
             "true",
@@ -409,6 +411,24 @@ class OAuthConfig:
         redirect_uri = os.getenv("ATLASSIAN_OAUTH_REDIRECT_URI")
         scope = os.getenv("ATLASSIAN_OAUTH_SCOPE")
 
+        # Get cloud_id from environment or extract from URLs
+        cloud_id = os.getenv("ATLASSIAN_OAUTH_CLOUD_ID")
+        if not cloud_id:
+            # Try to extract cloud_id from service URLs
+            jira_url = os.getenv("JIRA_URL") or os.getenv("ATLASSIAN_URL")
+            confluence_url = os.getenv("CONFLUENCE_URL") or os.getenv("ATLASSIAN_URL")
+
+            # Try extracting from either URL
+            if jira_url:
+                cloud_id = extract_cloud_id_from_url(jira_url)
+                if cloud_id:
+                    logger.info(f"Auto-extracted cloud_id '{cloud_id}' from JIRA_URL: {jira_url}")
+
+            if not cloud_id and confluence_url:
+                cloud_id = extract_cloud_id_from_url(confluence_url)
+                if cloud_id:
+                    logger.info(f"Auto-extracted cloud_id '{cloud_id}' from CONFLUENCE_URL: {confluence_url}")
+
         # Full OAuth configuration (traditional mode)
         if all([client_id, client_secret, redirect_uri, scope]):
             # Create the OAuth configuration with full credentials
@@ -417,7 +437,7 @@ class OAuthConfig:
                 client_secret=client_secret,
                 redirect_uri=redirect_uri,
                 scope=scope,
-                cloud_id=os.getenv("ATLASSIAN_OAUTH_CLOUD_ID"),
+                cloud_id=cloud_id,
             )
 
             # Try to load existing tokens
@@ -437,12 +457,14 @@ class OAuthConfig:
             logger.info(
                 "Creating minimal OAuth config for user-provided tokens (ATLASSIAN_OAUTH_ENABLE=true)"
             )
+            if cloud_id:
+                logger.info(f"Using cloud_id '{cloud_id}' for user-provided token authentication")
             return cls(
                 client_id="",  # Will be provided by user tokens
                 client_secret="",  # Not needed for user tokens
                 redirect_uri="",  # Not needed for user tokens
                 scope="",  # Will be determined by user token permissions
-                cloud_id=os.getenv("ATLASSIAN_OAUTH_CLOUD_ID"),  # Optional fallback
+                cloud_id=cloud_id,  # Auto-extracted or from environment
             )
 
         # No OAuth configuration
@@ -471,13 +493,31 @@ class BYOAccessTokenOAuthConfig:
         """Create a BYOAccessTokenOAuthConfig from environment variables.
 
         Reads `ATLASSIAN_OAUTH_CLOUD_ID` and `ATLASSIAN_OAUTH_ACCESS_TOKEN`.
+        If cloud_id is not set, attempts to extract it from Atlassian URLs.
 
         Returns:
             BYOAccessTokenOAuthConfig instance or None if required
             environment variables are missing.
         """
+        from .urls import extract_cloud_id_from_url
+
         cloud_id = os.getenv("ATLASSIAN_OAUTH_CLOUD_ID")
         access_token = os.getenv("ATLASSIAN_OAUTH_ACCESS_TOKEN")
+
+        # Auto-extract cloud_id if not provided
+        if not cloud_id:
+            jira_url = os.getenv("JIRA_URL") or os.getenv("ATLASSIAN_URL")
+            confluence_url = os.getenv("CONFLUENCE_URL") or os.getenv("ATLASSIAN_URL")
+
+            if jira_url:
+                cloud_id = extract_cloud_id_from_url(jira_url)
+                if cloud_id:
+                    logger.info(f"Auto-extracted cloud_id '{cloud_id}' from JIRA_URL for BYO token config")
+
+            if not cloud_id and confluence_url:
+                cloud_id = extract_cloud_id_from_url(confluence_url)
+                if cloud_id:
+                    logger.info(f"Auto-extracted cloud_id '{cloud_id}' from CONFLUENCE_URL for BYO token config")
 
         if not all([cloud_id, access_token]):
             return None

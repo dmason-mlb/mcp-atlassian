@@ -351,6 +351,8 @@ setup_env_file() {
 # TOOLS_ENABLED=all
 # READ_ONLY_MODE=false
 
+# Note: Only optimized meta-tools are available (legacy v1 tools removed)
+
 # Optional: Logging
 # LOG_LEVEL=INFO
 # LOG_FORMAT=json
@@ -599,6 +601,7 @@ check_claude_desktop_integration() {
         return 0
     fi
 
+
     # Use shared configuration function
     update_ide_config "Claude Desktop" "$config_path" "$python_cmd" "$server_args"
 }
@@ -617,6 +620,7 @@ check_cursor_ide_integration() {
         print_info "Skipping Cursor IDE integration"
         return 0
     fi
+
 
     # Use shared configuration function
     update_ide_config "Cursor IDE" "$config_path" "$python_cmd" "$server_args"
@@ -677,6 +681,7 @@ EOF
     print_info "   Config file location:"
     echo -e "   ${YELLOW}$cursor_config_path${NC}"
     echo ""
+
 
     print_info "3. Restart Claude Desktop/Cursor IDE after updating config files"
     echo ""

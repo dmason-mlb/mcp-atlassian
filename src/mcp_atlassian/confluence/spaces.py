@@ -28,6 +28,22 @@ class SpacesMixin(ConfluenceClient):
         # Cast the return value to the expected type
         return cast(dict[str, object], spaces)
 
+    def get_all_spaces(self, start: int = 0, limit: int = 500) -> dict[str, object]:
+        """
+        Get all spaces with the underlying API method.
+        
+        This method provides direct access to the confluence.get_all_spaces() method
+        for compatibility with existing code.
+        
+        Args:
+            start: The starting index for pagination
+            limit: Maximum number of spaces to return
+            
+        Returns:
+            Dictionary containing space information as returned by the API
+        """
+        return self.confluence.get_all_spaces(start=start, limit=limit)
+
     def get_user_contributed_spaces(self, limit: int = 250) -> dict:
         """
         Get spaces the current user has contributed to.

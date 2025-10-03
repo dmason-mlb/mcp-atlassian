@@ -7,6 +7,7 @@ from requests.exceptions import HTTPError
 
 from ..exceptions import MCPAtlassianAuthenticationError
 from ..models.jira import JiraSearchResult
+from ..utils.consistency import IndexingDelayMessageHelper
 from .client import JiraClient
 from .constants import DEFAULT_READ_JIRA_FIELDS
 from .protocols import IssueOperationsProto
@@ -25,6 +26,7 @@ class SearchMixin(JiraClient, IssueOperationsProto):
         limit: int = 50,
         expand: str | None = None,
         projects_filter: str | None = None,
+        reconcile_issues: list[str] | None = None,
     ) -> JiraSearchResult:
         """
         Search for issues using JQL (Jira Query Language).
@@ -38,6 +40,7 @@ class SearchMixin(JiraClient, IssueOperationsProto):
             limit: Maximum issues to return
             expand: Optional items to expand (comma-separated)
             projects_filter: Optional comma-separated list of project keys to filter by, overrides config
+            reconcile_issues: Optional list of issue keys to reconcile (ensures read-after-write consistency)
 
         Returns:
             JiraSearchResult object containing issues and metadata (total, start_at, max_results)
@@ -86,36 +89,12 @@ class SearchMixin(JiraClient, IssueOperationsProto):
                 fields_param = fields
 
             if self.config.is_cloud:
+                # New API uses token-based pagination, no total count available
                 actual_total = -1
-                try:
-                    # Call 1: Get metadata (including total) using standard search API
-                    metadata_params = {"jql": jql, "maxResults": 0}
-                    metadata_response = self.jira.get(
-                        self.jira.resource_url("search"), params=metadata_params
-                    )
 
-                    if (
-                        isinstance(metadata_response, dict)
-                        and "total" in metadata_response
-                    ):
-                        try:
-                            actual_total = int(metadata_response["total"])
-                        except (ValueError, TypeError):
-                            logger.warning(
-                                f"Could not parse 'total' from metadata response for JQL: {jql}. Received: {metadata_response.get('total')}"
-                            )
-                    else:
-                        logger.warning(
-                            f"Could not retrieve total count from metadata response for JQL: {jql}. Response type: {type(metadata_response)}"
-                        )
-                except Exception as meta_err:
-                    logger.error(
-                        f"Error fetching metadata for JQL '{jql}': {str(meta_err)}"
-                    )
-
-                # Call 2: Get the actual issues using the enhanced method
+                # Get the actual issues using the enhanced method
                 issues_response_list = self.jira.enhanced_jql_get_list_of_tickets(
-                    jql, fields=fields_param, limit=limit, expand=expand
+                    jql, fields=fields_param, limit=limit, expand=expand, reconcile_issues=reconcile_issues
                 )
 
                 if not isinstance(issues_response_list, list):
@@ -134,12 +113,20 @@ class SearchMixin(JiraClient, IssueOperationsProto):
                     requested_fields=fields_param,
                 )
 
+                # Add helpful warnings for empty results that might be due to indexing delays
+                if search_result.total == 0:
+                    delay_warning = IndexingDelayMessageHelper.create_general_delay_warning(
+                        is_cloud=True,
+                        operation="search"
+                    )
+                    logger.info(f"Search returned 0 results. {delay_warning}")
+
                 # Return the full search result object
                 return search_result
             else:
                 limit = min(limit, 50)
                 response = self.jira.jql(
-                    jql, fields=fields_param, start=start, limit=limit, expand=expand
+                    jql, fields=fields_param, start=start, limit=limit, expand=expand, reconcile_issues=reconcile_issues
                 )
                 if not isinstance(response, dict):
                     msg = f"Unexpected return value type from `jira.jql`: {type(response)}"
@@ -150,6 +137,19 @@ class SearchMixin(JiraClient, IssueOperationsProto):
                 search_result = JiraSearchResult.from_api_response(
                     response, base_url=self.config.url, requested_fields=fields_param
                 )
+
+                # Add helpful warnings for empty results that might be due to indexing delays
+                if search_result.total == 0:
+                    if self.config.is_cloud:
+                        # Check if this might be due to indexing delays
+                        delay_warning = IndexingDelayMessageHelper.create_general_delay_warning(
+                            is_cloud=True,
+                            operation="search"
+                        )
+                        logger.info(f"Search returned 0 results. {delay_warning}")
+                    else:
+                        # Simple message for server instances
+                        logger.info("Search returned 0 results.")
 
                 # Return the full search result object
                 return search_result

@@ -26,3 +26,4 @@ class MCPAtlassianValidationError(MCPAtlassianError):
     """Raised when request validation fails (400)."""
 
     pass
+

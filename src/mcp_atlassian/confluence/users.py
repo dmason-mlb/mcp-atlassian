@@ -98,3 +98,12 @@ class UsersMixin(ConfluenceClient):
             raise MCPAtlassianAuthenticationError(
                 f"Confluence token validation failed: {e}"
             ) from e
+
+    def get_current_user(self) -> dict[str, Any]:
+        """
+        Alias for get_current_user_info() for compatibility.
+        
+        Returns:
+            dict[str, Any]: The user details as returned by the API.
+        """
+        return self.get_current_user_info()

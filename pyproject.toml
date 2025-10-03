@@ -143,3 +143,44 @@ vcs = "git"
 style = "pep440"
 bump = true
 fallback-version = "0.0.0"
+
+[tool.pytest.ini_options]
+# Test discovery
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Markers for test categorization
+markers = [
+    "integration: Cross-service integration tests",
+    "unit: Unit tests (default)",
+    "slow: Tests that take longer to run",
+    "smoke: Smoke tests for basic functionality",
+    "edge_case: Edge case and error scenario tests",
+    "real_api: Tests requiring actual Atlassian credentials",
+    "qa_report: Tests that expose QA report issues (designed to fail initially)",
+    "mcp_protocol: MCP protocol compliance and JSON-RPC tests",
+    "mcp_errors: MCP error handling and recovery tests",
+    "mcp_lifecycle: MCP server lifecycle management tests",
+    "mcp_stdio: MCP stdio transport functionality tests",
+    "mcp_tools: MCP meta-tool contract validation tests"
+]
+
+# Output configuration
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+    "--tb=short",
+    "--color=yes"
+]
+
+# Asyncio configuration
+asyncio_mode = "auto"
+
+# Test filtering
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning"
+]

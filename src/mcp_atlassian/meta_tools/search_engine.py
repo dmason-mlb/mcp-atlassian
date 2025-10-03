@@ -8,9 +8,9 @@ import json
 import logging
 from typing import Any, Literal
 
-from ..exceptions import MetaToolError
-from ..jira.client import JiraFetcher
-from ..confluence.client import ConfluenceFetcher
+from .errors import MetaToolError
+from ..jira.client import JiraClient
+from ..confluence.client import ConfluenceClient
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,7 @@ class SearchEngine:
 
     # Supported query types for each service
     JIRA_QUERY_TYPES = {
+        "jql": "Search issues using JQL queries",
         "issues": "Search issues using JQL",
         "fields": "Discover available fields",
         "users": "Search for users",
@@ -52,26 +53,26 @@ class SearchEngine:
         "attachments": "Search attachments",
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the SearchEngine."""
         pass
 
     async def execute_search(
         self,
+        ctx: Any,  # FastMCP Context
         service: Literal["jira", "confluence"],
         query_type: str,
         query: str | dict | None = None,
         options: dict[str, Any] | None = None,
-        dry_run: bool = False,
     ) -> str:
         """Execute a search operation.
 
         Args:
+            ctx: The FastMCP context
             service: Target service (jira or confluence)
             query_type: Type of search to perform
             query: Search query (JQL/CQL string or structured query)
             options: Additional search options (limit, fields, expand, etc.)
-            dry_run: If True, validate without executing
 
         Returns:
             JSON string with search results
@@ -81,17 +82,14 @@ class SearchEngine:
             self._validate_search_inputs(service, query_type, query, options)
 
             # Perform dry run validation if requested
-            if dry_run:
-                return self._perform_dry_run_validation(service, query_type, query, options)
-
-            # Get appropriate client based on service
+            # Get appropriate fetcher based on service
             if service == "jira":
-                from ..servers.context import get_jira_client
-                client = get_jira_client()
+                from ..servers.dependencies import get_jira_fetcher
+                client = await get_jira_fetcher(ctx)
                 return await self._execute_jira_search(client, query_type, query, options)
             else:
-                from ..servers.context import get_confluence_client
-                client = get_confluence_client()
+                from ..servers.dependencies import get_confluence_fetcher
+                client = await get_confluence_fetcher(ctx)
                 return await self._execute_confluence_search(client, query_type, query, options)
 
         except MetaToolError:
@@ -170,42 +168,13 @@ class SearchEngine:
                 },
             )
 
-    def _perform_dry_run_validation(
-        self,
-        service: str,
-        query_type: str,
-        query: str | dict | None,
-        options: dict[str, Any] | None,
-    ) -> str:
-        """Perform dry run validation without executing the search."""
-        validation_result = {
-            "dry_run": True,
-            "service": service,
-            "query_type": query_type,
-            "validation": "PASSED",
-            "query_format": type(query).__name__ if query else "None",
-            "supported_options": self._get_supported_options(service, query_type),
-            "provided_options": list(options.keys()) if options else [],
-        }
-
-        # Add query-specific validation
-        if query_type in ["issues", "pages"] and query:
-            if isinstance(query, str):
-                validation_result["query_syntax"] = (
-                    "JQL" if service == "jira" else "CQL"
-                )
-            elif isinstance(query, dict):
-                validation_result["query_syntax"] = "Structured"
-                validation_result["query_fields"] = list(query.keys())
-
-        return json.dumps(validation_result, indent=2, ensure_ascii=False)
 
     def _get_supported_options(self, service: str, query_type: str) -> list[str]:
         """Get supported options for a specific search type."""
         common_options = ["limit", "start_at", "fields", "expand"]
 
         if service == "jira":
-            if query_type == "issues":
+            if query_type in ["issues", "jql"]:
                 return common_options + ["jql", "validate_query", "properties"]
             elif query_type == "projects":
                 return ["expand", "recent", "properties"]
@@ -223,7 +192,7 @@ class SearchEngine:
 
     async def _execute_jira_search(
         self,
-        client: JiraFetcher,
+        client: JiraClient,
         query_type: str,
         query: str | dict | None,
         options: dict[str, Any] | None,
@@ -233,7 +202,7 @@ class SearchEngine:
             # Apply default options
             opts = options or {}
 
-            if query_type == "issues":
+            if query_type in ["issues", "jql"]:
                 # Handle both string JQL and structured queries
                 if isinstance(query, str):
                     jql = query
@@ -246,10 +215,10 @@ class SearchEngine:
                 results = client.search_issues(
                     jql=jql,
                     limit=opts.get("limit", 50),
-                    start_at=opts.get("start_at", 0),
+                    start=opts.get("start_at", 0),  # Map start_at to start parameter
                     fields=opts.get("fields"),
                     expand=opts.get("expand"),
-                    validate_query=opts.get("validate_query", True)
+                    reconcile_issues=opts.get("reconcile_issues")
                 )
 
             elif query_type == "fields":
@@ -263,18 +232,17 @@ class SearchEngine:
                 )
 
             elif query_type == "projects":
-                results = client.get_all_projects(
-                    expand=opts.get("expand"),
-                    recent=opts.get("recent")
-                )
+                # get_all_projects only accepts include_archived parameter
+                include_archived = opts.get("include_archived", False)
+                results = client.get_all_projects(include_archived=include_archived)
 
             elif query_type == "boards":
-                results = client.get_agile_boards(
-                    start_at=opts.get("start_at", 0),
-                    max_results=opts.get("limit", 50),
+                results = client.get_all_agile_boards(
+                    start=opts.get("start_at", 0),  # Map start_at to start parameter
+                    limit=opts.get("limit", 50),
                     board_type=opts.get("type"),
-                    name=opts.get("name"),
-                    project_key_or_id=opts.get("project_key_or_id")
+                    board_name=opts.get("name"),
+                    project_key=opts.get("project_key_or_id")
                 )
 
             elif query_type == "sprints":
@@ -315,16 +283,24 @@ class SearchEngine:
             else:
                 raise ValueError(f"Unsupported Jira query type: {query_type}")
 
-            # Convert results to JSON
-            if hasattr(results, 'to_dict'):
-                result_data = results.to_dict()
-            elif hasattr(results, 'to_simplified_dict'):
+            # Convert results to JSON-serializable format
+            if hasattr(results, 'to_simplified_dict'):
                 result_data = results.to_simplified_dict()
+            elif hasattr(results, 'to_dict'):
+                result_data = results.to_dict()
+            elif hasattr(results, 'model_dump'):
+                result_data = results.model_dump(exclude_none=True)
             elif isinstance(results, list):
-                result_data = [
-                    item.to_dict() if hasattr(item, 'to_dict') else item
-                    for item in results
-                ]
+                result_data = []
+                for item in results:
+                    if hasattr(item, 'to_simplified_dict'):
+                        result_data.append(item.to_simplified_dict())
+                    elif hasattr(item, 'to_dict'):
+                        result_data.append(item.to_dict())
+                    elif hasattr(item, 'model_dump'):
+                        result_data.append(item.model_dump(exclude_none=True))
+                    else:
+                        result_data.append(item)
             else:
                 result_data = results
 
@@ -360,7 +336,7 @@ class SearchEngine:
 
     async def _execute_confluence_search(
         self,
-        client: ConfluenceFetcher,
+        client: ConfluenceClient,
         query_type: str,
         query: str | dict | None,
         options: dict[str, Any] | None,
@@ -435,16 +411,24 @@ class SearchEngine:
             else:
                 raise ValueError(f"Unsupported Confluence query type: {query_type}")
 
-            # Convert results to JSON
-            if hasattr(results, 'to_dict'):
-                result_data = results.to_dict()
-            elif hasattr(results, 'to_simplified_dict'):
+            # Convert results to JSON-serializable format
+            if hasattr(results, 'to_simplified_dict'):
                 result_data = results.to_simplified_dict()
+            elif hasattr(results, 'to_dict'):
+                result_data = results.to_dict()
+            elif hasattr(results, 'model_dump'):
+                result_data = results.model_dump(exclude_none=True)
             elif isinstance(results, list):
-                result_data = [
-                    item.to_dict() if hasattr(item, 'to_dict') else item
-                    for item in results
-                ]
+                result_data = []
+                for item in results:
+                    if hasattr(item, 'to_simplified_dict'):
+                        result_data.append(item.to_simplified_dict())
+                    elif hasattr(item, 'to_dict'):
+                        result_data.append(item.to_dict())
+                    elif hasattr(item, 'model_dump'):
+                        result_data.append(item.model_dump(exclude_none=True))
+                    else:
+                        result_data.append(item)
             else:
                 result_data = results
 
@@ -551,7 +535,8 @@ class SearchEngine:
         """Get the API endpoint for error reporting."""
         if service == "jira":
             endpoints = {
-                "issues": "/rest/api/3/search",
+                "issues": "/rest/api/3/search/jql",
+                "jql": "/rest/api/3/search/jql",
                 "fields": "/rest/api/3/field",
                 "users": "/rest/api/3/user/search",
                 "projects": "/rest/api/3/project",

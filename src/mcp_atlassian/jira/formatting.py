@@ -101,9 +101,9 @@ class FormattingMixin(
             if return_raw_adf and isinstance(result, dict):
                 return result
 
-            # If we got an ADF dict but caller expects default/string, return JSON string
+            # If we got an ADF dict, return it directly (Cloud instances always use dict)
             if isinstance(result, dict):
-                return self._convert_adf_to_json(result)
+                return result
 
             # Otherwise return string (wiki markup)
             return str(result)

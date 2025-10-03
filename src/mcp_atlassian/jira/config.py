@@ -46,6 +46,14 @@ class JiraConfig:
         None  # Override deployment detection ('cloud', 'server', 'datacenter')
     )
 
+    # Eventual consistency handling configuration
+    consistency_strategy: str = "hybrid"  # Strategy: "reconcile", "poll", "hybrid", "none"
+    consistency_max_retries: int = 5  # Maximum retry attempts for polling
+    consistency_base_delay: float = 0.5  # Initial delay between retries in seconds
+    consistency_max_delay: float = 8.0  # Maximum delay between retries in seconds
+    consistency_backoff_factor: float = 2.0  # Exponential backoff factor
+    consistency_timeout: float = 30.0  # Total timeout for all retries in seconds
+
     @property
     def is_cloud(self) -> bool:
         """Check if this is a cloud instance.
@@ -181,6 +189,26 @@ class JiraConfig:
         )
         deployment_type_override = os.getenv("ATLASSIAN_DEPLOYMENT_TYPE")
 
+        # Eventual consistency configuration from environment
+        def get_env_float(key: str, default: float) -> float:
+            try:
+                return float(os.getenv(key, str(default)))
+            except ValueError:
+                return default
+
+        def get_env_int(key: str, default: int) -> int:
+            try:
+                return int(os.getenv(key, str(default)))
+            except ValueError:
+                return default
+
+        consistency_strategy = os.getenv("JIRA_CONSISTENCY_STRATEGY", "hybrid")
+        consistency_max_retries = get_env_int("JIRA_CONSISTENCY_MAX_RETRIES", 5)
+        consistency_base_delay = get_env_float("JIRA_CONSISTENCY_BASE_DELAY", 0.5)
+        consistency_max_delay = get_env_float("JIRA_CONSISTENCY_MAX_DELAY", 8.0)
+        consistency_backoff_factor = get_env_float("JIRA_CONSISTENCY_BACKOFF_FACTOR", 2.0)
+        consistency_timeout = get_env_float("JIRA_CONSISTENCY_TIMEOUT", 30.0)
+
         # Ensure url is not None for the dataclass
         if not url:
             raise ValueError(
@@ -209,6 +237,12 @@ class JiraConfig:
             enable_adf=enable_adf,
             force_wiki_markup=force_wiki_markup,
             deployment_type_override=deployment_type_override,
+            consistency_strategy=consistency_strategy,
+            consistency_max_retries=consistency_max_retries,
+            consistency_base_delay=consistency_base_delay,
+            consistency_max_delay=consistency_max_delay,
+            consistency_backoff_factor=consistency_backoff_factor,
+            consistency_timeout=consistency_timeout,
         )
 
     def is_auth_configured(self) -> bool:
