@@ -102,6 +102,7 @@ class TestSearchMixin:
         expected_kwargs = {
             "limit": 10,
             "expand": None,
+            "reconcile_issues": None,
         }
 
         # Add start param only for Server/DC
@@ -151,6 +152,7 @@ class TestSearchMixin:
             start=0,
             limit=50,
             expand=None,
+            reconcile_issues=None,
         )
 
         # Verify results
@@ -296,6 +298,7 @@ class TestSearchMixin:
             start=0,
             limit=50,
             expand=None,
+            reconcile_issues=None,
         )
         assert len(result.issues) == 1
         assert result.total == 1
@@ -308,6 +311,7 @@ class TestSearchMixin:
             start=0,
             limit=50,
             expand=None,
+            reconcile_issues=None,
         )
         assert len(result.issues) == 1
         assert result.total == 1
@@ -343,6 +347,7 @@ class TestSearchMixin:
             start=0,
             limit=50,
             expand=None,
+            reconcile_issues=None,
         )
         assert len(result.issues) == 1
         assert result.total == 1
@@ -355,6 +360,7 @@ class TestSearchMixin:
             start=0,
             limit=50,
             expand=None,
+            reconcile_issues=None,
         )
         assert len(result.issues) == 1
         assert result.total == 1
@@ -369,6 +375,7 @@ class TestSearchMixin:
             start=0,
             limit=50,
             expand=None,
+            reconcile_issues=None,
         )
         assert len(result.issues) == 1
         assert result.total == 1
@@ -417,6 +424,7 @@ class TestSearchMixin:
             start=0,
             limit=50,
             expand=None,
+            reconcile_issues=None,
         )
 
         # Verify results
@@ -597,6 +605,7 @@ class TestSearchMixin:
             "fields": ANY,
             "limit": ANY,
             "expand": ANY,
+            "reconcile_issues": ANY,
         }
         # Add start parameter only for Server/DC
         if not is_cloud:
@@ -651,6 +660,7 @@ class TestSearchMixin:
             "fields": ANY,
             "limit": ANY,
             "expand": ANY,
+            "reconcile_issues": ANY,
         }
         # Add start parameter only for Server/DC
         if not is_cloud:
@@ -697,6 +707,7 @@ class TestSearchMixin:
             "fields": ANY,
             "limit": ANY,
             "expand": ANY,
+            "reconcile_issues": ANY,
         }
         # Add start parameter only for Server/DC
         if not is_cloud:
@@ -747,6 +758,7 @@ class TestSearchMixin:
             "fields": ANY,
             "limit": ANY,
             "expand": ANY,
+            "reconcile_issues": ANY,
         }
         # Add start parameter only for Server/DC
         if not is_cloud:

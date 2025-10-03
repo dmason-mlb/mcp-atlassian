@@ -1,0 +1,10 @@
+{
+  "measurement_type": "tool_definitions_only",
+  "model": "gpt-4",
+  "v1_tokens": 1226,
+  "v2_tokens": 1401,
+  "savings": -175,
+  "savings_percentage": -14.274061990212072,
+  "v1_tool_count": 16,
+  "v2_tool_count": 6
+}

@@ -382,6 +382,9 @@ MOCK_SPACES_RESPONSE = {
     },
 }
 
+# Alias for compatibility with mock factory
+MOCK_CONFLUENCE_PAGE_RESPONSE = MOCK_PAGE_RESPONSE
+
 MOCK_PAGES_FROM_SPACE_RESPONSE = [
     {
         "id": "123456789",

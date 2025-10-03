@@ -67,6 +67,18 @@ Tests with actual Atlassian APIs (requires `--use-real-data` flag).
 - **Rate Limiting**: API throttling behavior
 - **Cross-Service Linking**: Jira-Confluence integration
 
+### 8. Meta-Tools Real API Tests (`test_meta_tools_real_api.py`)
+**NEW**: Tests meta-tools against real Atlassian instances instead of mocks.
+
+- **ResourceManager**: CRUD operations with real Jira/Confluence APIs
+- **SearchEngine**: Real JQL/CQL search validation (planned)
+- **BatchProcessor**: Bulk operations with real data (planned)
+- **WorkflowEngine**: Real issue transitions (planned)
+- **RelationshipManager**: Real issue linking and epic operations (planned)
+- **AttachmentHandler**: Real file upload/download testing (planned)
+- **Token Usage**: Actual token measurement with real LLM tokenizers (planned)
+- **Error Validation**: Real API error handling and authentication failures
+
 ## Running Integration Tests
 
 ### Basic Execution
@@ -98,6 +110,60 @@ export CONFLUENCE_API_TOKEN=your-api-token
 export CONFLUENCE_TEST_SPACE_KEY=TEST
 ```
 
+### Meta-Tools Real API Testing (NEW)
+```bash
+# Set up real API testing environment
+python tests/integration/setup_integration_tests.py --all
+
+# Run ResourceManager real API tests
+python tests/integration/run_tests.py --resource-manager --verbose
+
+# Run all meta-tool real API tests
+python tests/integration/run_tests.py --all-meta-tools --verbose
+
+# Environment variables for meta-tools testing:
+export JIRA_TEST_URL=https://your-domain.atlassian.net
+export JIRA_TEST_USERNAME=your-email@example.com
+export JIRA_TEST_API_TOKEN=your-api-token
+export JIRA_TEST_PROJECT=TEST
+
+export CONFLUENCE_TEST_URL=https://your-domain.atlassian.net/wiki
+export CONFLUENCE_TEST_USERNAME=your-email@example.com
+export CONFLUENCE_TEST_API_TOKEN=your-api-token
+export CONFLUENCE_TEST_SPACE=TEST
+
+export TEST_ENVIRONMENT=development
+```
+
+#### Using Shared Atlassian Credentials (Recommended)
+
+If you already have shared Atlassian credentials in your `.env` file, the test configuration automatically uses them as fallbacks. This avoids credential duplication:
+
+```bash
+# Your existing .env file (no changes needed):
+ATLASSIAN_URL=https://your-domain.atlassian.net
+ATLASSIAN_EMAIL=your-email@example.com
+ATLASSIAN_API_TOKEN=your-api-token
+JIRA_PROJECT=YOUR_PROJECT
+CONFLUENCE_SPACE=YOUR_SPACE
+
+# Run compatibility check
+./tests/integration/setup_env_compat.sh
+
+# Run tests with shared credentials
+TEST_ENVIRONMENT=development python tests/integration/run_tests.py --resource-manager
+```
+
+**Automatic Fallback Logic:**
+- `JIRA_TEST_URL` → `ATLASSIAN_URL`
+- `CONFLUENCE_TEST_URL` → `ATLASSIAN_URL` + `/wiki`
+- `JIRA_TEST_USERNAME` → `ATLASSIAN_EMAIL`
+- `CONFLUENCE_TEST_USERNAME` → `ATLASSIAN_EMAIL`
+- `JIRA_TEST_API_TOKEN` → `ATLASSIAN_API_TOKEN`
+- `CONFLUENCE_TEST_API_TOKEN` → `ATLASSIAN_API_TOKEN`
+- `JIRA_TEST_PROJECT` → `JIRA_PROJECT`
+- `CONFLUENCE_TEST_SPACE` → `CONFLUENCE_SPACE`
+
 ### Test Markers
 - `@pytest.mark.integration` - All integration tests
 - `@pytest.mark.anyio` - Async tests supporting multiple backends
@@ -108,6 +174,32 @@ export CONFLUENCE_TEST_SPACE_KEY=TEST
 No special setup required. Tests use the utilities from `tests/utils/` for mocking.
 
 ### For Real API Tests
+
+#### Option 1: Shared Credentials (Recommended)
+If you already have Atlassian credentials in your `.env` file:
+
+1. Ensure your `.env` file contains:
+   ```bash
+   ATLASSIAN_URL=https://your-domain.atlassian.net
+   ATLASSIAN_EMAIL=your-email@example.com
+   ATLASSIAN_API_TOKEN=your-api-token
+   JIRA_PROJECT=YOUR_PROJECT
+   CONFLUENCE_SPACE=YOUR_SPACE
+   ```
+
+2. Run the compatibility check:
+   ```bash
+   ./tests/integration/setup_env_compat.sh
+   ```
+
+3. Set the test environment:
+   ```bash
+   export TEST_ENVIRONMENT=development
+   ```
+
+#### Option 2: Dedicated Test Variables
+For separate test credentials:
+
 1. Create a test project in Jira (e.g., "TEST")
 2. Create a test space in Confluence (e.g., "TEST")
 3. Generate API tokens from your Atlassian account

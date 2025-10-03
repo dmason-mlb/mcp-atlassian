@@ -1,0 +1,166 @@
+# Real API Testing Configuration for MCP Atlassian Meta-Tools
+# This file contains configuration for running integration tests against real Atlassian instances
+#
+# SECURITY WARNING: This file should NOT be committed with real credentials
+# Use environment variables or local override files for actual testing
+
+# Test Environment Configuration
+test_environment:
+  # Set to true to enable real API tests (requires valid credentials)
+  enabled: false
+
+  # Timeout settings for real API calls
+  timeouts:
+    default: 30  # seconds
+    upload: 120  # seconds for file uploads
+    batch: 180   # seconds for batch operations
+
+# Jira Test Configuration
+jira:
+  # Jira instance URL (Cloud or Server/DC)
+  url: "${JIRA_TEST_URL}"  # e.g., "https://your-domain.atlassian.net"
+
+  # Authentication (choose one method)
+  auth:
+    # For API Token authentication (recommended for Cloud)
+    username: "${JIRA_TEST_USERNAME}"  # e.g., "test@example.com"
+    api_token: "${JIRA_TEST_API_TOKEN}"
+
+    # For Personal Access Token (Server/DC)
+    # pat: "${JIRA_TEST_PAT}"
+
+    # For OAuth (advanced setup)
+    # oauth:
+    #   client_id: "${JIRA_OAUTH_CLIENT_ID}"
+    #   client_secret: "${JIRA_OAUTH_CLIENT_SECRET}"
+    #   access_token: "${JIRA_OAUTH_ACCESS_TOKEN}"
+    #   refresh_token: "${JIRA_OAUTH_REFRESH_TOKEN}"
+
+  # Test data configuration
+  test_data:
+    # Project key for creating test issues
+    project_key: "${JIRA_TEST_PROJECT}"  # e.g., "TEST"
+
+    # Issue type for test issues
+    issue_type: "Task"
+
+    # Epic issue key for relationship testing (must exist)
+    epic_key: "${JIRA_TEST_EPIC}"  # e.g., "TEST-1"
+
+    # Existing issue key for testing (read-only operations)
+    existing_issue: "${JIRA_TEST_ISSUE}"  # e.g., "TEST-2"
+
+    # Assignee for test issues
+    assignee: "${JIRA_TEST_ASSIGNEE}"  # e.g., "test@example.com"
+
+    # Component for test issues (optional)
+    component: "${JIRA_TEST_COMPONENT}"  # e.g., "Backend"
+
+# Confluence Test Configuration
+confluence:
+  # Confluence instance URL
+  url: "${CONFLUENCE_TEST_URL}"  # e.g., "https://your-domain.atlassian.net/wiki"
+
+  # Authentication (same options as Jira)
+  auth:
+    username: "${CONFLUENCE_TEST_USERNAME}"
+    api_token: "${CONFLUENCE_TEST_API_TOKEN}"
+
+    # For PAT authentication (Server/DC)
+    # pat: "${CONFLUENCE_TEST_PAT}"
+
+  # Test data configuration
+  test_data:
+    # Space key for creating test pages
+    space_key: "${CONFLUENCE_TEST_SPACE}"  # e.g., "TEST"
+
+    # Parent page ID for test pages (optional)
+    parent_page_id: "${CONFLUENCE_TEST_PARENT_PAGE}"  # e.g., "123456"
+
+    # Existing page ID for testing (read-only operations)
+    existing_page_id: "${CONFLUENCE_TEST_PAGE}"  # e.g., "789012"
+
+# Test Data Management
+test_data_management:
+  # Prefix for all test resources (to identify and clean them up)
+  resource_prefix: "MCPTEST_"
+
+  # Auto-cleanup after tests (recommended)
+  auto_cleanup: true
+
+  # Maximum number of test resources to create
+  max_test_resources: 50
+
+  # Test resource lifecycle
+  cleanup_on_start: true  # Clean up any existing test resources before starting
+  cleanup_on_end: true    # Clean up test resources after tests complete
+  cleanup_on_failure: false  # Keep test resources for debugging if tests fail
+
+# Token Usage Testing
+token_testing:
+  # Model to use for token counting (should match production usage)
+  model: "gpt-4"
+
+  # Test scenarios for token measurement
+  scenarios:
+    - name: "basic_crud"
+      description: "Basic create, read, update, delete operations"
+      operations: ["create_issue", "get_issue", "update_issue", "delete_issue"]
+
+    - name: "search_operations"
+      description: "Search and query operations"
+      operations: ["search_issues", "search_pages", "advanced_search"]
+
+    - name: "batch_operations"
+      description: "Bulk operations"
+      operations: ["bulk_create", "bulk_update", "bulk_transition"]
+
+    - name: "relationship_operations"
+      description: "Linking and relationship operations"
+      operations: ["create_link", "add_to_epic", "set_parent"]
+
+# Performance Testing
+performance:
+  # Number of iterations for performance tests
+  iterations: 10
+
+  # Concurrent requests for load testing
+  concurrency: 5
+
+  # Performance thresholds (milliseconds)
+  thresholds:
+    single_operation: 5000    # 5 seconds
+    batch_operation: 30000    # 30 seconds
+    search_operation: 10000   # 10 seconds
+
+# Logging Configuration for Tests
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+
+  # Log API requests/responses for debugging
+  log_requests: false
+
+  # Log file for test runs
+  log_file: "tests/logs/integration_test.log"
+
+# Environment-specific overrides
+environments:
+  development:
+    test_environment:
+      enabled: true
+    logging:
+      level: "DEBUG"
+      log_requests: true
+
+  ci:
+    test_environment:
+      enabled: false  # Disable by default in CI
+    performance:
+      iterations: 3   # Faster CI runs
+      concurrency: 2
+
+  local:
+    test_environment:
+      enabled: true
+    logging:
+      level: "DEBUG"

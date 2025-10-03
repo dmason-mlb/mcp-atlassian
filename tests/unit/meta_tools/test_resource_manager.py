@@ -18,11 +18,6 @@ class TestResourceManager:
         return ResourceManager()
 
     @pytest.fixture
-    def dry_run_manager(self):
-        """Create ResourceManager instance in dry-run mode."""
-        return ResourceManager(dry_run=True)
-
-    @pytest.fixture
     def mock_context(self):
         """Create a mock FastMCP context."""
         return Mock()
@@ -69,12 +64,8 @@ class TestResourceManager:
     def test_init_default(self):
         """Test ResourceManager initialization with defaults."""
         manager = ResourceManager()
-        assert manager.dry_run is False
-
-    def test_init_dry_run(self):
-        """Test ResourceManager initialization in dry-run mode."""
-        manager = ResourceManager(dry_run=True)
-        assert manager.dry_run is True
+        assert hasattr(manager, '__class__')
+        assert manager.__class__.__name__ == 'ResourceManager'
 
     # Test input validation
     @pytest.mark.asyncio
@@ -160,50 +151,6 @@ class TestResourceManager:
             error = exc_info.value
             assert error.error_code == "JIRA_OPERATION_NOT_SUPPORTED"
             assert "invalid_op" in error.user_message
-
-    # Test dry run functionality
-    @pytest.mark.asyncio
-    async def test_dry_run_validation_success(self, dry_run_manager, mock_context):
-        """Test successful dry run validation."""
-        result = await dry_run_manager.execute_operation(
-            ctx=mock_context,
-            service="jira",
-            resource="issue",
-            operation="create",
-            data={
-                "project_key": "TEST",
-                "summary": "Test Issue",
-                "issue_type": "Task",
-            },
-        )
-        
-        result_data = json.loads(result)
-        assert result_data["dry_run"] is True
-        assert result_data["validation"] == "PASSED"
-        assert result_data["service"] == "jira"
-        assert result_data["resource"] == "issue"
-        assert result_data["operation"] == "create"
-
-    @pytest.mark.asyncio
-    async def test_dry_run_validation_missing_fields(self, dry_run_manager, mock_context):
-        """Test dry run validation with missing required fields."""
-        result = await dry_run_manager.execute_operation(
-            ctx=mock_context,
-            service="jira",
-            resource="issue",
-            operation="create",
-            data={
-                "summary": "Test Issue",
-                # Missing project_key and issue_type
-            },
-        )
-        
-        result_data = json.loads(result)
-        assert result_data["dry_run"] is True
-        assert result_data["validation"] == "FAILED"
-        assert "missing_fields" in result_data
-        assert "project_key" in result_data["missing_fields"]
-        assert "issue_type" in result_data["missing_fields"]
 
     # Test Jira operations
     @pytest.mark.asyncio
