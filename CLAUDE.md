@@ -29,18 +29,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **HTTP transport (SSE)**: `uv run mcp-atlassian --transport sse --port 9000`
 - **HTTP transport (streamable)**: `uv run mcp-atlassian --transport streamable-http --port 9000`
 
-#### Version Selection (Tool Loading)
-The server supports two tool loading modes to balance functionality with token efficiency:
+#### Meta-Tools Architecture
+The server now exclusively uses optimized meta-tools for maximum token efficiency:
 
-- **v1 (Legacy)**: `uv run mcp-atlassian --version v1` - Loads all 42 individual tools (default for backward compatibility)
-- **v2 (Meta-tools)**: `uv run mcp-atlassian --version v2` - Loads 6-10 optimized meta-tools for 75% token reduction
-- **Environment variable**: Set `MCP_VERSION=v2` as alternative to CLI flag
-
-**Version Features:**
-- **v1**: Full backward compatibility, all existing tools available
-- **v2**: Token-optimized meta-tools (resource_manager, schema_discovery, etc.)
-- **Mutual exclusivity**: Only one version loads at a time to prevent token waste
-- **Migration support**: v1 remains default to ensure existing integrations work
+- **Legacy tools removed**: All 42 individual v1 tools have been replaced with meta-tools
+- **Token optimization**: 65%+ token reduction achieved through tool consolidation
+- **Migration complete**: All functionality preserved through 7 comprehensive meta-tools:
+  - `resource_manager`: Universal CRUD operations (issues, pages, sprints, etc.)
+  - `search_engine`: Unified search across Jira and Confluence
+  - `batch_processor`: Parallel bulk operations
+  - `workflow_engine`: Issue transitions and workflows
+  - `relationship_manager`: Links and associations
+  - `attachment_handler`: File operations
+  - `migration_helper`: Legacy tool compatibility support
 
 ### Debug Scripts (Root Directory)
 Several debug scripts are available for troubleshooting specific components:
@@ -81,6 +82,12 @@ This is a Model Context Protocol (MCP) server that provides AI assistants with a
   - `environment.py` - Environment variable processing
   - `logging.py` - Centralized logging configuration
   - `tools.py` - Tool filtering and enablement logic
+
+- **`src/mcp_atlassian/meta_tools/`** - Token-optimized meta-tools (v2 mode)
+  - `resource_manager.py` - Universal CRUD operations for all resources
+  - `search_engine.py` - Unified search across Jira and Confluence
+  - `batch_processor.py` - Bulk operations with parallel processing
+  - `base.py` - Common meta-tool patterns and error handling
 
 ### Authentication Architecture
 Supports multiple authentication methods with automatic detection:
@@ -131,6 +138,13 @@ Understanding these patterns is essential for effective development:
 - Per-request authentication middleware allows multi-tenant usage
 - Tool metadata and filtering logic in `utils/tools.py` enables fine-grained access control
 
+#### Meta-Tools Architecture (v2 Mode)
+- **Token Optimization**: Reduces context window usage by 65% through tool consolidation
+- **Universal Operations**: Single tools handle multiple resource types (issues, pages, sprints, etc.)
+- **Parallel Processing**: Batch operations with configurable concurrency
+- **Migration Support**: Complete mapping from legacy tools to meta-tools in `optimization/migration/legacy_mappings.json`
+- **Error Handling**: Structured error responses with MetaToolError class for better debugging
+
 ## Important Implementation Notes
 
 ### Code Style
@@ -167,6 +181,17 @@ Understanding these patterns is essential for effective development:
 - Pre-commit hooks ensure code quality before commits
 - Semantic versioning with automated releases via GitHub Actions
 
+## Token Optimization
+This project has completed its comprehensive token optimization strategy documented in `MCP_TOKEN_OPTIMIZATION_PLAN.md`. Key achievements:
+
+- **65% token reduction** achieved through meta-tools architecture
+- **Legacy migration complete**: All 42 individual tools replaced with 7 meta-tools
+- **API modernization**: Jira v3 and Confluence v2 APIs (except user search)
+- **Migration support**: Complete mapping from legacy to meta-tools preserved
+- **Performance**: Parallel processing and optimized error handling
+
+All legacy tools have been removed. The system now exclusively uses meta-tools for maximum efficiency.
+
 ## Common Development Workflows
 
 ### Debugging ADF Issues
@@ -176,13 +201,24 @@ When working on ADF (Atlassian Document Format) conversion issues:
 3. Validate ADF output using the built-in ADFValidator
 4. Run ADF-specific tests: `uv run pytest tests/unit/formatting/ -v`
 
-### Adding New MCP Tools
-When adding new MCP tools to either service:
-1. Define the tool in the appropriate service module (`src/mcp_atlassian/jira/` or `src/mcp_atlassian/confluence/`)
-2. Add corresponding Pydantic models in `src/mcp_atlassian/models/`
-3. Update the server registration in `src/mcp_atlassian/servers/{jira,confluence}.py`
-4. Write unit tests with mock fixtures in `tests/fixtures/`
-5. Add integration tests if API behavior is complex
+### Adding New MCP Functionality
+When adding new functionality to the MCP server:
+1. **Extend meta-tools**: Add new operations to existing meta-tools in `src/mcp_atlassian/meta_tools/`
+2. **Add new meta-tools**: Create new meta-tools following the established patterns
+3. Add corresponding Pydantic models in `src/mcp_atlassian/models/`
+4. Register new tools in `register_v2_tools()` in `src/mcp_atlassian/servers/main.py`
+5. Write unit tests with mock fixtures in `tests/fixtures/`
+6. Update migration mappings in `optimization/migration/legacy_mappings.json` if needed
+
+**Note**: Legacy individual tools are no longer supported. All functionality must be implemented through meta-tools.
+
+### Working with Meta-Tools
+When extending or debugging meta-tools:
+1. **ResourceManager**: Add new resource types in `_RESOURCE_HANDLERS` mapping
+2. **SearchEngine**: Add new query types in `_QUERY_TYPE_HANDLERS` mapping
+3. **BatchProcessor**: Add new batch operations in `_BATCH_HANDLERS` mapping
+4. Check `MetaToolError` responses for structured error information
+5. Refer to `MCP_TOKEN_OPTIMIZATION_PLAN.md` for architecture details
 
 ### Plugin Development (ADF)
 For extending ADF conversion capabilities:
