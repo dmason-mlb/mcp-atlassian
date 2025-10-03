@@ -99,8 +99,10 @@ class ConfluenceAdapter:
 
         # Use FormatRouter to determine deployment type and format
         try:
+            from ..formatting.router import DeploymentType
+
             result = self.format_router.detect_deployment_type(self.url)
-            return result.name == "CLOUD"
+            return result == DeploymentType.CLOUD
         except Exception as e:
             logger.warning(f"Failed to determine deployment type for {self.url}: {e}")
             # Fall back to the cloud parameter

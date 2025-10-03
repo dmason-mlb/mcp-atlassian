@@ -24,6 +24,7 @@ from mcp_atlassian.jira.config import JiraConfig
 from mcp_atlassian.utils.environment import get_available_services
 from mcp_atlassian.utils.io import is_read_only_mode
 from mcp_atlassian.utils.logging import mask_sensitive
+from mcp_atlassian.utils.serialization import deserialize_param
 from mcp_atlassian.utils.tools import get_enabled_tools, should_include_tool
 
 from .context import MainAppContext
@@ -47,6 +48,7 @@ def get_tool_context(server: "AtlassianMCP") -> Any:
     Returns:
         Context-like object with direct lifespan_context access
     """
+
     # Create a context object where lifespan_context is directly accessible
     # The dependencies.py functions expect ctx.lifespan_context to work
     class ToolContext:
@@ -59,16 +61,16 @@ def get_tool_context(server: "AtlassianMCP") -> Any:
             return ToolContext({})
 
         # Handle missing _mcp_server
-        if not hasattr(server, '_mcp_server') or server._mcp_server is None:
+        if not hasattr(server, "_mcp_server") or server._mcp_server is None:
             return ToolContext({})
 
         # Handle missing request_context
-        req_context = getattr(server._mcp_server, 'request_context', None)
+        req_context = getattr(server._mcp_server, "request_context", None)
         if req_context is None:
             return ToolContext({})
 
         # Handle missing lifespan_context
-        if hasattr(req_context, 'lifespan_context'):
+        if hasattr(req_context, "lifespan_context"):
             lifespan_context = req_context.lifespan_context
             # Return a copy of the lifespan_context for immutability (if it's a dict)
             if isinstance(lifespan_context, dict):
@@ -205,7 +207,6 @@ class AtlassianMCP(FastMCP[MainAppContext]):
         filtered_tools: list[MCPTool] = []
         for registered_name, tool_obj in all_tools.items():
             tool_tags = tool_obj.tags
-
 
             if not should_include_tool(registered_name, enabled_tools_filter):
                 logger.debug(f"Excluding tool '{registered_name}' (not enabled)")
@@ -395,7 +396,7 @@ def _format_error_response(
     service: str | None = None,
     resource: str | None = None,
     operation: str | None = None,
-    data: dict | None = None
+    data: dict | None = None,
 ) -> str:
     """Format exception into structured JSON response for AI agents.
 
@@ -423,12 +424,14 @@ def _format_error_response(
             "message": exception.user_message,
             "suggestions": exception.suggestions,
             "context": exception.context,
-            "api_endpoint": exception.api_endpoint
+            "api_endpoint": exception.api_endpoint,
         }
 
         # Add working example for the operation if possible
         if service and resource and operation:
-            error_response["working_example"] = _get_working_example(service, resource, operation)
+            error_response["working_example"] = _get_working_example(
+                service, resource, operation
+            )
 
     else:
         # Handle generic exceptions with helpful context
@@ -442,20 +445,22 @@ def _format_error_response(
             "suggestions": [
                 "Check the error message for specific details",
                 "Verify all required fields are provided correctly",
-                "Check the tool documentation for required field formats"
+                "Check the tool documentation for required field formats",
             ],
             "context": {
                 "service": service,
                 "resource": resource,
                 "operation": operation,
                 "provided_data_keys": list(data.keys()) if data else [],
-                "exception_type": type(exception).__name__
-            }
+                "exception_type": type(exception).__name__,
+            },
         }
 
         # Add working example if we have enough context
         if service and resource and operation:
-            error_response["working_example"] = _get_working_example(service, resource, operation)
+            error_response["working_example"] = _get_working_example(
+                service, resource, operation
+            )
 
         # Include traceback in debug mode
         if logger.isEnabledFor(logging.DEBUG):
@@ -474,8 +479,8 @@ def _get_working_example(service: str, resource: str, operation: str) -> dict[st
             "data": {
                 "space_key": "~911651470",
                 "title": "My Test Page",
-                "body": "# Welcome\\n\\nThis is a test page with **markdown** content."
-            }
+                "body": "# Welcome\\n\\nThis is a test page with **markdown** content.",
+            },
         },
         ("jira", "issue", "create"): {
             "service": "jira",
@@ -485,27 +490,28 @@ def _get_working_example(service: str, resource: str, operation: str) -> dict[st
                 "project_key": "FTEST",
                 "summary": "Example issue summary",
                 "issue_type": "Task",
-                "description": "Detailed description of the issue"
-            }
+                "description": "Detailed description of the issue",
+            },
         },
         ("jira", "comment", "add"): {
             "service": "jira",
             "resource": "comment",
             "operation": "add",
             "identifier": "FTEST-123",
-            "data": {
-                "body": "This is a comment on the issue"
-            }
-        }
+            "data": {"body": "This is a comment on the issue"},
+        },
     }
 
     key = (service, resource, operation)
-    return examples.get(key, {
-        "service": service,
-        "resource": resource,
-        "operation": operation,
-        "data": {"field": "example_value"}
-    })
+    return examples.get(
+        key,
+        {
+            "service": service,
+            "resource": resource,
+            "operation": operation,
+            "data": {"field": "example_value"},
+        },
+    )
 
 
 def register_v2_tools(server: AtlassianMCP) -> None:
@@ -529,7 +535,7 @@ def register_v2_tools(server: AtlassianMCP) -> None:
             debug_info = {
                 "timestamp": "2025-09-20",
                 "context_analysis": {},
-                "diagnostics": []
+                "diagnostics": [],
             }
 
             # Check if context exists
@@ -540,32 +546,52 @@ def register_v2_tools(server: AtlassianMCP) -> None:
 
             debug_info["context_analysis"]["has_context"] = True
             debug_info["context_analysis"]["context_type"] = str(type(ctx))
-            debug_info["context_analysis"]["context_attrs"] = [attr for attr in dir(ctx) if not attr.startswith('_')]
+            debug_info["context_analysis"]["context_attrs"] = [
+                attr for attr in dir(ctx) if not attr.startswith("_")
+            ]
 
             # Check request_context
-            if hasattr(ctx, 'request_context'):
+            if hasattr(ctx, "request_context"):
                 debug_info["context_analysis"]["has_request_context"] = True
                 if ctx.request_context:
-                    debug_info["context_analysis"]["request_context_type"] = str(type(ctx.request_context))
-                    debug_info["context_analysis"]["request_context_attrs"] = [attr for attr in dir(ctx.request_context) if not attr.startswith('_')]
+                    debug_info["context_analysis"]["request_context_type"] = str(
+                        type(ctx.request_context)
+                    )
+                    debug_info["context_analysis"]["request_context_attrs"] = [
+                        attr
+                        for attr in dir(ctx.request_context)
+                        if not attr.startswith("_")
+                    ]
 
                     # Check lifespan_context
-                    if hasattr(ctx.request_context, 'lifespan_context'):
+                    if hasattr(ctx.request_context, "lifespan_context"):
                         debug_info["context_analysis"]["has_lifespan_context"] = True
                         if ctx.request_context.lifespan_context:
-                            debug_info["context_analysis"]["lifespan_context_type"] = str(type(ctx.request_context.lifespan_context))
-                            debug_info["context_analysis"]["lifespan_keys"] = list(ctx.request_context.lifespan_context.keys()) if isinstance(ctx.request_context.lifespan_context, dict) else "Not a dict"
+                            debug_info["context_analysis"]["lifespan_context_type"] = (
+                                str(type(ctx.request_context.lifespan_context))
+                            )
+                            debug_info["context_analysis"]["lifespan_keys"] = (
+                                list(ctx.request_context.lifespan_context.keys())
+                                if isinstance(
+                                    ctx.request_context.lifespan_context, dict
+                                )
+                                else "Not a dict"
+                            )
                         else:
                             debug_info["context_analysis"]["lifespan_context"] = "None"
                     else:
                         debug_info["context_analysis"]["has_lifespan_context"] = False
-                        debug_info["diagnostics"].append("❌ request_context has no lifespan_context")
+                        debug_info["diagnostics"].append(
+                            "❌ request_context has no lifespan_context"
+                        )
                 else:
                     debug_info["context_analysis"]["request_context"] = "None"
                     debug_info["diagnostics"].append("❌ request_context is None")
             else:
                 debug_info["context_analysis"]["has_request_context"] = False
-                debug_info["diagnostics"].append("❌ Context has no request_context attribute")
+                debug_info["diagnostics"].append(
+                    "❌ Context has no request_context attribute"
+                )
 
             # Success message
             if not debug_info["diagnostics"]:
@@ -574,11 +600,14 @@ def register_v2_tools(server: AtlassianMCP) -> None:
             return json.dumps(debug_info, indent=2)
 
         except Exception as e:
-            return json.dumps({
-                "error": True,
-                "exception": str(e),
-                "traceback": traceback.format_exc()
-            }, indent=2)
+            return json.dumps(
+                {
+                    "error": True,
+                    "exception": str(e),
+                    "traceback": traceback.format_exc(),
+                },
+                indent=2,
+            )
 
     # Create meta-tool instances
     resource_manager = ResourceManager()
@@ -596,8 +625,8 @@ def register_v2_tools(server: AtlassianMCP) -> None:
         resource: str,
         operation: str,
         identifier: str | None = None,
-        data: dict | None = None,
-        options: dict | None = None
+        data: str | dict | None = None,
+        options: str | dict | None = None,
     ) -> str:
         """Universal CRUD operations for all Jira/Confluence resources.
 
@@ -653,7 +682,31 @@ def register_v2_tools(server: AtlassianMCP) -> None:
         - project_key: "FTEST" (from environment configuration)
         - summary: "Issue title/summary"
         - issue_type: "Task", "Bug", "Story", etc.
-        Optional: description, assignee, priority, labels, components
+        Optional: description, assignee, labels, components
+
+        IMPORTANT - Priority Field Limitation:
+        The 'priority' field often cannot be set during issue creation due to Jira screen
+        configurations. If you get a field validation error for priority, use this workaround:
+
+        1. Create the issue without priority
+        2. Update the issue to set priority using a separate call
+
+        Example:
+        # Step 1: Create issue
+        result = await resource_manager_tool(
+            service="jira",
+            resource="issue",
+            operation="create",
+            data={"project_key": "FTEST", "summary": "Bug fix", "issue_type": "Bug"}
+        )
+        # Step 2: Set priority
+        await resource_manager_tool(
+            service="jira",
+            resource="issue",
+            operation="update",
+            identifier="FTEST-123",
+            data={"priority": {"name": "High"}}
+        )
 
         Jira Issue (update):
         - Any field that exists on the issue type
@@ -732,6 +785,10 @@ def register_v2_tools(server: AtlassianMCP) -> None:
         For more specific examples, use the get_resource_schema tool with your
         specific service, resource, and operation combination."""
         try:
+            # Deserialize parameters that may be JSON strings from MCP clients
+            data = deserialize_param(data, dict)
+            options = deserialize_param(options, dict)
+
             result = await resource_manager.execute_operation(
                 ctx=ctx,
                 service=service,
@@ -739,7 +796,7 @@ def register_v2_tools(server: AtlassianMCP) -> None:
                 operation=operation,
                 identifier=identifier,
                 data=data,
-                options=options
+                options=options,
             )
             return result
         except Exception as e:
@@ -749,9 +806,7 @@ def register_v2_tools(server: AtlassianMCP) -> None:
 
     @server.tool(tags={"v2", "meta", "discovery"})
     async def get_resource_schema(
-        service: str,
-        resource: str,
-        operation: str = "create"
+        service: str, resource: str, operation: str = "create"
     ) -> str:
         """Get detailed schema information for specific resource operations.
 
@@ -787,9 +842,7 @@ def register_v2_tools(server: AtlassianMCP) -> None:
         - Common usage patterns"""
         try:
             schema_info = schema_discovery.get_resource_schema(
-                service=service,
-                resource=resource,
-                operation=operation
+                service=service, resource=resource, operation=operation
             )
             return schema_info.model_dump_json()
         except Exception as e:
@@ -797,9 +850,7 @@ def register_v2_tools(server: AtlassianMCP) -> None:
             raise
 
     @server.tool(tags={"v2", "meta", "discovery"})
-    async def get_capabilities(
-        service: str | None = None
-    ) -> str:
+    async def get_capabilities(service: str | None = None) -> str:
         """Get comprehensive capabilities overview for all available services and operations.
 
         This tool provides a high-level overview of what resources and operations
@@ -834,8 +885,7 @@ def register_v2_tools(server: AtlassianMCP) -> None:
 
     @server.tool(tags={"v2", "meta", "examples"})
     async def get_tool_examples(
-        operation_type: str | None = None,
-        service: str | None = None
+        operation_type: str | None = None, service: str | None = None
     ) -> str:
         """Get practical examples for common operations.
 
@@ -904,9 +954,9 @@ Visit [Atlassian Documentation](https://www.atlassian.com/software/confluence) f
 | Rich Formatting | ✅ Complete | All markdown supported |
 | ADF Conversion | ✅ Complete | Automatic for Cloud |
 
-This page was created via the MCP Atlassian server!"""
-                        }
-                    }
+This page was created via the MCP Atlassian server!""",
+                        },
+                    },
                 },
                 "jira_issue_create": {
                     "description": "Create a Jira issue",
@@ -934,9 +984,9 @@ Need to implement a secure user authentication system.
 - Failed login attempts are rate limited
 - All authentication events are logged""",
                             "priority": "High",
-                            "labels": ["security", "authentication", "user-management"]
-                        }
-                    }
+                            "labels": ["security", "authentication", "user-management"],
+                        },
+                    },
                 },
                 "confluence_search": {
                     "description": "Search Confluence pages",
@@ -945,8 +995,8 @@ Need to implement a secure user authentication system.
                         "service": "confluence",
                         "query_type": "cql",
                         "query": "space = '~911651470' AND type = page AND title ~ 'test'",
-                        "options": {"limit": 25}
-                    }
+                        "options": {"limit": 25},
+                    },
                 },
                 "jira_search": {
                     "description": "Search Jira issues",
@@ -955,8 +1005,8 @@ Need to implement a secure user authentication system.
                         "service": "jira",
                         "query_type": "jql",
                         "query": "project = FTEST AND status = 'In Progress' ORDER BY updated DESC",
-                        "options": {"limit": 20}
-                    }
+                        "options": {"limit": 20},
+                    },
                 },
                 "add_comment": {
                     "description": "Add comment to Jira issue",
@@ -968,8 +1018,8 @@ Need to implement a secure user authentication system.
                         "identifier": "FTEST-123",
                         "data": {
                             "body": "Updated the implementation based on code review feedback. Ready for testing."
-                        }
-                    }
+                        },
+                    },
                 },
                 "transition_issue": {
                     "description": "Move Jira issue to next status",
@@ -980,10 +1030,10 @@ Need to implement a secure user authentication system.
                         "transition_name": "In Progress",
                         "fields": {
                             "assignee": {"name": "john.doe@example.com"},
-                            "comment": "Starting work on this issue"
-                        }
-                    }
-                }
+                            "comment": "Starting work on this issue",
+                        },
+                    },
+                },
             }
 
             # Filter examples based on parameters
@@ -1006,7 +1056,10 @@ Need to implement a secure user authentication system.
                         include = False
                     elif operation_type == "search" and "search" not in example_tool:
                         include = False
-                    elif operation_type == "update" and example_op not in ["update", "transition"]:
+                    elif operation_type == "update" and example_op not in [
+                        "update",
+                        "transition",
+                    ]:
                         include = False
 
                 if include:
@@ -1017,9 +1070,9 @@ Need to implement a secure user authentication system.
                 "usage_note": "Copy these examples and modify the data fields as needed",
                 "environment_values": {
                     "confluence_space": "~911651470",
-                    "jira_project": "FTEST"
+                    "jira_project": "FTEST",
                 },
-                "examples": filtered_examples
+                "examples": filtered_examples,
             }
 
             return json.dumps(result, indent=2)
@@ -1034,7 +1087,7 @@ Need to implement a secure user authentication system.
         service: str,
         query_type: str,
         query: str | dict | None = None,
-        options: dict | None = None
+        options: str | dict | None = None,
     ) -> str:
         """Universal search engine for Jira/Confluence.
 
@@ -1055,11 +1108,13 @@ Need to implement a secure user authentication system.
         - recent_issues: Get recently updated issues
 
         Confluence Query Types:
-        - cql: CQL (Confluence Query Language) search
-        - text: Simple text search across pages
-        - pages_in_space: Find pages in specific space
-        - pages_by_title: Search pages by title
-        - recent_pages: Get recently updated pages
+        - cql: CQL (Confluence Query Language) search (recommended)
+        - pages: Search pages using CQL (alias for 'cql')
+        - content: Search all content types using CQL
+        - spaces: List all spaces
+        - users: Search for users
+        - labels: Search labels
+        - attachments: Search attachments
 
         Query Examples:
 
@@ -1072,8 +1127,8 @@ Need to implement a secure user authentication system.
         Confluence CQL Search:
         query = "space = '~911651470' AND type = page AND title ~ 'test'"
 
-        Confluence Text Search:
-        query = "API documentation tutorial"
+        Confluence Text Search (via CQL):
+        query = "text ~ 'API documentation tutorial'"
 
         Common Options:
         - limit: Maximum results to return (default: 50, max: 1000)
@@ -1139,20 +1194,27 @@ Need to implement a secure user authentication system.
         Error Handling:
         - Invalid JQL/CQL syntax returns detailed error messages
         - Permission errors include guidance on required access
-"""
+        """
         try:
+            # Deserialize parameters that may be JSON strings from MCP clients
+            if isinstance(query, str) and query.strip().startswith("{"):
+                query = deserialize_param(query, dict)
+            options = deserialize_param(options, dict)
+
             result = await search_engine.execute_search(
                 ctx=ctx,
                 service=service,
                 query_type=query_type,
                 query=query,
-                options=options
+                options=options,
             )
             return result
         except Exception as e:
             logger.error(f"Error in search_engine_tool: {e}", exc_info=True)
             # Return structured error information instead of re-raising
-            return _format_error_response(e, service, "search", query_type, {"query": query, "options": options})
+            return _format_error_response(
+                e, service, "search", query_type, {"query": query, "options": options}
+            )
 
     @server.tool(tags={"v2", "meta", "batch"})
     async def batch_processor_tool(
@@ -1160,8 +1222,8 @@ Need to implement a secure user authentication system.
         service: str,
         operation: str,
         resource: str,
-        items: list[dict],
-        concurrency: int = 5
+        items: str | list[dict],
+        concurrency: int = 5,
     ) -> str:
         """Process multiple operations in parallel.
 
@@ -1216,23 +1278,35 @@ Need to implement a secure user authentication system.
             ]
         )"""
         try:
+            # Deserialize parameters that may be JSON strings from MCP clients
+            items = deserialize_param(items, list)
+            if items is None:
+                raise ValueError("items parameter is required for batch operations")
+
             # Clamp concurrency to valid range
             clamped_concurrency = max(1, min(concurrency, 10))
-            
+
             result = await batch_processor.execute_batch_operation(
                 ctx=ctx,
                 service=service,
                 operation=operation,
                 resource_type=resource,
                 items=items,
-                options={"concurrency": clamped_concurrency}  # FIX: Pass concurrency in options
+                options={
+                    "concurrency": clamped_concurrency
+                },  # FIX: Pass concurrency in options
             )
             return result
         except Exception as e:
             logger.error(f"Error in batch_processor_tool: {e}", exc_info=True)
             # Return structured error information instead of re-raising
-            return _format_error_response(e, service, resource, operation, {"items": items, "concurrency": concurrency})
-
+            return _format_error_response(
+                e,
+                service,
+                resource,
+                operation,
+                {"items": items, "concurrency": concurrency},
+            )
 
     @server.tool(tags={"v2", "meta", "workflow"})
     async def workflow_engine_tool(
@@ -1241,10 +1315,10 @@ Need to implement a secure user authentication system.
         issue_key: str | None = None,
         transition_id: str | None = None,
         transition_name: str | None = None,
-        fields: dict | None = None,
+        fields: str | dict | None = None,
         project_key: str | None = None,
         issue_type: str | None = None,
-        options: dict | None = None
+        options: str | dict | None = None,
     ) -> str:
         """Universal workflow engine for Jira.
 
@@ -1329,8 +1403,12 @@ Need to implement a secure user authentication system.
         - Use get_transitions first to see what's available
         - Transition names are case-sensitive
         - Some transitions require specific fields (e.g., resolution for "Done")
-"""
+        """
         try:
+            # Deserialize parameters that may be JSON strings from MCP clients
+            fields = deserialize_param(fields, dict)
+            options = deserialize_param(options, dict)
+
             result = await workflow_engine.execute_workflow_operation(
                 ctx=ctx,
                 operation=operation,
@@ -1340,18 +1418,24 @@ Need to implement a secure user authentication system.
                 fields=fields,
                 project_key=project_key,
                 issue_type=issue_type,
-                options=options
+                options=options,
             )
             return result
         except Exception as e:
             logger.error(f"Error in workflow_engine_tool: {e}", exc_info=True)
             # Return structured error information instead of re-raising
-            return _format_error_response(e, "jira", "workflow", operation, {
-                "issue_key": issue_key,
-                "transition_id": transition_id,
-                "transition_name": transition_name,
-                "fields": fields
-            })
+            return _format_error_response(
+                e,
+                "jira",
+                "workflow",
+                operation,
+                {
+                    "issue_key": issue_key,
+                    "transition_id": transition_id,
+                    "transition_name": transition_name,
+                    "fields": fields,
+                },
+            )
 
     @server.tool(tags={"v2", "meta", "relationships"})
     async def relationship_manager_tool(
@@ -1364,7 +1448,7 @@ Need to implement a secure user authentication system.
         parent_key: str | None = None,
         comment: str | None = None,
         link_id: str | None = None,
-        options: dict | None = None
+        options: dict | None = None,
     ) -> str:
         """Universal relationship manager for Jira.
 
@@ -1372,41 +1456,64 @@ Need to implement a secure user authentication system.
         and parent-child hierarchies.
 
         Parameters:
-        - operation: Relationship operation (link, unlink, add_to_epic, etc.)
+        - operation: Relationship operation (create_link, delete_link, add_to_epic, etc.)
         - issue_key: Source issue key (e.g., "FTEST-123")
         - target_issue_key: Target issue for linking operations
         - link_type: Type of link ("Blocks", "Duplicates", "Relates", etc.)
         - epic_key: Epic issue key for epic operations
         - parent_key: Parent issue key for sub-task operations
-        - comment: Optional comment for the relationship
-        - link_id: Existing link ID for unlink operations
+        - comment: Optional comment (currently not supported for link creation, use workaround below)
+        - link_id: Existing link ID for delete_link operations
 
         Common Operations:
-        - link: Create link between two issues
-        - unlink: Remove link between issues
+        - create_link: Create link between two issues
+        - delete_link: Remove link between issues
         - add_to_epic: Add issue to epic
         - remove_from_epic: Remove issue from epic
         - get_links: Get all links for an issue
 
+        IMPORTANT - Link Comments Limitation:
+        Comments are not currently supported when creating issue links due to Jira Cloud API
+        requiring ADF format. To add a comment when linking issues, use this workaround:
+
+        1. Create the link without a comment
+        2. Add a separate comment to the issue using resource_manager_tool
+
         Usage Examples:
 
-        1. Link Issues:
+        1. Link Issues (without comment):
         await relationship_manager_tool(
-            operation="link",
+            operation="create_link",
             issue_key="FTEST-123",
             target_issue_key="FTEST-456",
-            link_type="Blocks",
-            comment="This issue blocks the other"
+            link_type="Blocks"
         )
 
-        2. Add Issue to Epic:
+        2. Link Issues WITH Comment (workaround):
+        # Step 1: Create the link
+        await relationship_manager_tool(
+            operation="create_link",
+            issue_key="FTEST-123",
+            target_issue_key="FTEST-456",
+            link_type="Blocks"
+        )
+        # Step 2: Add comment separately
+        await resource_manager_tool(
+            service="jira",
+            resource="comment",
+            operation="add",
+            identifier="FTEST-123",
+            data={"body": "This issue blocks FTEST-456"}
+        )
+
+        3. Add Issue to Epic:
         await relationship_manager_tool(
             operation="add_to_epic",
             issue_key="FTEST-123",
             epic_key="FTEST-100"
         )
 
-        3. Get Issue Links:
+        4. Get Issue Links:
         await relationship_manager_tool(
             operation="get_links",
             issue_key="FTEST-123"
@@ -1422,18 +1529,24 @@ Need to implement a secure user authentication system.
                 parent_key=parent_key,
                 comment=comment,
                 link_id=link_id,
-                options=options
+                options=options,
             )
             return result
         except Exception as e:
             logger.error(f"Error in relationship_manager_tool: {e}", exc_info=True)
             # Return structured error information instead of re-raising
-            return _format_error_response(e, "jira", "relationship", operation, {
-                "issue_key": issue_key,
-                "target_issue_key": target_issue_key,
-                "link_type": link_type,
-                "epic_key": epic_key
-            })
+            return _format_error_response(
+                e,
+                "jira",
+                "relationship",
+                operation,
+                {
+                    "issue_key": issue_key,
+                    "target_issue_key": target_issue_key,
+                    "link_type": link_type,
+                    "epic_key": epic_key,
+                },
+            )
 
     @server.tool(tags={"v2", "meta", "attachments"})
     async def attachment_handler_tool(
@@ -1447,7 +1560,7 @@ Need to implement a secure user authentication system.
         file_name: str | None = None,
         file_content: bytes | None = None,
         download_path: str | None = None,
-        options: dict | None = None
+        options: dict | None = None,
     ) -> str:
         """Universal attachment handler for Jira/Confluence.
 
@@ -1509,25 +1622,28 @@ Need to implement a secure user authentication system.
                 file_name=file_name,
                 file_content=file_content,
                 download_path=download_path,
-                options=options
+                options=options,
             )
             return result
         except Exception as e:
             logger.error(f"Error in attachment_handler_tool: {e}", exc_info=True)
             # Return structured error information instead of re-raising
-            return _format_error_response(e, service, "attachment", operation, {
-                "issue_key": issue_key,
-                "page_id": page_id,
-                "attachment_id": attachment_id,
-                "file_path": file_path,
-                "file_name": file_name
-            })
+            return _format_error_response(
+                e,
+                service,
+                "attachment",
+                operation,
+                {
+                    "issue_key": issue_key,
+                    "page_id": page_id,
+                    "attachment_id": attachment_id,
+                    "file_path": file_path,
+                    "file_name": file_name,
+                },
+            )
 
     @server.tool(tags={"v2", "meta", "health"})
-    async def connection_health_check(
-        ctx: Context,
-        service: str | None = None
-    ) -> str:
+    async def connection_health_check(ctx: Context, service: str | None = None) -> str:
         """Check connection health for Atlassian services.
 
         Validates connectivity and authentication for Jira and/or Confluence.
@@ -1578,7 +1694,7 @@ async def _check_service_health(ctx: Any, service: str) -> dict[str, Any]:
             "config_present": False,
             "auth_type": "unknown",
             "is_cloud": None,
-        }
+        },
     }
 
     try:
@@ -1587,14 +1703,25 @@ async def _check_service_health(ctx: Any, service: str) -> dict[str, Any]:
 
         if service == "jira":
             # Check relevant environment variables
-            env_vars = ["JIRA_URL", "ATLASSIAN_URL", "JIRA_USERNAME", "ATLASSIAN_EMAIL",
-                       "JIRA_API_TOKEN", "ATLASSIAN_API_TOKEN", "ATLASSIAN_OAUTH_ACCESS_TOKEN",
-                       "ATLASSIAN_OAUTH_CLOUD_ID"]
+            env_vars = [
+                "JIRA_URL",
+                "ATLASSIAN_URL",
+                "JIRA_USERNAME",
+                "ATLASSIAN_EMAIL",
+                "JIRA_API_TOKEN",
+                "ATLASSIAN_API_TOKEN",
+                "ATLASSIAN_OAUTH_ACCESS_TOKEN",
+                "ATLASSIAN_OAUTH_CLOUD_ID",
+            ]
             for var in env_vars:
                 if os.getenv(var):
-                    health_check["diagnostics"]["environment_vars_checked"].append(f"{var}=present")
+                    health_check["diagnostics"]["environment_vars_checked"].append(
+                        f"{var}=present"
+                    )
                 else:
-                    health_check["diagnostics"]["environment_vars_checked"].append(f"{var}=absent")
+                    health_check["diagnostics"]["environment_vars_checked"].append(
+                        f"{var}=absent"
+                    )
 
             try:
                 fetcher = await get_jira_fetcher(ctx)
@@ -1602,27 +1729,47 @@ async def _check_service_health(ctx: Any, service: str) -> dict[str, Any]:
                 health_check["diagnostics"]["config_present"] = True
                 health_check["diagnostics"]["auth_type"] = fetcher.config.auth_type
                 health_check["diagnostics"]["is_cloud"] = fetcher.config.is_cloud
-                if hasattr(fetcher.config, 'oauth_config') and fetcher.config.oauth_config:
-                    health_check["diagnostics"]["oauth_cloud_id"] = fetcher.config.oauth_config.cloud_id
+                if (
+                    hasattr(fetcher.config, "oauth_config")
+                    and fetcher.config.oauth_config
+                ):
+                    health_check["diagnostics"]["oauth_cloud_id"] = (
+                        fetcher.config.oauth_config.cloud_id
+                    )
             except Exception as e:
                 health_check["configuration"] = "invalid"
                 health_check["errors"].append(f"Jira configuration error: {str(e)}")
                 health_check["status"] = "unhealthy"
-                health_check["verification_method"] = "configuration_validation_failed_before_api_testing"
-                health_check["note"] = "Cannot perform operational API tests due to configuration issues"
+                health_check["verification_method"] = (
+                    "configuration_validation_failed_before_api_testing"
+                )
+                health_check["note"] = (
+                    "Cannot perform operational API tests due to configuration issues"
+                )
                 health_check["diagnostics"]["config_error"] = str(e)
                 return health_check
 
         elif service == "confluence":
             # Check relevant environment variables
-            env_vars = ["CONFLUENCE_URL", "ATLASSIAN_URL", "CONFLUENCE_USERNAME", "ATLASSIAN_EMAIL",
-                       "CONFLUENCE_API_TOKEN", "ATLASSIAN_API_TOKEN", "ATLASSIAN_OAUTH_ACCESS_TOKEN",
-                       "ATLASSIAN_OAUTH_CLOUD_ID"]
+            env_vars = [
+                "CONFLUENCE_URL",
+                "ATLASSIAN_URL",
+                "CONFLUENCE_USERNAME",
+                "ATLASSIAN_EMAIL",
+                "CONFLUENCE_API_TOKEN",
+                "ATLASSIAN_API_TOKEN",
+                "ATLASSIAN_OAUTH_ACCESS_TOKEN",
+                "ATLASSIAN_OAUTH_CLOUD_ID",
+            ]
             for var in env_vars:
                 if os.getenv(var):
-                    health_check["diagnostics"]["environment_vars_checked"].append(f"{var}=present")
+                    health_check["diagnostics"]["environment_vars_checked"].append(
+                        f"{var}=present"
+                    )
                 else:
-                    health_check["diagnostics"]["environment_vars_checked"].append(f"{var}=absent")
+                    health_check["diagnostics"]["environment_vars_checked"].append(
+                        f"{var}=absent"
+                    )
 
             try:
                 fetcher = await get_confluence_fetcher(ctx)
@@ -1630,17 +1777,27 @@ async def _check_service_health(ctx: Any, service: str) -> dict[str, Any]:
                 health_check["diagnostics"]["config_present"] = True
                 health_check["diagnostics"]["auth_type"] = fetcher.config.auth_type
                 health_check["diagnostics"]["is_cloud"] = fetcher.config.is_cloud
-                if hasattr(fetcher.config, 'oauth_config') and fetcher.config.oauth_config:
-                    health_check["diagnostics"]["oauth_cloud_id"] = fetcher.config.oauth_config.cloud_id
+                if (
+                    hasattr(fetcher.config, "oauth_config")
+                    and fetcher.config.oauth_config
+                ):
+                    health_check["diagnostics"]["oauth_cloud_id"] = (
+                        fetcher.config.oauth_config.cloud_id
+                    )
             except Exception as e:
                 health_check["configuration"] = "invalid"
-                health_check["errors"].append(f"Confluence configuration error: {str(e)}")
+                health_check["errors"].append(
+                    f"Confluence configuration error: {str(e)}"
+                )
                 health_check["status"] = "unhealthy"
-                health_check["verification_method"] = "configuration_validation_failed_before_api_testing"
-                health_check["note"] = "Cannot perform operational API tests due to configuration issues"
+                health_check["verification_method"] = (
+                    "configuration_validation_failed_before_api_testing"
+                )
+                health_check["note"] = (
+                    "Cannot perform operational API tests due to configuration issues"
+                )
                 health_check["diagnostics"]["config_error"] = str(e)
                 return health_check
-
 
         # Test authentication and connectivity with actual API operations
         try:
@@ -1666,12 +1823,16 @@ async def _check_service_health(ctx: Any, service: str) -> dict[str, Any]:
             error_str = str(e).lower()
             if "authentication" in error_str or "unauthorized" in error_str:
                 health_check["authentication"] = "failed_during_api_call"
-                health_check["errors"].append(f"Authentication failed during operational test: {str(e)}")
+                health_check["errors"].append(
+                    f"Authentication failed during operational test: {str(e)}"
+                )
             else:
                 health_check["connectivity"] = "failed_during_api_call"
                 health_check["errors"].append(f"API operation failed: {str(e)}")
             health_check["status"] = "unhealthy"
-            health_check["verification_method"] = "actual_api_operations_attempted_but_failed"
+            health_check["verification_method"] = (
+                "actual_api_operations_attempted_but_failed"
+            )
 
     except Exception as e:
         health_check["status"] = "unhealthy"
@@ -1691,7 +1852,9 @@ async def confluence_troubleshooting_guide() -> str:
     import os
     from pathlib import Path
 
-    guide_path = Path(__file__).parent.parent / "resources" / "confluence_troubleshooting.md"
+    guide_path = (
+        Path(__file__).parent.parent / "resources" / "confluence_troubleshooting.md"
+    )
     if guide_path.exists():
         return guide_path.read_text(encoding="utf-8")
     else:

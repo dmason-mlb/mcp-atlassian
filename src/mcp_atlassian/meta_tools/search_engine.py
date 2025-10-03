@@ -45,10 +45,11 @@ class SearchEngine:
     }
 
     CONFLUENCE_QUERY_TYPES = {
+        "cql": "CQL (Confluence Query Language) search - alias for 'pages'",
         "pages": "Search pages using CQL",
+        "content": "Search all content types using CQL",
         "spaces": "List all spaces",
         "users": "Search for users",
-        "content": "Search all content types",
         "labels": "Search labels",
         "attachments": "Search attachments",
     }
@@ -85,12 +86,18 @@ class SearchEngine:
             # Get appropriate fetcher based on service
             if service == "jira":
                 from ..servers.dependencies import get_jira_fetcher
+
                 client = await get_jira_fetcher(ctx)
-                return await self._execute_jira_search(client, query_type, query, options)
+                return await self._execute_jira_search(
+                    client, query_type, query, options
+                )
             else:
                 from ..servers.dependencies import get_confluence_fetcher
+
                 client = await get_confluence_fetcher(ctx)
-                return await self._execute_confluence_search(client, query_type, query, options)
+                return await self._execute_confluence_search(
+                    client, query_type, query, options
+                )
 
         except MetaToolError:
             raise
@@ -152,8 +159,11 @@ class SearchEngine:
             "confluence": ["pages", "content", "labels", "attachments", "users"],
         }
 
-        if (query_type in query_required_types.get(service, []) and
-            not query and query != ""):
+        if (
+            query_type in query_required_types.get(service, [])
+            and not query
+            and query != ""
+        ):
             raise MetaToolError(
                 error_code="MISSING_QUERY",
                 user_message=f"Query type '{query_type}' requires a query parameter",
@@ -167,7 +177,6 @@ class SearchEngine:
                     "query_type": query_type,
                 },
             )
-
 
     def _get_supported_options(self, service: str, query_type: str) -> list[str]:
         """Get supported options for a specific search type."""
@@ -218,7 +227,7 @@ class SearchEngine:
                     start=opts.get("start_at", 0),  # Map start_at to start parameter
                     fields=opts.get("fields"),
                     expand=opts.get("expand"),
-                    reconcile_issues=opts.get("reconcile_issues")
+                    reconcile_issues=opts.get("reconcile_issues"),
                 )
 
             elif query_type == "fields":
@@ -228,7 +237,7 @@ class SearchEngine:
                 results = client.search_users(
                     query=str(query) if query else "",
                     start_at=opts.get("start_at", 0),
-                    max_results=opts.get("limit", 50)
+                    max_results=opts.get("limit", 50),
                 )
 
             elif query_type == "projects":
@@ -242,7 +251,7 @@ class SearchEngine:
                     limit=opts.get("limit", 50),
                     board_type=opts.get("type"),
                     board_name=opts.get("name"),
-                    project_key=opts.get("project_key_or_id")
+                    project_key=opts.get("project_key_or_id"),
                 )
 
             elif query_type == "sprints":
@@ -253,7 +262,7 @@ class SearchEngine:
                     board_id=board_id,
                     start_at=opts.get("start_at", 0),
                     max_results=opts.get("limit", 50),
-                    state=opts.get("state")
+                    state=opts.get("state"),
                 )
 
             elif query_type == "versions":
@@ -284,20 +293,20 @@ class SearchEngine:
                 raise ValueError(f"Unsupported Jira query type: {query_type}")
 
             # Convert results to JSON-serializable format
-            if hasattr(results, 'to_simplified_dict'):
+            if hasattr(results, "to_simplified_dict"):
                 result_data = results.to_simplified_dict()
-            elif hasattr(results, 'to_dict'):
+            elif hasattr(results, "to_dict"):
                 result_data = results.to_dict()
-            elif hasattr(results, 'model_dump'):
+            elif hasattr(results, "model_dump"):
                 result_data = results.model_dump(exclude_none=True)
             elif isinstance(results, list):
                 result_data = []
                 for item in results:
-                    if hasattr(item, 'to_simplified_dict'):
+                    if hasattr(item, "to_simplified_dict"):
                         result_data.append(item.to_simplified_dict())
-                    elif hasattr(item, 'to_dict'):
+                    elif hasattr(item, "to_dict"):
                         result_data.append(item.to_dict())
-                    elif hasattr(item, 'model_dump'):
+                    elif hasattr(item, "model_dump"):
                         result_data.append(item.model_dump(exclude_none=True))
                     else:
                         result_data.append(item)
@@ -311,8 +320,10 @@ class SearchEngine:
                     "query_type": query_type,
                     "query": query,
                     "result_count": (
-                        len(result_data) if isinstance(result_data, list)
-                        else result_data.get("total") if isinstance(result_data, dict)
+                        len(result_data)
+                        if isinstance(result_data, list)
+                        else result_data.get("total")
+                        if isinstance(result_data, dict)
                         else 1
                     ),
                     "results": result_data,
@@ -346,7 +357,8 @@ class SearchEngine:
             # Apply default options
             opts = options or {}
 
-            if query_type == "pages":
+            # Support both "cql" and "pages" as aliases for CQL search
+            if query_type in ("pages", "cql"):
                 # Handle both string CQL and structured queries
                 if isinstance(query, str):
                     cql = query
@@ -360,7 +372,7 @@ class SearchEngine:
                     cql=cql,
                     limit=opts.get("limit", 25),
                     start=opts.get("start_at", 0),
-                    expand=opts.get("expand")
+                    expand=opts.get("expand"),
                 )
 
             elif query_type == "content":
@@ -376,7 +388,7 @@ class SearchEngine:
                     cql=cql,
                     limit=opts.get("limit", 25),
                     start=opts.get("start_at", 0),
-                    expand=opts.get("expand")
+                    expand=opts.get("expand"),
                 )
 
             elif query_type == "spaces":
@@ -385,19 +397,17 @@ class SearchEngine:
                     start=opts.get("start", 0),
                     expand=opts.get("expand"),
                     status=opts.get("status"),
-                    type=opts.get("type")
+                    type=opts.get("type"),
                 )
 
             elif query_type == "users":
                 results = client.search_users(
-                    query=str(query) if query else "",
-                    limit=opts.get("limit", 50)
+                    query=str(query) if query else "", limit=opts.get("limit", 50)
                 )
 
             elif query_type == "labels":
                 results = client.search_labels(
-                    query=str(query) if query else "",
-                    limit=opts.get("limit", 200)
+                    query=str(query) if query else "", limit=opts.get("limit", 200)
                 )
 
             elif query_type == "attachments":
@@ -405,27 +415,27 @@ class SearchEngine:
                 results = client.search_attachments(
                     filename=str(query) if query else "",
                     space_key=space_key,
-                    limit=opts.get("limit", 25)
+                    limit=opts.get("limit", 25),
                 )
 
             else:
                 raise ValueError(f"Unsupported Confluence query type: {query_type}")
 
             # Convert results to JSON-serializable format
-            if hasattr(results, 'to_simplified_dict'):
+            if hasattr(results, "to_simplified_dict"):
                 result_data = results.to_simplified_dict()
-            elif hasattr(results, 'to_dict'):
+            elif hasattr(results, "to_dict"):
                 result_data = results.to_dict()
-            elif hasattr(results, 'model_dump'):
+            elif hasattr(results, "model_dump"):
                 result_data = results.model_dump(exclude_none=True)
             elif isinstance(results, list):
                 result_data = []
                 for item in results:
-                    if hasattr(item, 'to_simplified_dict'):
+                    if hasattr(item, "to_simplified_dict"):
                         result_data.append(item.to_simplified_dict())
-                    elif hasattr(item, 'to_dict'):
+                    elif hasattr(item, "to_dict"):
                         result_data.append(item.to_dict())
-                    elif hasattr(item, 'model_dump'):
+                    elif hasattr(item, "model_dump"):
                         result_data.append(item.model_dump(exclude_none=True))
                     else:
                         result_data.append(item)
@@ -439,8 +449,10 @@ class SearchEngine:
                     "query_type": query_type,
                     "query": query,
                     "result_count": (
-                        len(result_data) if isinstance(result_data, list)
-                        else result_data.get("size") if isinstance(result_data, dict)
+                        len(result_data)
+                        if isinstance(result_data, list)
+                        else result_data.get("size")
+                        if isinstance(result_data, dict)
                         else 1
                     ),
                     "results": result_data,

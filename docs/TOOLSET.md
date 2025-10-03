@@ -139,9 +139,9 @@ See the [main README](../README.md) for installation and configuration instructi
 - `users` - Search for users
 - `projects` - List all projects
 - `boards` - List agile boards
-- `sprints` - Search sprints (requires board_id)
-- `versions` - Search project versions (requires project_key)
-- `components` - Search project components (requires project_key)
+- `sprints` - Search sprints
+- `versions` - Search project versions
+- `components` - Search project components
 - `issue_types` - List issue types
 - `statuses` - List issue statuses
 - `priorities` - List issue priorities
@@ -149,9 +149,9 @@ See the [main README](../README.md) for installation and configuration instructi
 
 **Confluence Query Types**:
 - `pages` - Search pages using CQL
-- `content` - Search all content types
 - `spaces` - List all spaces
 - `users` - Search for users
+- `content` - Search all content types
 - `labels` - Search labels
 - `attachments` - Search attachments
 
@@ -183,6 +183,27 @@ See the [main README](../README.md) for installation and configuration instructi
 }
 ~~~
 
+~~~json
+{
+  "tool": "search_engine_tool",
+  "input": {
+    "service": "jira",
+    "query_type": "fields",
+    "options": {"limit": 50}
+  }
+}
+~~~
+
+~~~json
+{
+  "tool": "search_engine_tool",
+  "input": {
+    "service": "jira",
+    "query_type": "projects"
+  }
+}
+~~~
+
 ---
 
 ### workflow_engine_tool
@@ -206,7 +227,7 @@ See the [main README](../README.md) for installation and configuration instructi
 - `get_transitions` - Get available transitions for issue
 - `get_workflow` - Get workflow info for project/issue type
 - `get_statuses` - Get all possible statuses for project
-- `get_status` - Get current status of issue
+- `validate_transition` - Validate if transition is possible
 
 **Output**: JSON string with transition results or workflow information.
 
@@ -257,11 +278,16 @@ See the [main README](../README.md) for installation and configuration instructi
 | options | object | ❌ | Additional parameters |
 
 **Operations**:
-- `link` - Create link between two issues
-- `unlink` - Remove link between issues
+- `create_link` - Create link between two issues
+- `get_links` - Get all links for an issue
+- `delete_link` - Delete issue link
 - `add_to_epic` - Add issue to epic
 - `remove_from_epic` - Remove issue from epic
-- `get_links` - Get all links for an issue
+- `get_epic_issues` - Get all issues in an epic
+- `set_parent` - Set parent-child relationship
+- `remove_parent` - Remove parent relationship
+- `get_subtasks` - Get subtasks of an issue
+- `validate_relationship` - Validate if relationship is possible
 
 **Output**: JSON string with relationship operation results.
 
@@ -271,7 +297,7 @@ See the [main README](../README.md) for installation and configuration instructi
 {
   "tool": "relationship_manager_tool",
   "input": {
-    "operation": "link",
+    "operation": "create_link",
     "issue_key": "FTEST-123",
     "target_issue_key": "FTEST-456",
     "link_type": "Blocks",
@@ -287,6 +313,37 @@ See the [main README](../README.md) for installation and configuration instructi
     "operation": "add_to_epic",
     "issue_key": "FTEST-123",
     "epic_key": "FTEST-100"
+  }
+}
+~~~
+
+~~~json
+{
+  "tool": "relationship_manager_tool",
+  "input": {
+    "operation": "get_epic_issues",
+    "issue_key": "FTEST-100"
+  }
+}
+~~~
+
+~~~json
+{
+  "tool": "relationship_manager_tool",
+  "input": {
+    "operation": "set_parent",
+    "issue_key": "FTEST-124",
+    "parent_key": "FTEST-123"
+  }
+}
+~~~
+
+~~~json
+{
+  "tool": "relationship_manager_tool",
+  "input": {
+    "operation": "get_subtasks",
+    "issue_key": "FTEST-123"
   }
 }
 ~~~
@@ -529,6 +586,61 @@ See the [main README](../README.md) for installation and configuration instructi
 
 ---
 
+## MCP Resources
+
+The MCP Atlassian server provides several resources that can be accessed by MCP clients for additional context and help.
+
+### confluence://troubleshooting
+
+**Purpose**: Comprehensive troubleshooting guide for Confluence operations.
+
+**Description**: Provides detailed troubleshooting steps, common issues, and solutions for Confluence page creation and management.
+
+**Access**: Query this resource from your MCP client when encountering Confluence-related issues.
+
+**Example**:
+```
+Read resource: confluence://troubleshooting
+```
+
+---
+
+### atlassian://field-mappings
+
+**Purpose**: Field mappings and examples for all MCP Atlassian operations.
+
+**Description**: JSON file containing field mappings, required fields, and example values for creating and updating issues, pages, and other resources.
+
+**Access**: Query this resource to understand the correct field names and formats for various operations.
+
+**Example**:
+```
+Read resource: atlassian://field-mappings
+```
+
+---
+
+### atlassian://help
+
+**Purpose**: Quick help resource for common MCP Atlassian operations.
+
+**Description**: Provides quick reference examples for the most common operations like creating Confluence pages and Jira issues.
+
+**Access**: Query this resource for quick copy-paste examples.
+
+**Example**:
+```
+Read resource: atlassian://help
+```
+
+**Content Preview**:
+- Create Confluence Page examples
+- Create Jira Issue examples
+- Error handling guidance
+- Links to other help resources
+
+---
+
 ## Environment Configuration
 
 The tools require proper environment configuration. Key variables:
@@ -576,7 +688,7 @@ If you were using the previous version with 42 individual tools, here's how to m
 | `jira_get_issue` | `resource_manager_tool` (service="jira", resource="issue", operation="get") |
 | `jira_search` | `search_engine_tool` (service="jira", query_type="jql") |
 | `confluence_create_page` | `resource_manager_tool` (service="confluence", resource="page", operation="create") |
-| `confluence_search` | `search_engine_tool` (service="confluence", query_type="cql") |
+| `confluence_search` | `search_engine_tool` (service="confluence", query_type="pages") |
 | `jira_transition_issue` | `workflow_engine_tool` (operation="transition") |
 | `jira_add_comment` | `resource_manager_tool` (service="jira", resource="comment", operation="add") |
 | And 35+ more... | Use corresponding meta-tool operations |

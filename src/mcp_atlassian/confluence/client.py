@@ -219,3 +219,179 @@ class ConfluenceClient:
         return self.preprocessor.process_html_content(
             html_content, space_key, self.confluence
         )
+
+    # Search methods
+    def search_pages(
+        self,
+        cql: str,
+        limit: int = 25,
+        start: int = 0,
+        expand: str | None = None,
+    ) -> dict:
+        """Search for Confluence pages using CQL.
+
+        Args:
+            cql: Confluence Query Language (CQL) query string
+            limit: Maximum number of results to return (default: 25)
+            start: Starting index for pagination (default: 0)
+            expand: Comma-separated list of properties to expand
+
+        Returns:
+            Dictionary containing search results
+
+        Examples:
+            >>> client.search_pages("space = DEV AND type = page")
+            >>> client.search_pages("title ~ 'API' AND space = '~123456'", limit=50)
+        """
+        return self.confluence.cql(cql=cql, limit=limit, start=start, expand=expand)
+
+    def search_content(
+        self,
+        cql: str,
+        limit: int = 25,
+        start: int = 0,
+        expand: str | None = None,
+    ) -> dict:
+        """Search for Confluence content (pages, blogposts, attachments) using CQL.
+
+        Args:
+            cql: Confluence Query Language (CQL) query string
+            limit: Maximum number of results to return (default: 25)
+            start: Starting index for pagination (default: 0)
+            expand: Comma-separated list of properties to expand
+
+        Returns:
+            Dictionary containing search results
+
+        Examples:
+            >>> client.search_content("type in (page, blogpost) AND space = DEV")
+            >>> client.search_content("lastModified >= '2024-01-01'")
+        """
+        return self.confluence.cql(cql=cql, limit=limit, start=start, expand=expand)
+
+    def search_users(
+        self,
+        query: str,
+        limit: int = 50,
+    ) -> list:
+        """Search for Confluence users.
+
+        Args:
+            query: Search query string (username, email, or display name)
+            limit: Maximum number of results to return (default: 50)
+
+        Returns:
+            List of user dictionaries
+
+        Examples:
+            >>> client.search_users("john.doe")
+            >>> client.search_users("john.doe@example.com", limit=10)
+        """
+        # Use CQL to search for users
+        cql = f"user.fullname ~ '{query}' OR user ~ '{query}'"
+        try:
+            # Try user search via CQL first
+            results = self.confluence.cql(cql=cql, limit=limit)
+
+            # Extract unique users from results
+            users_dict = {}
+            if results and "results" in results:
+                for item in results["results"]:
+                    # Extract user information from various fields
+                    if "lastModified" in item and "by" in item["lastModified"]:
+                        user = item["lastModified"]["by"]
+                        if "accountId" in user:
+                            users_dict[user["accountId"]] = user
+                    if "history" in item and "createdBy" in item["history"]:
+                        user = item["history"]["createdBy"]
+                        if "accountId" in user:
+                            users_dict[user["accountId"]] = user
+
+            return list(users_dict.values())[:limit]
+        except Exception as e:
+            logger.warning(f"CQL user search failed: {e}, returning empty list")
+            return []
+
+    def search_labels(
+        self,
+        query: str,
+        limit: int = 200,
+    ) -> list:
+        """Search for Confluence labels.
+
+        Args:
+            query: Search query for label names
+            limit: Maximum number of results to return (default: 200)
+
+        Returns:
+            List of label dictionaries
+
+        Examples:
+            >>> client.search_labels("documentation")
+            >>> client.search_labels("api-*", limit=50)
+        """
+        # Use CQL to find content with labels matching the query
+        cql = f"label = '{query}' OR label ~ '{query}'"
+        try:
+            results = self.confluence.cql(cql=cql, limit=limit)
+
+            # Extract unique labels from results
+            labels_dict = {}
+            if results and "results" in results:
+                for item in results["results"]:
+                    if "metadata" in item and "labels" in item["metadata"]:
+                        for label in item["metadata"]["labels"]["results"]:
+                            label_name = label.get("name") or label.get("label")
+                            if label_name and label_name not in labels_dict:
+                                labels_dict[label_name] = label
+
+            return list(labels_dict.values())[:limit]
+        except Exception as e:
+            logger.warning(f"Label search failed: {e}, returning empty list")
+            return []
+
+    def search_attachments(
+        self,
+        filename: str,
+        space_key: str | None = None,
+        limit: int = 25,
+    ) -> list:
+        """Search for Confluence attachments.
+
+        Args:
+            filename: Filename or pattern to search for
+            space_key: Optional space key to restrict search
+            limit: Maximum number of results to return (default: 25)
+
+        Returns:
+            List of attachment dictionaries
+
+        Examples:
+            >>> client.search_attachments("diagram.png")
+            >>> client.search_attachments("*.pdf", space_key="DEV", limit=100)
+        """
+        # Build CQL query for attachments
+        cql_parts = ["type = attachment"]
+
+        if filename:
+            # Use title for filename search
+            cql_parts.append(f"title ~ '{filename}'")
+
+        if space_key:
+            cql_parts.append(f"space = '{space_key}'")
+
+        cql = " AND ".join(cql_parts)
+
+        try:
+            results = self.confluence.cql(cql=cql, limit=limit)
+
+            attachments = []
+            if results and "results" in results:
+                for item in results["results"]:
+                    if item.get("type") == "attachment":
+                        attachments.append(item)
+
+            return attachments[:limit]
+        except Exception as e:
+            logger.warning(f"Attachment search failed: {e}, returning empty list")
+            return []
