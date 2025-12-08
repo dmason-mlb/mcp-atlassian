@@ -226,15 +226,17 @@ class ConfluenceClient:
         cql: str,
         limit: int = 25,
         start: int = 0,
-        expand: str | None = None,
     ) -> dict:
         """Search for Confluence pages using CQL.
+
+        Note: The Confluence v2 API does not support the expand parameter for search
+        operations. This is a deliberate design decision to improve performance.
+        If you need additional fields, retrieve them with separate get_page_by_id() calls.
 
         Args:
             cql: Confluence Query Language (CQL) query string
             limit: Maximum number of results to return (default: 25)
             start: Starting index for pagination (default: 0)
-            expand: Comma-separated list of properties to expand
 
         Returns:
             Dictionary containing search results
@@ -243,22 +245,24 @@ class ConfluenceClient:
             >>> client.search_pages("space = DEV AND type = page")
             >>> client.search_pages("title ~ 'API' AND space = '~123456'", limit=50)
         """
-        return self.confluence.cql(cql=cql, limit=limit, start=start, expand=expand)
+        return self.confluence.cql(cql=cql, limit=limit, start=start)
 
     def search_content(
         self,
         cql: str,
         limit: int = 25,
         start: int = 0,
-        expand: str | None = None,
     ) -> dict:
         """Search for Confluence content (pages, blogposts, attachments) using CQL.
+
+        Note: The Confluence v2 API does not support the expand parameter for search
+        operations. This is a deliberate design decision to improve performance.
+        If you need additional fields, retrieve them with separate API calls.
 
         Args:
             cql: Confluence Query Language (CQL) query string
             limit: Maximum number of results to return (default: 25)
             start: Starting index for pagination (default: 0)
-            expand: Comma-separated list of properties to expand
 
         Returns:
             Dictionary containing search results
@@ -267,7 +271,7 @@ class ConfluenceClient:
             >>> client.search_content("type in (page, blogpost) AND space = DEV")
             >>> client.search_content("lastModified >= '2024-01-01'")
         """
-        return self.confluence.cql(cql=cql, limit=limit, start=start, expand=expand)
+        return self.confluence.cql(cql=cql, limit=limit, start=start)
 
     def search_users(
         self,

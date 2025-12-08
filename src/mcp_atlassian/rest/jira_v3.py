@@ -267,6 +267,37 @@ class JiraV3Client(BaseRESTClient):
             json_data=data,
         )
 
+    def update_comment(
+        self,
+        issue_key: str,
+        comment_id: str,
+        body: str | dict[str, Any],
+        visibility: dict[str, str] | None = None,
+        properties: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        """Update an existing comment on an issue.
+
+        Args:
+            issue_key: Issue key
+            comment_id: Comment ID to update
+            body: Updated comment body (string for wiki markup, dict for ADF)
+            visibility: Visibility restrictions
+            properties: Comment properties
+
+        Returns:
+            Updated comment data
+        """
+        data = {"body": body}
+        if visibility:
+            data["visibility"] = visibility
+        if properties:
+            data["properties"] = properties
+
+        return self.put(
+            f"/rest/api/3/issue/{quote(issue_key)}/comment/{comment_id}",
+            json_data=data,
+        )
+
     # === Transitions ===
 
     def get_transitions(self, issue_key: str) -> dict[str, Any]:

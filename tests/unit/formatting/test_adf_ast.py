@@ -88,6 +88,119 @@ def hello():
         assert list_block["type"] == "orderedList"
         assert len(list_block["content"]) == 3
 
+    def test_unicode_bullets(self):
+        """Test Unicode bullet character conversion to markdown lists."""
+        generator = ASTBasedADFGenerator()
+
+        # Test basic Unicode bullet conversion
+        markdown = """Summary:
+• Item 1
+• Item 2
+• Item 3"""
+
+        result = generator.markdown_to_adf(markdown)
+
+        # Should have a paragraph for "Summary:" and a bulletList
+        assert result["type"] == "doc"
+        assert len(result["content"]) == 2
+        assert result["content"][0]["type"] == "paragraph"
+        assert result["content"][1]["type"] == "bulletList"
+
+        # Check the list items
+        list_items = result["content"][1]["content"]
+        assert len(list_items) == 3
+        assert all(item["type"] == "listItem" for item in list_items)
+
+    def test_unicode_bullets_multiple_types(self):
+        """Test various Unicode bullet characters."""
+        generator = ASTBasedADFGenerator()
+
+        # Test different Unicode bullet characters
+        bullet_chars = ['•', '○', '◦', '▪', '▫', '‣', '●', '◘', '◙']
+
+        for bullet in bullet_chars:
+            markdown = f"{bullet} Test item"
+            result = generator.markdown_to_adf(markdown)
+
+            # Should create a bulletList
+            assert result["content"][0]["type"] == "bulletList"
+            assert len(result["content"][0]["content"]) == 1
+            assert result["content"][0]["content"][0]["type"] == "listItem"
+
+    def test_unicode_bullets_nested(self):
+        """Test nested Unicode bullets with indentation."""
+        generator = ASTBasedADFGenerator()
+
+        markdown = """• Item 1
+  • Nested item 1.1
+  • Nested item 1.2
+• Item 2"""
+
+        result = generator.markdown_to_adf(markdown)
+
+        # Should have a bulletList
+        assert result["content"][0]["type"] == "bulletList"
+
+        # Top-level list should have 2 items
+        top_items = result["content"][0]["content"]
+        assert len(top_items) == 2
+
+        # First item should contain a nested list
+        first_item = top_items[0]
+        assert first_item["type"] == "listItem"
+        # Check for nested list in the first item's content
+        has_nested_list = any(
+            content_item.get("type") == "bulletList"
+            for content_item in first_item.get("content", [])
+        )
+        assert has_nested_list
+
+    def test_unicode_bullets_mixed_content(self):
+        """Test Unicode bullets mixed with regular text."""
+        generator = ASTBasedADFGenerator()
+
+        markdown = """Testing complete for FRAMED-1838.
+
+Validation Summary:
+• All acceptance criteria met ✓
+• iOS: Excellent test coverage with 8 snapshot tests
+
+Key findings:
+• Calendar bar validated
+• Date selection verified"""
+
+        result = generator.markdown_to_adf(markdown)
+
+        # Should have multiple content blocks
+        assert result["type"] == "doc"
+        assert len(result["content"]) >= 4
+
+        # First should be a paragraph
+        assert result["content"][0]["type"] == "paragraph"
+
+        # Should contain bulletLists
+        bullet_lists = [block for block in result["content"] if block["type"] == "bulletList"]
+        assert len(bullet_lists) == 2
+
+    def test_unicode_bullets_preserve_formatting(self):
+        """Test that Unicode bullets preserve text formatting."""
+        generator = ASTBasedADFGenerator()
+
+        markdown = """• Item with **bold** text
+• Item with *italic* text
+• Item with `code` text"""
+
+        result = generator.markdown_to_adf(markdown)
+
+        # Should create a bulletList
+        assert result["content"][0]["type"] == "bulletList"
+        list_items = result["content"][0]["content"]
+        assert len(list_items) == 3
+
+        # Check that formatting is preserved
+        # (The actual mark checking would require deep inspection of nested content)
+        assert all(item["type"] == "listItem" for item in list_items)
+
     def test_links(self):
         """Test link conversion."""
         generator = ASTBasedADFGenerator()

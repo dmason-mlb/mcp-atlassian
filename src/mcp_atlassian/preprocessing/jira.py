@@ -103,6 +103,116 @@ class JiraPreprocessor(BasePreprocessor):
 
         return text
 
+    def _detect_wiki_markup(self, text: str) -> bool:
+        """Detect if text contains Jira wiki markup patterns.
+        
+        Args:
+            text: Text to analyze
+            
+        Returns:
+            True if wiki markup patterns are detected
+        """
+        if not text:
+            return False
+            
+        # Common wiki markup patterns that don't overlap with markdown
+        wiki_patterns = [
+            r'^h[1-6]\.',  # Headings: h1., h2., etc.
+            r'\{code[:\}]',  # Code blocks: {code}, {code:java}
+            r'\{quote\}',  # Quotes: {quote}
+            r'\{panel[:\}]',  # Panels: {panel}, {panel:title=}
+            r'\{color[:\}]',  # Color: {color:red}
+            r'\{noformat\}',  # No format: {noformat}
+            r'\{\{',  # Monospace: {{text}}
+            r'\{anchor[:\}]',  # Anchors: {anchor:name}
+        ]
+        
+        import re
+        for pattern in wiki_patterns:
+            if re.search(pattern, text, re.MULTILINE):
+                return True
+        return False
+    
+    def _normalize_wiki_to_markdown(self, text: str) -> str:
+        """Normalize common Jira wiki markup patterns to markdown.
+        
+        This is a best-effort conversion for common patterns. Complex wiki markup
+        may not convert perfectly.
+        
+        Args:
+            text: Text potentially containing wiki markup
+            
+        Returns:
+            Text with wiki markup converted to markdown where possible
+        """
+        if not text:
+            return text
+        
+        import re
+
+        # Convert numbered lists FIRST: # -> 1., ## -> 1. (indented), etc.
+        # This MUST come before heading conversion to avoid conflicts with ## headings
+        # In Jira wiki: # = list level 1, ## = list level 2, ### = level 3, etc.
+        # In markdown: 1. = list level 1, with 2-space indents for nesting
+        text = re.sub(
+            r'^(#+)\s+(.+)$',
+            lambda m: ('  ' * (len(m.group(1)) - 1)) + '1. ' + m.group(2),
+            text,
+            flags=re.MULTILINE
+        )
+
+        # Convert headings: h1. -> #, h2. -> ##, etc.
+        for level in range(1, 7):
+            hashes = '#' * level
+            text = re.sub(
+                rf'^h{level}\.\s*(.+)$',
+                rf'{hashes} \1',
+                text,
+                flags=re.MULTILINE
+            )
+        
+        # Convert code blocks: {code} -> ```
+        text = re.sub(r'\{code(?::(\w+))?\}(.*?)\{code\}', r'```\1\n\2\n```', text, flags=re.DOTALL)
+        
+        # Convert inline code/monospace: {{text}} -> `text`
+        text = re.sub(r'\{\{([^}]+)\}\}', r'`\1`', text)
+        
+        # Convert quotes: {quote} -> >
+        text = re.sub(r'\{quote\}(.*?)\{quote\}', lambda m: '\n'.join(f'> {line}' for line in m.group(1).strip().split('\n')), text, flags=re.DOTALL)
+        
+        # Convert panels to info blocks (markdown extension used by some renderers)
+        text = re.sub(r'\{panel:title=([^}]+)\}(.*?)\{panel\}', r':::info \1\n\2\n:::', text, flags=re.DOTALL)
+        text = re.sub(r'\{panel\}(.*?)\{panel\}', r':::info\n\1\n:::', text, flags=re.DOTALL)
+        
+        # Convert colors - just remove them as markdown doesn't support inline colors
+        text = re.sub(r'\{color:[^}]+\}(.*?)\{color\}', r'\1', text)
+        
+        # Convert noformat to code blocks
+        text = re.sub(r'\{noformat\}(.*?)\{noformat\}', r'```\n\1\n```', text, flags=re.DOTALL)
+
+        # Convert Confluence/Jira emoticons to Unicode emoji
+        # These are common in Confluence wiki markup but also appear in Jira
+        emoticon_map = {
+            r'\(\?\)': '❓',  # Question mark
+            r'\(!\)': '⚠️',   # Warning
+            r'\(i\)': 'ℹ️',   # Information
+            r'\(\+\)': '➕',  # Plus sign
+            r'\(-\)': '➖',   # Minus sign (must come before (/) and (x) to avoid conflicts)
+            r'\(/\)': '✅',  # Check mark (tick)
+            r'\(x\)': '❌',  # Cross mark
+            r'\(on\)': '✅', # On (same as tick)
+            r'\(off\)': '❌', # Off (same as cross)
+            r'\(\*\)': '⭐', # Star
+        }
+
+        for pattern, emoji in emoticon_map.items():
+            text = re.sub(pattern, emoji, text, flags=re.IGNORECASE)
+
+        # Note: Bullet lists, links, and basic formatting (*, _, etc.) are similar in both formats
+        # Numbered lists are converted above (# -> 1.)
+
+        return text
+
     def jira_to_markdown(self, input_text: str) -> str:
         """
         Convert Jira markup to Markdown format.
@@ -241,9 +351,11 @@ class JiraPreprocessor(BasePreprocessor):
         Uses FormatRouter to automatically detect deployment type and choose format:
         - Cloud instances: Returns ADF JSON dictionary
         - Server/DC instances: Returns wiki markup string
+        
+        Automatically detects and normalizes Jira wiki markup input to markdown before conversion.
 
         Args:
-            input_text: Text in Markdown format
+            input_text: Text in Markdown format (or wiki markup, which will be normalized)
             enable_adf: Whether to enable ADF conversion (default: True)
 
         Returns:
@@ -259,6 +371,14 @@ class JiraPreprocessor(BasePreprocessor):
                 else:
                     return ""  # Return empty string for wiki markup
             return ""
+
+        # Detect and normalize wiki markup to markdown
+        if self._detect_wiki_markup(input_text):
+            logger.warning(
+                "Input appears to contain Jira wiki markup. Attempting to normalize to markdown. "
+                "For best results, use markdown syntax (e.g., '## Heading' instead of 'h2. Heading')"
+            )
+            input_text = self._normalize_wiki_to_markdown(input_text)
 
         if not enable_adf:
             # Fall back to legacy wiki markup conversion

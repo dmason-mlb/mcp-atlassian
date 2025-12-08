@@ -60,22 +60,27 @@ class ConfluenceAdapter:
             and ("Authorization" in session.headers)
         ):
             # OAuth session
+            logger.debug(f"ConfluenceAdapter: Creating ConfluenceV2Client with OAuth. URL: {original_url}")
             self.client = ConfluenceV2Client(
                 base_url=original_url,
                 auth_type="oauth",
                 oauth_session=session,
                 verify_ssl=verify_ssl,
             )
+            logger.debug(f"ConfluenceAdapter: Created client type: {type(self.client).__name__}, base_url: {self.client.base_url}")
         elif token:
             # PAT auth
+            logger.debug(f"ConfluenceAdapter: Creating ConfluenceV2Client with PAT. URL: {original_url}")
             self.client = ConfluenceV2Client(
                 base_url=original_url,
                 auth_type="pat",
                 token=token,
                 verify_ssl=verify_ssl,
             )
+            logger.debug(f"ConfluenceAdapter: Created client type: {type(self.client).__name__}, base_url: {self.client.base_url}")
         else:
             # Basic auth
+            logger.debug(f"ConfluenceAdapter: Creating ConfluenceV2Client with Basic auth. URL: {original_url}")
             self.client = ConfluenceV2Client(
                 base_url=original_url,
                 auth_type="basic",
@@ -83,6 +88,7 @@ class ConfluenceAdapter:
                 password=password,
                 verify_ssl=verify_ssl,
             )
+            logger.debug(f"ConfluenceAdapter: Created client type: {type(self.client).__name__}, base_url: {self.client.base_url}")
 
         # Store session reference for compatibility
         self._session = self.client.session
@@ -443,6 +449,53 @@ class ConfluenceAdapter:
             body = text
 
         return self.client.create_comment(page_id=page_id, body=body)
+
+    def get_comment_by_id(
+        self,
+        comment_id: str,
+        expand: str | None = None,
+    ) -> dict[str, Any]:
+        """Get comment by ID."""
+        body_format = self._get_representation()
+        return self.client.get_comment(comment_id=comment_id, body_format=body_format)
+
+    def update_comment(
+        self,
+        comment_id: str,
+        body: str | dict[str, Any],
+        version_number: int,
+        version_message: str | None = None,
+    ) -> dict[str, Any]:
+        """Update an existing comment."""
+        # Handle body format
+        if isinstance(body, str):
+            # Convert to ADF if needed
+            body_dict = {
+                "type": "doc",
+                "version": 1,
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": body,
+                            }
+                        ],
+                    }
+                ],
+            }
+        else:
+            body_dict = body
+
+        representation = self._get_representation()
+        return self.client.update_comment(
+            comment_id=comment_id,
+            body=body_dict,
+            version_number=version_number,
+            version_message=version_message,
+            representation=representation,
+        )
 
     # === Search Operations ===
 

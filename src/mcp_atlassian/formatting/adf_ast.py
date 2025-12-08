@@ -801,6 +801,7 @@ class ASTBasedADFGenerator:
         # Create mistune markdown parser with ADF renderer
         self.markdown = mistune.create_markdown(
             renderer=self.renderer,
+            hard_wrap=True,  # Treat single newlines as hard breaks
             plugins=[
                 "strikethrough",
                 "table",
@@ -816,6 +817,40 @@ class ASTBasedADFGenerator:
             ],
         )
 
+    def _normalize_unicode_bullets(self, text: str) -> str:
+        """Convert Unicode bullet characters to markdown list syntax.
+
+        Mistune's markdown parser only recognizes standard markdown list markers
+        (-, *, +, 1.). This method preprocesses text to convert Unicode bullet
+        characters to markdown syntax so they are properly converted to ADF lists.
+
+        Args:
+            text: Input text potentially containing Unicode bullets
+
+        Returns:
+            Text with Unicode bullets converted to markdown list syntax
+        """
+        # Common Unicode bullet characters used in text
+        bullet_chars = ['•', '○', '◦', '▪', '▫', '‣', '●', '◘', '◙']
+
+        lines = text.split('\n')
+        normalized_lines = []
+
+        for line in lines:
+            stripped = line.lstrip()
+            indent = len(line) - len(stripped)
+
+            # Check if line starts with a Unicode bullet
+            if stripped and stripped[0] in bullet_chars:
+                # Convert to markdown bullet with proper indentation
+                content = stripped[1:].lstrip()  # Remove bullet and following whitespace
+                markdown_indent = ' ' * indent
+                normalized_lines.append(f"{markdown_indent}- {content}")
+            else:
+                normalized_lines.append(line)
+
+        return '\n'.join(normalized_lines)
+
     @lru_cache(maxsize=256)
     def markdown_to_adf(self, markdown_text: str) -> dict[str, Any]:
         """Convert markdown to ADF using AST parsing.
@@ -829,6 +864,9 @@ class ASTBasedADFGenerator:
         try:
             if not markdown_text or not markdown_text.strip():
                 return {"version": 1, "type": "doc", "content": []}
+
+            # Normalize Unicode bullets to markdown syntax
+            markdown_text = self._normalize_unicode_bullets(markdown_text)
 
             # Parse markdown to AST and render to ADF
             adf_doc = self.markdown(markdown_text)

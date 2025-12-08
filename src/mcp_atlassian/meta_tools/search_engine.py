@@ -192,6 +192,8 @@ class SearchEngine:
             else:
                 return common_options
         else:  # confluence
+            # Note: Confluence v2 API does not support expand for search operations
+            # expand is listed for backward compatibility but will be ignored with a warning
             if query_type == "pages":
                 return common_options + ["cql", "space_key", "title", "type"]
             elif query_type == "spaces":
@@ -368,11 +370,19 @@ class SearchEngine:
                 else:
                     cql = str(query) if query else ""
 
+                # Note: Confluence v2 API does not support expand for search operations
+                # This is a deliberate design decision by Atlassian for performance
+                if opts.get("expand"):
+                    logger.warning(
+                        "Confluence v2 API does not support 'expand' parameter for search operations. "
+                        "The expand parameter will be ignored. Use separate get_page_by_id() calls "
+                        "to retrieve additional fields."
+                    )
+
                 results = client.search_pages(
                     cql=cql,
                     limit=opts.get("limit", 25),
                     start=opts.get("start_at", 0),
-                    expand=opts.get("expand"),
                 )
 
             elif query_type == "content":
@@ -384,11 +394,17 @@ class SearchEngine:
                 else:
                     cql = str(query) if query else ""
 
+                # Note: Confluence v2 API does not support expand for search operations
+                if opts.get("expand"):
+                    logger.warning(
+                        "Confluence v2 API does not support 'expand' parameter for search operations. "
+                        "The expand parameter will be ignored."
+                    )
+
                 results = client.search_content(
                     cql=cql,
                     limit=opts.get("limit", 25),
                     start=opts.get("start_at", 0),
-                    expand=opts.get("expand"),
                 )
 
             elif query_type == "spaces":
@@ -563,6 +579,7 @@ class SearchEngine:
             }
         else:  # confluence
             endpoints = {
+                "cql": "/wiki/api/v2/search",
                 "pages": "/wiki/api/v2/pages",
                 "content": "/wiki/api/v2/content/search",
                 "spaces": "/wiki/api/v2/spaces",
@@ -571,7 +588,11 @@ class SearchEngine:
                 "attachments": "/wiki/api/v2/attachments",
             }
 
-        return endpoints.get(query_type, f"/rest/api/3/{query_type}")
+        # Service-aware fallback pattern
+        if service == "confluence":
+            return endpoints.get(query_type, f"/wiki/api/v2/{query_type}")
+        else:
+            return endpoints.get(query_type, f"/rest/api/3/{query_type}")
 
     def _get_error_suggestions(
         self, service: str, query_type: str, error: Exception
@@ -593,5 +614,12 @@ class SearchEngine:
                 suggestions.append(f"Check your {query_lang} syntax")
         elif "permission" in error_str:
             suggestions.append(f"Ensure you have permission to search {query_type}")
+        elif "expand" in error_str and service == "confluence":
+            suggestions.append(
+                "Note: Confluence v2 API does not support 'expand' parameter for search operations"
+            )
+            suggestions.append(
+                "Use separate get_page_by_id() calls to retrieve additional fields"
+            )
 
         return suggestions

@@ -79,6 +79,53 @@ class MetaToolError(Exception):
         Returns:
             MetaToolError instance wrapping the original error
         """
+        # Ensure context is initialized
+        if context is None:
+            context = {}
+
+        # Extract detailed error information from Atlassian API exceptions
+        error_str = str(error)
+        error_type = type(error).__name__
+
+        # Try to parse structured error details from API validation errors
+        # Format from base.py: "Validation error: field1: msg1; field2: msg2"
+        api_error_details = {}
+
+        if "ValidationError" in error_type or "Validation error:" in error_str:
+            # Extract the part after "Validation error:"
+            if "Validation error:" in error_str:
+                details_str = error_str.split("Validation error:", 1)[1].strip()
+
+                # Split by semicolon to get individual error messages
+                error_parts = [part.strip() for part in details_str.split(";") if part.strip()]
+
+                if error_parts:
+                    # First, check if we have field-level errors (format: "field: message")
+                    field_errors = {}
+                    general_errors = []
+
+                    for part in error_parts:
+                        if ":" in part and not part.startswith("http"):
+                            # Likely a field error
+                            field, msg = part.split(":", 1)
+                            field_errors[field.strip()] = msg.strip()
+                        else:
+                            # General error message
+                            general_errors.append(part)
+
+                    if field_errors:
+                        api_error_details["field_errors"] = field_errors
+                    if general_errors:
+                        api_error_details["error_messages"] = general_errors
+
+        # Add API error details to context if we found any
+        if api_error_details:
+            context["api_error_details"] = api_error_details
+
+        # Add original error type for debugging
+        context["original_error_type"] = error_type
+        context["raw_error_message"] = error_str
+
         return cls(
             error_code=error_code,
             user_message=user_message or str(error),

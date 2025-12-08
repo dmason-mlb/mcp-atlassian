@@ -291,24 +291,48 @@ class ConfluenceV2Client(BaseRESTClient):
     ) -> dict[str, Any]:
         """Search content using CQL.
 
+        Note: This uses the legacy /rest/api/content/search endpoint because
+        the v2 /api/v2/search endpoint only supports new content types
+        (databases, embeds, folders, whiteboards) and cannot search pages/blogs.
+
         Args:
             cql: CQL query string
-            cursor: Pagination cursor
+            cursor: Pagination cursor (not supported by legacy endpoint)
             limit: Results per page
             include_archived_spaces: Include archived spaces
 
         Returns:
             Search results with pagination
         """
+        # Validate that base_url is a Confluence URL, not Jira
+        if 'jira' in self.base_url.lower():
+            error_msg = (
+                f"ConfluenceV2Client.search() called with Jira base_url: {self.base_url}. "
+                f"This should be a Confluence URL."
+            )
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        # Use legacy endpoint for CQL searches - v2 /api/v2/search only supports
+        # new content types (databases, whiteboards, etc), not pages/blogs
         params = {
             "cql": cql,
             "limit": limit,
-            "includeArchivedSpaces": include_archived_spaces,
         }
-        if cursor:
-            params["cursor"] = cursor
 
-        return self.get("/api/v2/search", params=params)
+        # Note: cursor pagination is not supported by the legacy endpoint
+        # Legacy endpoint uses start/limit pagination
+        if cursor:
+            logger.warning(
+                "Cursor pagination not supported for CQL search. "
+                "Use start/limit parameters instead."
+            )
+
+        # Log the full URL being constructed
+        full_url = f"{self.base_url}/rest/api/content/search"
+        logger.debug(f"ConfluenceV2Client.search(): Calling {full_url} with CQL: {cql}")
+
+        return self.get("/rest/api/content/search", params=params)
 
     # === Comment Operations ===
 

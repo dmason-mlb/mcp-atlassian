@@ -530,3 +530,163 @@ More content.
     # Note: md2conf may use different anchor formats, so we check for presence of id attributes
     assert "<h1>" in result_with_anchors
     assert "<h2>" in result_with_anchors
+
+
+def test_wiki_numbered_list_normalization(preprocessor_with_jira):
+    """Test normalization of Jira wiki numbered lists to markdown."""
+    # Test that wiki numbered lists (# syntax) are properly converted to markdown (1. syntax)
+    # This addresses the bug where # was being interpreted as H1 heading instead of list item
+    wiki_text = """h2. Steps to Reproduce (Android)
+# Configure app to use QA Bullpen service environment
+# Navigate to Scores tab (SDUI Scoreboard)
+# Select any game
+# Tap on "Gameday" product link
+# Observe Gameday launches with production environment"""
+
+    # The normalize method should convert:
+    # - h2. -> ## (heading)
+    # - # item -> 1. item (numbered list, NOT heading!)
+    normalized = preprocessor_with_jira._normalize_wiki_to_markdown(wiki_text)
+
+    # Verify headings are converted correctly
+    assert "## Steps to Reproduce (Android)" in normalized
+
+    # Verify numbered lists are converted to markdown format (1.) not headings (#)
+    assert "1. Configure app to use QA Bullpen service environment" in normalized
+    assert "1. Navigate to Scores tab (SDUI Scoreboard)" in normalized
+    assert "1. Select any game" in normalized
+    assert "1. Tap on" in normalized
+    assert "1. Observe Gameday launches with production environment" in normalized
+
+    # Verify we don't have erroneous H1 headings
+    assert "# Configure" not in normalized
+    assert "# Navigate" not in normalized
+    assert "# Select" not in normalized
+
+
+def test_wiki_nested_numbered_list_normalization(preprocessor_with_jira):
+    """Test normalization of nested Jira wiki numbered lists to markdown."""
+    wiki_text = """# Level 1 item
+## Level 2 item
+### Level 3 item
+## Another level 2 item
+# Another level 1 item"""
+
+    normalized = preprocessor_with_jira._normalize_wiki_to_markdown(wiki_text)
+
+    # Level 1 items (no indentation)
+    assert "1. Level 1 item" in normalized
+    assert "1. Another level 1 item" in normalized
+
+    # Level 2 items (2 spaces indentation)
+    assert "  1. Level 2 item" in normalized
+    assert "  1. Another level 2 item" in normalized
+
+    # Level 3 items (4 spaces indentation)
+    assert "    1. Level 3 item" in normalized
+
+
+def test_wiki_markup_with_mixed_lists(preprocessor_with_jira):
+    """Test wiki markup with both numbered and bullet lists."""
+    wiki_text = """h2. Features
+* Bullet item 1
+* Bullet item 2
+
+h2. Steps
+# Numbered item 1
+# Numbered item 2"""
+
+    normalized = preprocessor_with_jira._normalize_wiki_to_markdown(wiki_text)
+
+    # Headings
+    assert "## Features" in normalized
+    assert "## Steps" in normalized
+
+    # Bullet lists should remain unchanged (already compatible with markdown)
+    assert "* Bullet item 1" in normalized
+    assert "* Bullet item 2" in normalized
+
+    # Numbered lists should be converted
+    assert "1. Numbered item 1" in normalized
+    assert "1. Numbered item 2" in normalized
+
+
+def test_wiki_emoticon_conversion(preprocessor_with_jira):
+    """Test conversion of Confluence/Jira emoticons to Unicode emoji."""
+    wiki_text = """h2. Test Results
+* Android: (x) BROKEN
+* iOS: (/) WORKING
+* Warning: (!) Important
+* Question: (?) Unknown
+* Info: (i) Details
+* Plus: (+) Added
+* Minus: (-) Removed
+* Star: (*) Favorite
+* On: (on) Enabled
+* Off: (off) Disabled"""
+
+    normalized = preprocessor_with_jira._normalize_wiki_to_markdown(wiki_text)
+
+    # Verify heading conversion
+    assert "## Test Results" in normalized
+
+    # Verify emoticon conversions
+    assert "❌ BROKEN" in normalized  # (x) -> ❌
+    assert "✅ WORKING" in normalized  # (/) -> ✅
+    assert "⚠️ Important" in normalized  # (!) -> ⚠️
+    assert "❓ Unknown" in normalized  # (?) -> ❓
+    assert "ℹ️ Details" in normalized  # (i) -> ℹ️
+    assert "➕ Added" in normalized  # (+) -> ➕
+    assert "➖ Removed" in normalized  # (-) -> ➖
+    assert "⭐ Favorite" in normalized  # (*) -> ⭐
+    assert "✅ Enabled" in normalized  # (on) -> ✅
+    assert "❌ Disabled" in normalized  # (off) -> ❌
+
+    # Verify original emoticons are NOT in the output
+    assert "(x)" not in normalized
+    assert "(/)" not in normalized
+    assert "(!)" not in normalized
+    assert "(?)" not in normalized
+
+
+def test_wiki_emoticons_case_insensitive(preprocessor_with_jira):
+    """Test that emoticon conversion is case-insensitive."""
+    wiki_text = """* Upper: (X) and (I)
+* Lower: (x) and (i)
+* Mixed: (On) and (OFF)"""
+
+    normalized = preprocessor_with_jira._normalize_wiki_to_markdown(wiki_text)
+
+    # All should be converted regardless of case
+    assert "❌" in normalized
+    assert "ℹ️" in normalized
+    assert "✅" in normalized
+
+    # Count occurrences to ensure all were converted
+    assert normalized.count("❌") >= 3  # (X), (x), (OFF)
+    assert normalized.count("ℹ️") >= 2  # (I), (i)
+    assert normalized.count("✅") >= 1  # (On)
+
+
+def test_wiki_emoticons_in_real_issue_text(preprocessor_with_jira):
+    """Test emoticons in context similar to real JIRA issue."""
+    wiki_text = """h3. Affected Platforms
+* *Android*: (x) BROKEN - Completely affected
+* *iOS*: (/) WORKING - Has client-side workaround
+
+h2. Expected vs Actual
+*Expected:* Launches QA environment
+*Actual (Android):* Launches production (x)
+*Actual (iOS):* Launches QA environment (/)"""
+
+    normalized = preprocessor_with_jira._normalize_wiki_to_markdown(wiki_text)
+
+    # Verify emoticons are converted in context
+    assert "❌ BROKEN" in normalized
+    assert "✅ WORKING" in normalized
+    assert "production ❌" in normalized
+    assert "QA environment ✅" in normalized
+
+    # Verify markdown structure
+    assert "### Affected Platforms" in normalized
+    assert "## Expected vs Actual" in normalized

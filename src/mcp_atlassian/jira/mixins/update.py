@@ -89,28 +89,54 @@ class IssueUpdateMixin(
 
             # SINGLE PROCESSING PATH: Convert description from Markdown to Jira format if present
             if "description" in update_fields:
+                original_description = update_fields["description"]
+
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("[DEBUG] Processing description field...")
+                    logger.debug(f"[DEBUG] Original description length: {len(original_description)}")
                     logger.debug(
-                        f"[DEBUG] Original description: {update_fields['description'][:200]}..."
+                        f"[DEBUG] Original description preview: {original_description[:200]}..."
                     )
 
                 description_content = self.markdown_to_jira(
-                    update_fields["description"], return_raw_adf=True
+                    original_description, return_raw_adf=True
                 )
 
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("[DEBUG] Description content after conversion:")
                     logger.debug(f"[DEBUG]   Type: {type(description_content)}")
                     logger.debug(
-                        f"[DEBUG]   Is dict: {isinstance(description_content, dict)}"
+                        f"[DEBUG]   Is dict (ADF): {isinstance(description_content, dict)}"
                     )
                     logger.debug(
-                        f"[DEBUG]   Is str: {isinstance(description_content, str)}"
+                        f"[DEBUG]   Is str (wiki markup): {isinstance(description_content, str)}"
                     )
-                    logger.debug(
-                        f"[DEBUG]   Content preview: {str(description_content)[:300]}..."
-                    )
+
+                    # For ADF, log structure details
+                    if isinstance(description_content, dict):
+                        logger.debug(f"[DEBUG]   ADF doc type: {description_content.get('type')}")
+                        logger.debug(f"[DEBUG]   ADF version: {description_content.get('version')}")
+                        content_nodes = description_content.get("content", [])
+                        logger.debug(f"[DEBUG]   ADF content nodes: {len(content_nodes)}")
+
+                        if content_nodes:
+                            # Log the types of content nodes
+                            node_types = [node.get("type") for node in content_nodes if isinstance(node, dict)]
+                            logger.debug(f"[DEBUG]   ADF node types: {node_types}")
+
+                            # Log full ADF structure (truncated) for debugging
+                            import json
+                            adf_json = json.dumps(description_content, indent=2)
+                            max_log_size = 1000
+                            if len(adf_json) > max_log_size:
+                                logger.debug(f"[DEBUG]   ADF structure (truncated): {adf_json[:max_log_size]}...")
+                            else:
+                                logger.debug(f"[DEBUG]   ADF structure: {adf_json}")
+                    else:
+                        # String format (wiki markup)
+                        logger.debug(
+                            f"[DEBUG]   Content preview: {str(description_content)[:300]}..."
+                        )
 
                 # Handle both ADF (dict) and wiki markup (str) formats
                 # With the new REST client, ADF is passed as-is (dict)

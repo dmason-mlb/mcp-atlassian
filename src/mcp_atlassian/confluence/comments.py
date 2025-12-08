@@ -155,3 +155,97 @@ class CommentsMixin(ConfluenceClient):
             logger.error(f"Unexpected error adding comment: {str(e)}")
             logger.debug("Full exception details for adding comment:", exc_info=True)
             return None
+
+    def update_comment(
+        self,
+        comment_id: str,
+        content: str,
+        version_number: int | None = None,
+    ) -> ConfluenceComment | None:
+        """
+        Update an existing comment on a Confluence page.
+
+        Args:
+            comment_id: The ID of the comment to update
+            content: The new content of the comment (in markdown format)
+            version_number: The current version number (auto-fetched if not provided)
+
+        Returns:
+            ConfluenceComment object if comment was updated successfully, None otherwise
+        """
+        try:
+            # Get the current comment to extract version and space details
+            current_comment = self.confluence.get_comment_by_id(comment_id)
+            
+            # Get version number if not provided
+            if version_number is None:
+                current_version = current_comment.get("version", {}).get("number", 1)
+                version_number = current_version  # Don't increment - adapter will do it
+            
+            # Get space key from the comment's container (page)
+            container_id = current_comment.get("pageId", "")
+            space_key = ""
+            if container_id:
+                try:
+                    page = self.confluence.get_page_by_id(page_id=container_id, expand="space")
+                    space_key = page.get("space", {}).get("key", "")
+                except Exception:
+                    logger.warning(f"Could not retrieve space for comment {comment_id}")
+
+            # Convert markdown to appropriate Confluence format
+            if not content.strip().startswith("<"):
+                # If content doesn't appear to be HTML/XML, treat it as markdown
+                result = self.preprocessor.markdown_to_confluence(content)
+                if isinstance(result, dict):
+                    # For ADF format, use the dict directly
+                    body_content = result
+                else:
+                    # Storage format string
+                    body_content = result
+            else:
+                # Already HTML/storage format
+                body_content = content
+
+            # Update the comment via the Confluence API
+            response = self.confluence.update_comment(
+                comment_id=comment_id,
+                body=body_content,
+                version_number=version_number,
+            )
+
+            if not response:
+                logger.error("Failed to update comment: empty response")
+                return None
+
+            # Process the comment to return a consistent model
+            processed_html, processed_markdown = self.preprocessor.process_html_content(
+                response.get("body", {}).get("view", {}).get("value", ""),
+                space_key=space_key,
+                confluence_client=self.confluence,
+            )
+
+            # Modify the response to include processed content
+            modified_response = response.copy()
+            if "body" not in modified_response:
+                modified_response["body"] = {}
+            if "view" not in modified_response["body"]:
+                modified_response["body"]["view"] = {}
+
+            modified_response["body"]["view"]["value"] = processed_markdown
+
+            # Create and return the comment model
+            return ConfluenceComment.from_api_response(
+                modified_response,
+                base_url=self.config.url,
+            )
+
+        except requests.RequestException as e:
+            logger.error(f"Network error when updating comment: {str(e)}")
+            return None
+        except (ValueError, TypeError, KeyError) as e:
+            logger.error(f"Error processing comment data: {str(e)}")
+            return None
+        except Exception as e:  # noqa: BLE001 - Intentional fallback with full logging
+            logger.error(f"Unexpected error updating comment: {str(e)}")
+            logger.debug("Full exception details for updating comment:", exc_info=True)
+            return None

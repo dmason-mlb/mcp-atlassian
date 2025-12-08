@@ -160,6 +160,27 @@ class JiraAdapter:
                 pass
         return self.client.add_comment(issue_key, comment, visibility)
 
+    def update_comment(
+        self,
+        issue_key: str,
+        comment_id: str,
+        comment: str | dict[str, Any],
+        visibility: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
+        """Update an existing comment on an issue."""
+        # If running against Cloud, ensure ADF is passed as a dict even if provided as JSON string
+        if isinstance(comment, str) and self.cloud:
+            try:
+                import json
+
+                loaded = json.loads(comment)
+                if isinstance(loaded, dict) and loaded.get("type") == "doc":
+                    comment = loaded
+            except Exception:
+                # Not JSON or not ADF structure; leave as string (wiki markup)
+                pass
+        return self.client.update_comment(issue_key, comment_id, comment, visibility)
+
     # === Transitions ===
 
     def get_issue_transitions(self, issue_key: str) -> list[dict[str, Any]]:

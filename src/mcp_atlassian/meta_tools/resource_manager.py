@@ -490,31 +490,75 @@ class ResourceManager:
                 ]
                 raise ValueError(f"Missing required fields: {', '.join(missing)}")
 
+            # Validate description field if present to provide better error messages
+            description = data.get("description", "")
+            if description and isinstance(description, str):
+                # Detect if user might have sent wiki markup instead of markdown
+                wiki_markup_patterns = ["h1.", "h2.", "h3.", "h4.", "h5.", "h6.", "{code", "{quote", "{panel"]
+                if any(description.strip().startswith(pattern) for pattern in wiki_markup_patterns):
+                    logger.warning(
+                        f"Description for new issue in {project_key} appears to contain Jira wiki markup. "
+                        "Expected markdown format. This may cause conversion issues. "
+                        "Use markdown syntax (e.g., '## Heading' instead of 'h2. Heading')"
+                    )
+
             # Create issue using consistency-aware implementation
-            wait_for_indexing = (options or {}).get("wait_for_indexing", True)
-            issue = client.create_issue_with_consistency(
-                project_key=project_key,
-                summary=summary,
-                issue_type=issue_type,
-                description=data.get("description", ""),
-                assignee=data.get("assignee"),
-                components=data.get("components"),
-                wait_for_indexing=wait_for_indexing,
-                **{
-                    k: v
-                    for k, v in data.items()
-                    if k
-                    not in [
-                        "project_key",
-                        "summary",
-                        "issue_type",
-                        "description",
-                        "assignee",
-                        "components",
-                    ]
-                },
-            )
-            return issue.to_simplified_dict()
+            try:
+                wait_for_indexing = (options or {}).get("wait_for_indexing", True)
+                issue = client.create_issue_with_consistency(
+                    project_key=project_key,
+                    summary=summary,
+                    issue_type=issue_type,
+                    description=description,
+                    assignee=data.get("assignee"),
+                    components=data.get("components"),
+                    wait_for_indexing=wait_for_indexing,
+                    **{
+                        k: v
+                        for k, v in data.items()
+                        if k
+                        not in [
+                            "project_key",
+                            "summary",
+                            "issue_type",
+                            "description",
+                            "assignee",
+                            "components",
+                        ]
+                    },
+                )
+                return issue.to_simplified_dict()
+            except Exception as create_error:
+                # Check if this might be a format conversion error
+                error_msg = str(create_error).lower()
+                if description and any(
+                    keyword in error_msg
+                    for keyword in ["invalid", "malformed", "format", "adf", "body", "description"]
+                ):
+                    # Likely a conversion or format issue
+                    raise MetaToolError.from_exception(
+                        error=create_error,
+                        error_code="JIRA_CREATE_ISSUE_FAILED",
+                        api_endpoint="/rest/api/3/issue",
+                        suggestions=[
+                            "The description field may contain invalid content or formatting",
+                            "Ensure description uses markdown syntax (not Jira wiki markup)",
+                            "For Cloud instances, markdown is converted to ADF automatically",
+                            "Try simplifying the description content to identify the problematic section",
+                        ],
+                        context={
+                            "project_key": project_key,
+                            "has_description": bool(description),
+                            "description_preview": description[:100] + "..." if len(description) > 100 else description,
+                        },
+                    )
+                else:
+                    # Some other error
+                    raise
+                    
+        except MetaToolError:
+            # Already wrapped, re-raise
+            raise
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -523,6 +567,7 @@ class ResourceManager:
                 suggestions=[
                     "Verify project key, issue type, and required fields are correct",
                     "Check that you have permission to create issues in this project",
+                    "Ensure all required fields for the issue type are provided",
                 ],
                 context={"project_key": data.get("project_key") if data else None},
             )
@@ -534,14 +579,118 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        """Update Jira issue."""
+        """Update Jira issue.
+        
+        Automatically converts markdown content in the description field to the appropriate
+        format for the target Jira instance:
+        - Cloud instances: Converts to ADF (Atlassian Document Format)
+        - Server/DC instances: Converts to wiki markup
+        
+        Args:
+            client: JiraFetcher instance
+            identifier: Issue key (e.g., 'PROJ-123')
+            data: Fields to update (description will be auto-converted from markdown)
+            options: Optional parameters
+            
+        Returns:
+            Dictionary representation of the updated issue
+        """
         try:
             if not identifier or not data:
                 raise ValueError("Issue key and update data are required")
 
-            # Use correct parameter name
-            issue = client.update_issue(issue_key=identifier, fields=data)
-            return issue.to_simplified_dict()
+            # Validate description field if present to provide better error messages
+            if "description" in data:
+                description = data["description"]
+                
+                # Check for common issues with description format
+                if description and isinstance(description, str):
+                    # Detect if user might have sent wiki markup instead of markdown
+                    wiki_markup_patterns = ["h1.", "h2.", "h3.", "h4.", "h5.", "h6.", "{code", "{quote", "{panel"]
+                    if any(description.strip().startswith(pattern) for pattern in wiki_markup_patterns):
+                        logger.warning(
+                            f"Description for {identifier} appears to contain Jira wiki markup. "
+                            "Expected markdown format. This may cause conversion issues. "
+                            "Use markdown syntax (e.g., '## Heading' instead of 'h2. Heading')"
+                        )
+
+            # Use correct parameter name - the conversion happens in update_issue
+            try:
+                issue = client.update_issue(issue_key=identifier, fields=data)
+                return issue.to_simplified_dict()
+            except Exception as update_error:
+                # Check if this might be a format conversion error
+                error_msg = str(update_error).lower()
+                error_type = type(update_error).__name__
+
+                # Build context with issue details
+                error_context = {
+                    "issue_key": identifier,
+                    "fields_being_updated": list(data.keys()) if data else [],
+                }
+
+                if "description" in data and any(
+                    keyword in error_msg
+                    for keyword in ["invalid", "malformed", "format", "adf", "body", "description"]
+                ):
+                    # Likely a description/ADF formatting error
+                    description_value = data.get("description", "")
+
+                    # Add description details to context
+                    error_context["has_description"] = True
+                    error_context["description_type"] = type(description_value).__name__
+
+                    if isinstance(description_value, dict):
+                        # ADF structure - include summary of structure
+                        error_context["adf_doc_type"] = description_value.get("type")
+                        error_context["adf_version"] = description_value.get("version")
+                        content_nodes = description_value.get("content", [])
+                        error_context["adf_content_nodes"] = len(content_nodes)
+                        if content_nodes:
+                            error_context["adf_first_node_type"] = content_nodes[0].get("type") if content_nodes else None
+                    elif isinstance(description_value, str):
+                        # String description (wiki markup or malformed)
+                        error_context["description_length"] = len(description_value)
+                        error_context["description_preview"] = description_value[:200] + "..." if len(description_value) > 200 else description_value
+
+                    # Create error with enhanced suggestions
+                    suggestions = [
+                        "The description field contains invalid or malformed content",
+                        "Check the 'api_error_details' in the error context for specific validation errors",
+                        "For Cloud instances, ensure markdown is being converted to valid ADF structure",
+                        "Verify ADF structure has required fields: type='doc', version=1, content=[]",
+                    ]
+
+                    # Add specific suggestion if we detected the description type
+                    if isinstance(description_value, dict):
+                        suggestions.append("ADF validation failed - check node types and required fields in the structure")
+                    elif isinstance(description_value, str):
+                        suggestions.append("Description is a string - Cloud instances require ADF dict structure, not wiki markup")
+
+                    raise MetaToolError.from_exception(
+                        error=update_error,
+                        error_code="JIRA_UPDATE_ISSUE_FAILED",
+                        api_endpoint=f"/rest/api/3/issue/{identifier}",
+                        suggestions=suggestions,
+                        context=error_context,
+                    )
+                else:
+                    # Some other error - still preserve details but with generic handling
+                    raise MetaToolError.from_exception(
+                        error=update_error,
+                        error_code="JIRA_UPDATE_ISSUE_FAILED",
+                        api_endpoint=f"/rest/api/3/issue/{identifier}",
+                        suggestions=[
+                            "Check the 'api_error_details' in the error context for specific validation errors from Jira",
+                            f"Original error type: {error_type}",
+                            "Verify all field values are in the correct format for the issue type",
+                        ],
+                        context=error_context,
+                    )
+                    
+        except MetaToolError:
+            # Already wrapped, re-raise
+            raise
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -550,6 +699,7 @@ class ResourceManager:
                 suggestions=[
                     "Verify the issue key exists and you have permission to edit it",
                     "Check that the field values are valid for this issue type",
+                    "Ensure all required fields for the issue type are provided",
                 ],
                 context={"issue_key": identifier},
             )
@@ -643,7 +793,17 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        """Update Jira comment."""
+        """Update Jira comment.
+        
+        Note: Jira requires both issue_key and comment_id to update a comment.
+        Provide issue_key in the data parameter.
+        
+        Args:
+            client: JiraFetcher instance
+            identifier: Comment ID
+            data: Must include 'body' (markdown text) and 'issue_key'
+            options: Optional parameters
+        """
         try:
             if not identifier or not data:
                 raise ValueError("Comment ID and update data are required")
@@ -651,11 +811,18 @@ class ResourceManager:
             body = data.get("body")
             if not body:
                 raise ValueError("Comment body is required")
+                
+            issue_key = data.get("issue_key")
+            if not issue_key:
+                raise ValueError(
+                    "issue_key is required in data to update a Jira comment. "
+                    "Example: data={'issue_key': 'PROJ-123', 'body': 'Updated comment text'}"
+                )
 
             comment = client.update_comment(
+                issue_key=issue_key,
                 comment_id=identifier,
-                body=body,
-                visibility=data.get("visibility")
+                comment=body,
             )
             return self._serialize_result(comment)
         except Exception as e:
@@ -666,8 +833,9 @@ class ResourceManager:
                 suggestions=[
                     "Verify the comment ID exists and you have permission to edit it",
                     "Check that the comment body is not empty",
+                    "Ensure 'issue_key' is provided in the data parameter",
                 ],
-                context={"comment_id": identifier},
+                context={"comment_id": identifier, "issue_key": data.get("issue_key") if data else None},
             )
 
     async def _delete_jira_comment(
@@ -1414,7 +1582,7 @@ class ResourceManager:
                 enable_heading_anchors=data.get("enable_heading_anchors", False),
                 content_representation=data.get("content_representation"),
             )
-            return page.to_dict()
+            return self._serialize_result(page)
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -1517,7 +1685,19 @@ class ResourceManager:
         data: dict[str, Any] | None,
         options: dict[str, Any] | None,
     ) -> dict[str, Any]:
-        """Update Confluence comment."""
+        """Update Confluence comment.
+        
+        Automatically converts markdown content to the appropriate format for the target
+        Confluence instance:
+        - Cloud instances: Converts to ADF (Atlassian Document Format)
+        - Server/DC instances: Converts to Confluence storage format (XHTML)
+        
+        Args:
+            client: ConfluenceFetcher instance
+            identifier: Comment ID
+            data: Must include 'body' (markdown text), optional 'version_number' (auto-fetched if not provided)
+            options: Optional parameters
+        """
         try:
             if not identifier or not data:
                 raise ValueError("Comment ID and update data are required")
@@ -1526,12 +1706,15 @@ class ResourceManager:
             if not body:
                 raise ValueError("Comment body is required")
 
+            # version_number is optional - if not provided, the update_comment method will fetch it
+            version_number = data.get("version_number")
+            
             comment = client.update_comment(
                 comment_id=identifier,
-                body=body,
-                is_markdown=data.get("is_markdown", True)
+                content=body,
+                version_number=version_number,
             )
-            return self._serialize_result(comment)
+            return self._serialize_result(comment) if comment else {"error": "Failed to update comment"}
         except Exception as e:
             raise MetaToolError.from_exception(
                 error=e,
@@ -1540,6 +1723,7 @@ class ResourceManager:
                 suggestions=[
                     "Verify the comment ID exists and you have permission to edit it",
                     "Check that the comment body is not empty",
+                    "The version number is auto-fetched if not provided",
                 ],
                 context={"comment_id": identifier},
             )

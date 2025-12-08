@@ -121,6 +121,58 @@ class CommentsMixin(JiraClient):
             raise_msg = f"Error adding comment: {str(e)}"
             raise Exception(raise_msg) from e
 
+    def update_comment(
+        self, issue_key: str, comment_id: str, comment: str
+    ) -> dict[str, Any]:
+        """
+        Update an existing comment on an issue.
+
+        Args:
+            issue_key: The issue key (e.g. 'PROJ-123')
+            comment_id: The comment ID to update
+            comment: Updated comment text (in Markdown format)
+
+        Returns:
+            The updated comment details
+
+        Raises:
+            Exception: If there is an error updating the comment
+        """
+        try:
+            # Convert markdown using helper which returns string (JSON for ADF or wiki markup)
+            jira_formatted_comment = self._markdown_to_jira(comment)
+
+            result = self.jira.update_comment(
+                issue_key, comment_id, jira_formatted_comment
+            )
+            if not isinstance(result, dict):
+                msg = (
+                    "Unexpected return value type from "
+                    f"`jira.update_comment`: {type(result)}"
+                )
+                logger.error(msg)
+                raise TypeError(msg)
+
+            # Handle ADF response where body is a dict
+            body = result.get("body", "")
+            if isinstance(body, dict):
+                # For ADF format, return the dict as-is or convert to string
+                body_text = str(body)  # Simple string representation
+            else:
+                body_text = self._clean_text(body)
+
+            return {
+                "id": result.get("id"),
+                "body": body_text,
+                "updated": str(parse_date(result.get("updated"))),
+                "author": result.get("author", {}).get("displayName", "Unknown"),
+            }
+        except Exception as e:
+            error_msg = f"Error updating comment {comment_id} on issue {issue_key}: {str(e)}"
+            logger.error(error_msg)
+            raise_msg = f"Error updating comment: {str(e)}"
+            raise Exception(raise_msg) from e
+
     def _markdown_to_jira(self, markdown_text: str) -> str | dict[str, Any]:
         """
         Convert Markdown syntax to Jira markup syntax.
